@@ -1,13 +1,13 @@
 import { GeoJson, Map } from "pigeon-maps"
 import '@config'
 import config from "@config"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import "./MapContainer.css";
 import { useRouteNodes } from "@/hooks/useRouteNodes";
 
 interface MapContainerProps {
-  selectedRouteId: number | null;
-  selectedRouteType: "А" | "Т" | "М" | null; // TransportType
+    selectedRouteId: number | null;
+    selectedRouteType: "А" | "Т" | "М" | null;
 }
 
 export function MapContainer({ selectedRouteId, selectedRouteType }: MapContainerProps) {
@@ -26,17 +26,26 @@ export function MapContainer({ selectedRouteId, selectedRouteType }: MapContaine
         ]
     } : null;
 
-    const routeConfig = config.routes.find((r) => r.type === selectedRouteType);
+    const debouncedOnBoundsChanged = useMemo(() => {
+        let timeoutId: ReturnType<typeof setTimeout>;
+        return ({ center, zoom }: { center: [number, number]; zoom: number }) => {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => {
+                setCenter(center);
+                setZoom(zoom);
+            }, 100); 
+        };
+    }, []);
+
+    const routeConfig = config.routes.find((route) => route.type === selectedRouteType);
 
     return (
         <div className="map-container">
             <Map
                 center={center}
                 zoom={zoom}
-                onBoundsChanged={({ center, zoom }) => {
-                    setCenter(center);
-                    setZoom(zoom);
-                }}
+                onBoundsChanged={debouncedOnBoundsChanged}
+                defaultWidth={window.innerWidth}
             >
                 {geoJsonData && (
                     <GeoJson
