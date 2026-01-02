@@ -1,0 +1,18 @@
+.route-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  padding: 6px 8px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.route-item:hover {
+  background-color: #e9ecef;
+}
+
+.route-item input[type="checkbox"] {
+  margin: 0;
+}
