@@ -14,7 +14,7 @@ export default function RouteItem({ id, num, onClick }: RouteItemProps) {
         onChange={onClick}
       />
       <label htmlFor={id.toString()}>
-        [{num}]
+        {num}
       </label>
     </div>
   );
