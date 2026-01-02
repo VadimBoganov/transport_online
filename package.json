@@ -12,6 +12,7 @@
   "dependencies": {
     "@tanstack/react-query": "^5.90.16",
     "bootstrap": "^5.3.8",
+    "pigeon-maps": "^0.22.1",
     "react": "^19.2.0",
     "react-bootstrap": "^2.10.10",
     "react-dom": "^19.2.0",
