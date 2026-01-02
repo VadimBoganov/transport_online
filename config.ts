@@ -1,4 +1,24 @@
-export default {
+export type TransportType = 'А' | 'Т' | 'М';
+
+export interface RouteConfig {
+  title: string;
+  type: TransportType;
+  color: string;
+}
+
+export interface AppConfig {
+  map: {
+    lat: number;
+    lng: number;
+    zoom: number;
+    stationVisibleZoom: number;
+  };
+  routes: RouteConfig[];
+  routeIconSize: number;
+  routeLineWeight: number;
+}
+
+const config: AppConfig = {
   map: {
     lat: 54.628723,
     lng: 39.716815,
@@ -25,3 +45,5 @@ export default {
   routeIconSize: 18,
   routeLineWeight: 3,
 };
+
+export default config;

@@ -3,6 +3,12 @@ import { IoMenu, IoClose } from 'react-icons/io5';
 import './Sidebar.css';
 import { useRoutes } from '@/hooks/useRotues';
 import RouteItem from '../RouteItem/RouteItem';
+import config, { type TransportType } from '@config';
+import { Accordion } from 'react-bootstrap';
+
+import * as IOIcons from "react-icons/io5";
+import * as BIIcons from "react-icons/bi";
+import * as MDIcons from "react-icons/ri";
 
 export default function Sidebar() {
     const [isOpen, setIsOpen] = useState(false);
@@ -11,6 +17,14 @@ export default function Sidebar() {
     const handleRouteToggle = () => {
         console.log('Переключить маршрут:');
     };
+
+    // Внутри Sidebar.tsx
+    const RouteIcons: Record<TransportType, React.ReactNode> = {
+        "А": <BIIcons.BiBus size={config.routeIconSize} />,
+        "Т": <IOIcons.IoBus size={config.routeIconSize} />,
+        "М": <MDIcons.RiBusFill size={config.routeIconSize} />
+    };
+
 
     return (
         <>
@@ -25,20 +39,43 @@ export default function Sidebar() {
 
             <div className={`sidebar ${isOpen ? 'open' : ''}`}>
                 <h2>Маршруты</h2>
-                
+
                 {isLoading && <p>Загрузка маршрутов...</p>}
                 {error && <p className="error">Ошибка: {(error as Error).message}</p>}
                 {routes && routes.length === 0 && <p>Маршруты не найдены</p>}
-                
-                <div className="routes-list">
-                    {routes?.map((route) => (
-                        <RouteItem
-                            key={route.id}
-                            {...route}
-                            onClick={() => handleRouteToggle()}
-                        />
-                    ))}
-                </div>
+
+                <Accordion>
+                    {config.routes.map((route, index) => {
+                        const filteredRoutes = routes?.filter(item => item.type === route.type)
+                            .filter((item, idx, self) =>
+                                self.findIndex(a => a.num === item.num) === idx
+                            ) || [];
+
+                        return (
+                            <Accordion.Item key={index} eventKey={index.toString()}>
+                                <Accordion.Header>
+                                    <div className="accordion-header__icon">{RouteIcons[route.type]}</div>
+                                    {route.title}
+                                </Accordion.Header>
+                                <Accordion.Body>
+                                    {filteredRoutes.length === 0 ? (
+                                        <p className="text-muted">Нет маршрутов</p>
+                                    ) : (
+                                        <div className="routes-grid">
+                                            {filteredRoutes.map((item) => (
+                                                <RouteItem
+                                                    key={item.id}
+                                                    {...item}
+                                                    onClick={() => handleRouteToggle()}
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
+                                </Accordion.Body>
+                            </Accordion.Item>
+                        );
+                    })}
+                </Accordion>
             </div>
         </>
     );
