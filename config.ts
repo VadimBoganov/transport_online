@@ -22,7 +22,7 @@ const config: AppConfig = {
   map: {
     lat: 54.628723,
     lng: 39.716815,
-    zoom: 14,
+    zoom: 15,
     stationVisibleZoom: 15,
   },
   routes: [
