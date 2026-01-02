@@ -1,8 +1,10 @@
+import Sidebar from "@components/Sidebar";
+
 function App() {
 
   return (
-    <div className="container mt-4">
-      
+    <div>
+      <Sidebar />
     </div>
   );
 }
