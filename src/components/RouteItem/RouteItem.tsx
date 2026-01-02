@@ -3,19 +3,21 @@ import './RouteItem.css'
 
 interface RouteItemProps extends Route {
   onClick: () => void;
+  checked: boolean;
 }
 
-export default function RouteItem({ id, num, onClick }: RouteItemProps) {
+export default function RouteItem({ id, num, onClick, checked }: RouteItemProps) {
     return (
-    <div className="route-item">
-      <input
-        type="checkbox"
-        id={id.toString()}
-        onChange={onClick}
-      />
-      <label htmlFor={id.toString()}>
-        {num}
-      </label>
-    </div>
-  );
+        <div className="route-item">
+            <input
+                type="checkbox"
+                id={id.toString()}
+                checked={checked}
+                onChange={onClick}
+            />
+            <label htmlFor={id.toString()}>
+                {num}
+            </label>
+        </div>
+    );
 }

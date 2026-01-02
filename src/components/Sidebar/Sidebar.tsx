@@ -10,15 +10,26 @@ import * as IOIcons from "react-icons/io5";
 import * as BIIcons from "react-icons/bi";
 import * as MDIcons from "react-icons/ri";
 
-export default function Sidebar() {
+interface SidebarProps {
+    onRouteSelect: (routeId: number | null, routeType: TransportType | null) => void;
+}
+
+export default function Sidebar({ onRouteSelect }: SidebarProps) {
     const [isOpen, setIsOpen] = useState(false);
+    const [selectedRouteId, setSelectedRouteId] = useState<number | null>(null);
+    const [_, setSelectedRouteType] = useState<TransportType | null>(null);
+
     const { data: routes, isLoading, error } = useRoutes();
 
-    const handleRouteToggle = () => {
-        console.log('Переключить маршрут:');
+    const handleRouteToggle = (id: number, type: TransportType) => {
+        const newId = selectedRouteId === id ? null : id;
+        const newType = newId ? type : null;
+
+        setSelectedRouteId(newId);
+        setSelectedRouteType(newType);
+        onRouteSelect(newId, newType);
     };
 
-    // Внутри Sidebar.tsx
     const RouteIcons: Record<TransportType, React.ReactNode> = {
         "А": <BIIcons.BiBus size={config.routeIconSize} />,
         "Т": <IOIcons.IoBus size={config.routeIconSize} />,
@@ -66,7 +77,8 @@ export default function Sidebar() {
                                                 <RouteItem
                                                     key={item.id}
                                                     {...item}
-                                                    onClick={() => handleRouteToggle()}
+                                                    onClick={() => handleRouteToggle(item.id, item.type as TransportType)}
+                                                    checked={selectedRouteId === item.id}
                                                 />
                                             ))}
                                         </div>
