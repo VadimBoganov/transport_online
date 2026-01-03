@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { IoMenu, IoClose } from 'react-icons/io5';
 import './Sidebar.css';
-import { useRoutes } from '@/hooks/useRotues';
+import { useRoutes } from '@/hooks/useRoutes';
 import RouteItem from '../RouteItem/RouteItem';
 import config, { type TransportType } from '@config';
 import { Accordion } from 'react-bootstrap';
@@ -11,23 +11,26 @@ import * as BIIcons from "react-icons/bi";
 import * as MDIcons from "react-icons/ri";
 
 interface SidebarProps {
-    onRouteSelect: (routeId: number | null, routeType: TransportType | null) => void;
+    onRoutesChange: (routes: Array<{ id: number; type: TransportType }>) => void;
 }
 
-export default function Sidebar({ onRouteSelect }: SidebarProps) {
+export default function Sidebar({ onRoutesChange }: SidebarProps) {
     const [isOpen, setIsOpen] = useState(false);
-    const [selectedRouteId, setSelectedRouteId] = useState<number | null>(null);
-    const [_, setSelectedRouteType] = useState<TransportType | null>(null);
-
+    const [selectedRoutes, setSelectedRoutes] = useState<Array<{ id: number; type: TransportType }>>([]);
     const { data: routes, isLoading, error } = useRoutes();
 
     const handleRouteToggle = (id: number, type: TransportType) => {
-        const newId = selectedRouteId === id ? null : id;
-        const newType = newId ? type : null;
+        const exists = selectedRoutes.find(r => r.id === id);
 
-        setSelectedRouteId(newId);
-        setSelectedRouteType(newType);
-        onRouteSelect(newId, newType);
+        let updated;
+        if (exists) {
+            updated = selectedRoutes.filter(r => r.id !== id);
+        } else {
+            updated = [...selectedRoutes, { id, type }];
+        }
+
+        setSelectedRoutes(updated);
+        onRoutesChange(updated);
     };
 
     const RouteIcons: Record<TransportType, React.ReactNode> = {
@@ -78,7 +81,7 @@ export default function Sidebar({ onRouteSelect }: SidebarProps) {
                                                     key={item.id}
                                                     {...item}
                                                     onClick={() => handleRouteToggle(item.id, item.type as TransportType)}
-                                                    checked={selectedRouteId === item.id}
+                                                    checked={!!selectedRoutes.find(r => r.id === item.id)}
                                                 />
                                             ))}
                                         </div>

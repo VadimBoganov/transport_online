@@ -3,28 +3,49 @@ import '@config'
 import config from "@config"
 import { useMemo, useState } from "react"
 import "./MapContainer.css";
-import { useRouteNodes } from "@/hooks/useRouteNodes";
+import { useRouteNodesBatch } from "@/hooks/useRouteNodesBatch";
 
-interface MapContainerProps {
-    selectedRouteId: number | null;
-    selectedRouteType: "А" | "Т" | "М" | null;
+interface SelectedRoute {
+    id: number;
+    type: "А" | "Т" | "М";
 }
 
-export function MapContainer({ selectedRouteId, selectedRouteType }: MapContainerProps) {
+interface MapContainerProps {
+    selectedRoutes: SelectedRoute[];
+}
+
+export function MapContainer({ selectedRoutes }: MapContainerProps) {
     const [center, setCenter] = useState<[number, number]>([config.map.lat, config.map.lng]);
     const [zoom, setZoom] = useState<number>(config.map.zoom);
 
-    const { data: nodes, isLoading: loading } = useRouteNodes({ routeId: selectedRouteId });
-    const safeNodes = nodes || [];
+    const routeNodes = useRouteNodesBatch(selectedRoutes);
 
-    const geoJsonData = safeNodes.length > 1 ? {
-        features: [
-            {
-                type: "Feature",
-                geometry: { type: "LineString", coordinates: safeNodes.map(node => [node.lng / 1000000, node.lat / 1000000] as [number, number]) },
-            },
-        ]
-    } : null;
+    const features = selectedRoutes
+        .map((route, index) => {
+            const result = routeNodes[index];
+            const data = result.data;
+
+            if (!data || data.length < 2) return null;
+
+            const color = config.routes.find(rt => rt.type === route.type)?.color || "#1a73e8";
+
+            return {
+                type: "Feature" as const,
+                geometry: {
+                    type: "LineString" as const,
+                    coordinates: data.map(node => [
+                        node.lng / 1000000,
+                        node.lat / 1000000,
+                    ]) as [number, number][],
+                },
+                properties: { stroke: color },
+            };
+        })
+        .filter((feature): feature is NonNullable<typeof feature> => feature !== null);
+
+    const geoJsonData = features.length > 0
+        ? { type: "FeatureCollection" as const, features }
+        : null;
 
     const debouncedOnBoundsChanged = useMemo(() => {
         let timeoutId: ReturnType<typeof setTimeout>;
@@ -33,11 +54,9 @@ export function MapContainer({ selectedRouteId, selectedRouteType }: MapContaine
             timeoutId = setTimeout(() => {
                 setCenter(center);
                 setZoom(zoom);
-            }, 100); 
+            }, 100);
         };
     }, []);
-
-    const routeConfig = config.routes.find((route) => route.type === selectedRouteType);
 
     return (
         <div className="map-container">
@@ -50,8 +69,8 @@ export function MapContainer({ selectedRouteId, selectedRouteType }: MapContaine
                 {geoJsonData && (
                     <GeoJson
                         data={geoJsonData}
-                        styleCallback={() => ({
-                            stroke: routeConfig?.color,
+                        styleCallback={(feature: { properties: { stroke: any; }; }) => ({
+                            stroke: feature.properties?.stroke,
                             strokeWidth: 4,
                             fill: "none",
                         })}
@@ -60,7 +79,7 @@ export function MapContainer({ selectedRouteId, selectedRouteType }: MapContaine
             </Map>
 
             <div style={{ position: 'absolute', top: 10, left: 10, zIndex: 1000 }}>
-                {loading && <p>Загрузка маршрута...</p>}
+                {routeNodes.some(rd => rd.isLoading) && <p>Загрузка маршрутов...</p>}
             </div>
         </div>
     )

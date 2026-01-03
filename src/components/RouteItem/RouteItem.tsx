@@ -1,4 +1,4 @@
-import type { Route } from "@/hooks/useRotues";
+import type { Route } from "@/hooks/useRoutes";
 import './RouteItem.css'
 
 interface RouteItemProps extends Route {

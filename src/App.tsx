@@ -4,21 +4,12 @@ import { useState } from "react";
 import type { TransportType } from "@config";
 
 function App() {
-  const [selectedRouteId, setSelectedRouteId] = useState<number | null>(null);
-  const [selectedRouteType, setSelectedRouteType] = useState<TransportType | null>(null);
+  const [selectedRoutes, setSelectedRoutes] = useState<Array<{ id: number; type: TransportType }>>([]);
 
   return (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
-      <Sidebar
-        onRouteSelect={(id, type) => {
-          setSelectedRouteId(id);
-          setSelectedRouteType(type);
-        }}
-      />
-      <MapContainer
-        selectedRouteId={selectedRouteId}
-        selectedRouteType={selectedRouteType}
-      />
+      <Sidebar onRoutesChange={setSelectedRoutes} />
+      <MapContainer selectedRoutes={selectedRoutes} />
     </div>
   );
 }
