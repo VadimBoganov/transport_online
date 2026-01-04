@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { IoMenu, IoClose } from 'react-icons/io5';
 import './Sidebar.css';
-import { useRoutes } from '@/hooks/useRoutes';
 import RouteItem from '../RouteItem/RouteItem';
 import config, { type TransportType } from '@config';
 import { Accordion } from 'react-bootstrap';
@@ -9,15 +8,18 @@ import { Accordion } from 'react-bootstrap';
 import * as IOIcons from "react-icons/io5";
 import * as BIIcons from "react-icons/bi";
 import * as MDIcons from "react-icons/ri";
+import type { Route } from '@/hooks/useRoutes';
 
 interface SidebarProps {
+    routes: Route[];   
+    loading: boolean;   
+    error: Error | null;
     onRoutesChange: (routes: Array<{ id: number; type: TransportType }>) => void;
 }
 
-export default function Sidebar({ onRoutesChange }: SidebarProps) {
+export default function Sidebar({ routes, loading, error, onRoutesChange }: SidebarProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedRoutes, setSelectedRoutes] = useState<Array<{ id: number; type: TransportType }>>([]);
-    const { data: routes, isLoading, error } = useRoutes();
 
     const handleRouteToggle = (id: number, type: TransportType) => {
         const exists = selectedRoutes.find(r => r.id === id);
@@ -54,7 +56,7 @@ export default function Sidebar({ onRoutesChange }: SidebarProps) {
             <div className={`sidebar ${isOpen ? 'open' : ''}`}>
                 <h2>Маршруты</h2>
 
-                {isLoading && <p>Загрузка маршрутов...</p>}
+                {loading && <p>Загрузка маршрутов...</p>}
                 {error && <p className="error">Ошибка: {(error as Error).message}</p>}
                 {routes && routes.length === 0 && <p>Маршруты не найдены</p>}
 
