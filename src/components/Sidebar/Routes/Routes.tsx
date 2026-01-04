@@ -1,5 +1,4 @@
 import { Accordion } from 'react-bootstrap';
-import RouteItem from '@components/RouteItem/RouteItem';
 import config, { type TransportType } from '@config';
 import type { Route } from '@/hooks/useRoutes';
 import './Routes.css';
@@ -7,6 +6,7 @@ import './Routes.css';
 import * as IOIcons from "react-icons/io5";
 import * as BIIcons from "react-icons/bi";
 import * as MDIcons from "react-icons/ri";
+import RouteItem from '../RouteItem/RouteItem';
 
 interface RoutesListProps {
     routes: Route[];

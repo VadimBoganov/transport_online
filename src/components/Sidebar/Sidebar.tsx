@@ -12,9 +12,10 @@ interface SidebarProps {
     loading: boolean;
     error: Error | null;
     onRoutesChange: (routes: Array<{ id: number; type: TransportType }>) => void;
+    onStationSelect?: (lat: number, lng: number) => void;
 }
 
-export default function Sidebar({ routes, loading, error, onRoutesChange }: SidebarProps) {
+export default function Sidebar({ routes, loading, error, onRoutesChange, onStationSelect }: SidebarProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedRoutes, setSelectedRoutes] = useState<Array<{ id: number; type: TransportType }>>([]);
     const [activeTab, setActiveTab] = useState('routes');
@@ -67,7 +68,7 @@ export default function Sidebar({ routes, loading, error, onRoutesChange }: Side
 
                         <Tab eventKey="stops" title="Остановки">
                             <div className="tab-content-area">
-                                <Stations />
+                                <Stations onStationSelect={onStationSelect}/>
                             </div>
                         </Tab>
                     </Tabs>

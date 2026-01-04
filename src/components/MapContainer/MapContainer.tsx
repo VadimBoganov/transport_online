@@ -1,7 +1,7 @@
 import { GeoJson, Map, Marker } from "pigeon-maps"
 import '@config'
 import config from "@config"
-import { useMemo, useState } from "react"
+import { useMemo } from "react"
 import "./MapContainer.css";
 import { useRouteNodesBatch } from "@/hooks/useRouteNodesBatch";
 import { useVehiclePositions } from "@/hooks/useVehiclePositions";
@@ -15,22 +15,22 @@ interface SelectedRoute {
 interface MapContainerProps {
     selectedRoutes: SelectedRoute[];
     routes: Route[];
+    center: [number, number];
+    zoom: number;
+    onCenterChange?: (center: [number, number], zoom: number) => void;
 }
 
-export function MapContainer({ selectedRoutes, routes }: MapContainerProps) {
-    const [center, setCenter] = useState<[number, number]>([config.map.lat, config.map.lng]);
-    const [zoom, setZoom] = useState<number>(config.map.zoom);
-
+export function MapContainer({
+    selectedRoutes,
+    routes,
+    center,
+    zoom,
+    onCenterChange
+}: MapContainerProps) {
     const routeNodes = useRouteNodesBatch(selectedRoutes);
 
-    const effectiveRoutes = selectedRoutes.length > 0
-        ? selectedRoutes
-        : routes || [];
-
-    const rids = effectiveRoutes.length > 0
-        ? effectiveRoutes.map(r => `${r.id}-0`).join(',')
-        : '';
-
+    const effectiveRoutes = selectedRoutes.length > 0 ? selectedRoutes : routes || [];
+    const rids = effectiveRoutes.length > 0 ? effectiveRoutes.map(r => `${r.id}-0`).join(',') : '';
     const { data: vehiclePositions } = useVehiclePositions(rids);
 
     const features = effectiveRoutes
@@ -65,11 +65,10 @@ export function MapContainer({ selectedRoutes, routes }: MapContainerProps) {
         return ({ center, zoom }: { center: [number, number]; zoom: number }) => {
             clearTimeout(timeoutId);
             timeoutId = setTimeout(() => {
-                setCenter(center);
-                setZoom(zoom);
+                onCenterChange?.(center, zoom);
             }, 100);
         };
-    }, []);
+    }, [onCenterChange]);
 
     return (
         <div className="map-container">
