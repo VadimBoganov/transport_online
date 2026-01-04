@@ -1,18 +1,15 @@
 import { useState } from 'react';
 import { IoMenu, IoClose } from 'react-icons/io5';
 import './Sidebar.css';
-import RouteItem from '../RouteItem/RouteItem';
-import config, { type TransportType } from '@config';
-import { Accordion } from 'react-bootstrap';
-
-import * as IOIcons from "react-icons/io5";
-import * as BIIcons from "react-icons/bi";
-import * as MDIcons from "react-icons/ri";
 import type { Route } from '@/hooks/useRoutes';
+import type { TransportType } from '@config';
+import Routes from './Routes/Routes';
+import { Tab, Tabs } from 'react-bootstrap';
+import Stations from './Stations/Stations';
 
 interface SidebarProps {
-    routes: Route[];   
-    loading: boolean;   
+    routes: Route[];
+    loading: boolean;
     error: Error | null;
     onRoutesChange: (routes: Array<{ id: number; type: TransportType }>) => void;
 }
@@ -20,27 +17,16 @@ interface SidebarProps {
 export default function Sidebar({ routes, loading, error, onRoutesChange }: SidebarProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedRoutes, setSelectedRoutes] = useState<Array<{ id: number; type: TransportType }>>([]);
+    const [activeTab, setActiveTab] = useState('routes');
 
     const handleRouteToggle = (id: number, type: TransportType) => {
-        const exists = selectedRoutes.find(r => r.id === id);
-
-        let updated;
-        if (exists) {
-            updated = selectedRoutes.filter(r => r.id !== id);
-        } else {
-            updated = [...selectedRoutes, { id, type }];
-        }
+        const updated = selectedRoutes.find(r => r.id === id)
+            ? selectedRoutes.filter(r => r.id !== id)
+            : [...selectedRoutes, { id, type }];
 
         setSelectedRoutes(updated);
         onRoutesChange(updated);
     };
-
-    const RouteIcons: Record<TransportType, React.ReactNode> = {
-        "А": <BIIcons.BiBus size={config.routeIconSize} />,
-        "Т": <IOIcons.IoBus size={config.routeIconSize} />,
-        "М": <MDIcons.RiBusFill size={config.routeIconSize} />
-    };
-
 
     return (
         <>
@@ -54,45 +40,38 @@ export default function Sidebar({ routes, loading, error, onRoutesChange }: Side
             </button>
 
             <div className={`sidebar ${isOpen ? 'open' : ''}`}>
-                <h2>Маршруты</h2>
-
                 {loading && <p>Загрузка маршрутов...</p>}
-                {error && <p className="error">Ошибка: {(error as Error).message}</p>}
-                {routes && routes.length === 0 && <p>Маршруты не найдены</p>}
+                {error && <p className="error">Ошибка: {error.message}</p>}
+                {routes.length === 0 && !loading && <p>Маршруты не найдены</p>}
 
-                <Accordion>
-                    {config.routes.map((route, index) => {
-                        const filteredRoutes = routes?.filter(item => item.type === route.type)
-                            .filter((item, idx, self) =>
-                                self.findIndex(a => a.num === item.num) === idx
-                            ) || [];
+                {!loading && !error && (
+                    <Tabs
+                        activeKey={activeTab}
+                        onSelect={(k) => setActiveTab(k || 'routes')}
+                        id="sidebar-tabs"
+                        className="mb-3"
+                    >
+                        <Tab eventKey="routes" title="Маршруты">
+                            <div className="tab-content-area">
+                                {routes.length === 0 ? (
+                                    <p>Маршруты не найдены</p>
+                                ) : (
+                                    <Routes
+                                        routes={routes}
+                                        selectedRoutes={selectedRoutes}
+                                        onRouteToggle={handleRouteToggle}
+                                    />
+                                )}
+                            </div>
+                        </Tab>
 
-                        return (
-                            <Accordion.Item key={index} eventKey={index.toString()}>
-                                <Accordion.Header>
-                                    <div className="accordion-header__icon">{RouteIcons[route.type]}</div>
-                                    {route.title}
-                                </Accordion.Header>
-                                <Accordion.Body>
-                                    {filteredRoutes.length === 0 ? (
-                                        <p className="text-muted">Нет маршрутов</p>
-                                    ) : (
-                                        <div className="routes-grid">
-                                            {filteredRoutes.map((item) => (
-                                                <RouteItem
-                                                    key={item.id}
-                                                    {...item}
-                                                    onClick={() => handleRouteToggle(item.id, item.type as TransportType)}
-                                                    checked={!!selectedRoutes.find(r => r.id === item.id)}
-                                                />
-                                            ))}
-                                        </div>
-                                    )}
-                                </Accordion.Body>
-                            </Accordion.Item>
-                        );
-                    })}
-                </Accordion>
+                        <Tab eventKey="stops" title="Остановки">
+                            <div className="tab-content-area">
+                                <Stations />
+                            </div>
+                        </Tab>
+                    </Tabs>
+                )}
             </div>
         </>
     );

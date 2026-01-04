@@ -1,0 +1,49 @@
+.stations-list {
+    padding: 10px;
+    font-size: 14px;
+}
+
+.stations-list h4 {
+    margin-bottom: 12px;
+    color: #333;
+}
+
+.stations-grid {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: calc(100vh - 150px);
+    overflow-y: auto;
+}
+
+.stations-grid .station-item {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    line-height: 1.5;
+}
+
+.stations-grid .station-item:hover {
+    background-color: #f9f9f9;
+}
+
+.stations-grid .descr {
+    color: #0066cc;
+    font-style: italic;
+    margin-left: 8px;
+}
+
+.stations-grid small {
+    color: #666;
+    display: block;
+    margin-top: 4px;
+}
+
+.error {
+    color: #d9534f;
+    padding: 10px;
+}
+
+.text-muted {
+    color: #999;
+    font-style: italic;
+}
