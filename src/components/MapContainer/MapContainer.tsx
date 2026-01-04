@@ -1,4 +1,4 @@
-import { GeoJson, Map, Marker } from "pigeon-maps"
+import { GeoJson, Map, Marker, Overlay } from "pigeon-maps"
 import '@config'
 import config from "@config"
 import { useMemo } from "react"
@@ -6,6 +6,7 @@ import "./MapContainer.css";
 import { useRouteNodesBatch } from "@/hooks/useRouteNodesBatch";
 import { useVehiclePositions } from "@/hooks/useVehiclePositions";
 import type { Route } from "@/hooks/useRoutes";
+import { StationPopup } from "@components/MapContainer/StationPopup";
 
 interface SelectedRoute {
     id: number;
@@ -18,7 +19,8 @@ interface MapContainerProps {
     center: [number, number];
     zoom: number;
     onCenterChange?: (center: [number, number], zoom: number) => void;
-    selectedStation: { lat: number; lng: number } | null;
+    selectedStation: { lat: number; lng: number, id: number, name: string } | null;
+    onStationDeselect: () => void;
 }
 
 export function MapContainer({
@@ -27,7 +29,8 @@ export function MapContainer({
     center,
     zoom,
     onCenterChange,
-    selectedStation
+    selectedStation,
+    onStationDeselect
 }: MapContainerProps) {
     const routeNodes = useRouteNodesBatch(selectedRoutes);
 
@@ -58,9 +61,7 @@ export function MapContainer({
         })
         .filter((feature): feature is NonNullable<typeof feature> => feature !== null);
 
-    const geoJsonData = features.length > 0
-        ? { type: "FeatureCollection" as const, features }
-        : null;
+    const geoJsonData = features.length > 0 ? { type: "FeatureCollection" as const, features } : null;
 
     const debouncedOnBoundsChanged = useMemo(() => {
         let timeoutId: ReturnType<typeof setTimeout>;
@@ -107,17 +108,18 @@ export function MapContainer({
                 )}
 
                 {selectedStation && (
-                    <Marker anchor={[selectedStation.lat / 1e6, selectedStation.lng / 1e6]}>
-                        <div style={{
-                            width: '20px',
-                            height: '20px',
-                            borderRadius: '50%',
-                            backgroundColor: 'red',
-                            border: '3px solid white',
-                            boxShadow: '0 0 6px rgba(0,0,0,0.5)',
-                            transform: 'translate(-50%, -50%)'
-                        }} />
-                    </Marker>
+                    <Overlay anchor={[selectedStation.lat / 1e6, selectedStation.lng / 1e6]} offset={[0, -40]}>
+                        <Marker anchor={[selectedStation.lat / 1e6, selectedStation.lng / 1e6]}>
+                             <div className="station-marker" />
+                        </Marker>
+                        <StationPopup
+                            lat={selectedStation.lat}
+                            lng={selectedStation.lng}
+                            stationId={selectedStation.id}
+                            stationName={selectedStation.name}
+                            onDeselect={onStationDeselect}
+                        />
+                    </Overlay>
                 )}
             </Map>
 

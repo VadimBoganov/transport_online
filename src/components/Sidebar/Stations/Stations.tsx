@@ -2,7 +2,7 @@ import { useStations, type Station } from '@/hooks/useStations';
 import './Stations.css';
 
 interface StationsProps {
-    onStationSelect?: (lat: number, lng: number) => void;
+    onStationSelect?: (lat: number, lng: number, id: number, name: string) => void;
 }
 
 export default function Stations({ onStationSelect }: StationsProps) {
@@ -17,7 +17,7 @@ export default function Stations({ onStationSelect }: StationsProps) {
     }
     
     const handleStationClick = (station: Station) => {
-        onStationSelect?.(station.lat, station.lng);
+        onStationSelect?.(station.lat, station.lng, station.id, station.name);
     };
 
     return (

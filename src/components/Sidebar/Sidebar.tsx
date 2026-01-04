@@ -12,7 +12,7 @@ interface SidebarProps {
     loading: boolean;
     error: Error | null;
     onRoutesChange: (routes: Array<{ id: number; type: TransportType }>) => void;
-    onStationSelect?: (lat: number, lng: number) => void;
+    onStationSelect?: (lat: number, lng: number, id: number, name: string) => void;
 }
 
 export default function Sidebar({ routes, loading, error, onRoutesChange, onStationSelect }: SidebarProps) {

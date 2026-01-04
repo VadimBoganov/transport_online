@@ -9,14 +9,14 @@ function App() {
   const [selectedRoutes, setSelectedRoutes] = useState<Array<{ id: number; type: TransportType }>>([]);
   const [mapCenter, setMapCenter] = useState<[number, number]>([config.map.lat, config.map.lng]);
   const [mapZoom, setMapZoom] = useState<number>(config.map.zoom);
-  const [selectedStation, setSelectedStation] = useState<{ lat: number; lng: number } | null>(null);
+  const [selectedStation, setSelectedStation] = useState<{ lat: number; lng: number, id: number, name: string } | null>(null);
 
   const { data: routes, isLoading, error } = useRoutes();
 
-  const handleStationSelect = (lat: number, lng: number) => {
+  const handleStationSelect = (lat: number, lng: number, id: number, name: string) => {
     setMapCenter([lat / 1e6, lng / 1e6]);
     setMapZoom(config.map.stationSelectZoom ?? 17);
-    setSelectedStation({ lat, lng });
+    setSelectedStation({ lat, lng, id, name });
   };
 
   const handleCenterChange = (center: [number, number], zoom: number) => {
@@ -40,6 +40,7 @@ function App() {
         zoom={mapZoom}
         onCenterChange={handleCenterChange}
         selectedStation={selectedStation}
+        onStationDeselect={() => setSelectedStation(null)}
       />
     </div>
   );
