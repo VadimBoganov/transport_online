@@ -18,6 +18,7 @@ interface MapContainerProps {
     center: [number, number];
     zoom: number;
     onCenterChange?: (center: [number, number], zoom: number) => void;
+    selectedStation: { lat: number; lng: number } | null;
 }
 
 export function MapContainer({
@@ -25,7 +26,8 @@ export function MapContainer({
     routes,
     center,
     zoom,
-    onCenterChange
+    onCenterChange,
+    selectedStation
 }: MapContainerProps) {
     const routeNodes = useRouteNodesBatch(selectedRoutes);
 
@@ -47,8 +49,8 @@ export function MapContainer({
                 geometry: {
                     type: "LineString" as const,
                     coordinates: data.map(node => [
-                        node.lng / 1_000_000,
-                        node.lat / 1_000_000,
+                        node.lng / 1e6,
+                        node.lat / 1e6,
                     ]) as [number, number][],
                 },
                 properties: { stroke: color },
@@ -91,7 +93,7 @@ export function MapContainer({
                 {vehiclePositions && vehiclePositions.anims.map(anim =>
                     <Marker
                         key={`${anim.id}-${anim.lasttime}`}
-                        anchor={[anim.lat / 1_000_000, anim.lon / 1_000_000]}
+                        anchor={[anim.lat / 1e6, anim.lon / 1e6]}
                     >
                         <div
                             className="vehicle-marker"
@@ -101,6 +103,20 @@ export function MapContainer({
                         >
                             {anim.rnum}
                         </div>
+                    </Marker>
+                )}
+
+                {selectedStation && (
+                    <Marker anchor={[selectedStation.lat / 1e6, selectedStation.lng / 1e6]}>
+                        <div style={{
+                            width: '20px',
+                            height: '20px',
+                            borderRadius: '50%',
+                            backgroundColor: 'red',
+                            border: '3px solid white',
+                            boxShadow: '0 0 6px rgba(0,0,0,0.5)',
+                            transform: 'translate(-50%, -50%)'
+                        }} />
                     </Marker>
                 )}
             </Map>

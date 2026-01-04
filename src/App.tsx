@@ -9,8 +9,20 @@ function App() {
   const [selectedRoutes, setSelectedRoutes] = useState<Array<{ id: number; type: TransportType }>>([]);
   const [mapCenter, setMapCenter] = useState<[number, number]>([config.map.lat, config.map.lng]);
   const [mapZoom, setMapZoom] = useState<number>(config.map.zoom);
+  const [selectedStation, setSelectedStation] = useState<{ lat: number; lng: number } | null>(null);
 
   const { data: routes, isLoading, error } = useRoutes();
+
+  const handleStationSelect = (lat: number, lng: number) => {
+    setMapCenter([lat / 1e6, lng / 1e6]);
+    setMapZoom(config.map.stationSelectZoom ?? 17);
+    setSelectedStation({ lat, lng });
+  };
+
+  const handleCenterChange = (center: [number, number], zoom: number) => {
+    setMapCenter(center);
+    setMapZoom(zoom);
+  };
 
   return (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
@@ -19,20 +31,15 @@ function App() {
         loading={isLoading}
         error={error}
         onRoutesChange={setSelectedRoutes}
-        onStationSelect={(lat, lng) => {
-          setMapCenter([lat / 1e6, lng / 1e6]);
-          setMapZoom(config.map.stationSelectZoom);
-        }}
+        onStationSelect={handleStationSelect}
       />
       <MapContainer
         selectedRoutes={selectedRoutes}
         routes={routes || []}
         center={mapCenter}
         zoom={mapZoom}
-        onCenterChange={(center, zoom) => {
-          setMapCenter(center);
-          setMapZoom(zoom);
-        }}
+        onCenterChange={handleCenterChange}
+        selectedStation={selectedStation}
       />
     </div>
   );
