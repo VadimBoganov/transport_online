@@ -1,5 +1,6 @@
 import { useStations, type Station } from '@/hooks/useStations';
 import './Stations.css';
+import { useState } from 'react';
 
 interface StationsProps {
     onStationSelect?: (lat: number, lng: number, id: number, name: string) => void;
@@ -7,6 +8,7 @@ interface StationsProps {
 
 export default function Stations({ onStationSelect }: StationsProps) {
     const { data: stations, isLoading, error } = useStations();
+    const [searchTerm, setSearchTerm] = useState('');
 
     if (isLoading) {
         return <p>Загрузка остановок...</p>;
@@ -15,18 +17,29 @@ export default function Stations({ onStationSelect }: StationsProps) {
     if (error) {
         return <p className="error">Ошибка: {error.message}</p>;
     }
-    
+
     const handleStationClick = (station: Station) => {
         onStationSelect?.(station.lat, station.lng, station.id, station.name);
     };
 
+    const filteredStations = stations?.filter(station =>
+        station.name.toLowerCase().includes(searchTerm.toLowerCase())
+    ) || [];
+
     return (
         <div className="stations-list">
-            {stations?.length === 0 ? (
+            <input
+                type="text"
+                placeholder="Поиск остановок..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="search-input"
+            />
+            {filteredStations.length === 0 ? (
                 <p className="text-muted">Остановки не найдены</p>
             ) : (
                 <ul className="stations-grid">
-                    {stations?.map((station) => (
+                    {filteredStations?.map((station) => (
                         <li
                             key={station.id}
                             className="station-item"

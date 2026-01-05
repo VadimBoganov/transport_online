@@ -110,7 +110,7 @@ export function MapContainer({
                 {selectedStation && (
                     <Overlay anchor={[selectedStation.lat / 1e6, selectedStation.lng / 1e6]} offset={[0, -40]}>
                         <Marker anchor={[selectedStation.lat / 1e6, selectedStation.lng / 1e6]}>
-                             <div className="station-marker" />
+                            <div className="station-marker" />
                         </Marker>
                         <StationPopup
                             lat={selectedStation.lat}
