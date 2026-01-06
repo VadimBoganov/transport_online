@@ -28,6 +28,8 @@
     line-height: 1;
     font-size: 12px;
     box-sizing: border-box;
+    pointer-events: auto;
+    z-index: 1000;
 }
 
 .station-marker {

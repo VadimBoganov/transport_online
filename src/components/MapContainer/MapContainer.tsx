@@ -1,12 +1,13 @@
 import { GeoJson, Map, Marker, Overlay } from "pigeon-maps"
 import '@config'
 import config from "@config"
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import "./MapContainer.css";
 import { useRouteNodesBatch } from "@/hooks/useRouteNodesBatch";
 import { useVehiclePositions } from "@/hooks/useVehiclePositions";
 import type { Route } from "@/hooks/useRoutes";
 import { StationPopup } from "@components/MapContainer/StationPopup";
+import { useRouteNodes } from "@/hooks/useRouteNodes";
 
 interface SelectedRoute {
     id: number;
@@ -38,6 +39,12 @@ export function MapContainer({
     const rids = effectiveRoutes.length > 0 ? effectiveRoutes.map(r => `${r.id}-0`).join(',') : '';
     const { data: vehiclePositions } = useVehiclePositions(rids);
 
+    const [selectedVehicle, setSelectedVehicle] = useState<{ rid: number; rtype: string } | null>(null);
+
+    const { data: selectedVehicleRouteNodes } = useRouteNodes({
+        routeId: selectedVehicle?.rid ?? null
+    });
+
     const features = effectiveRoutes
         .map((route, index) => {
             const result = routeNodes[index];
@@ -62,6 +69,27 @@ export function MapContainer({
         .filter((feature): feature is NonNullable<typeof feature> => feature !== null);
 
     const geoJsonData = features.length > 0 ? { type: "FeatureCollection" as const, features } : null;
+
+    let selectedVehicleGeoJson = null;
+    if (selectedVehicle && selectedVehicleRouteNodes && selectedVehicleRouteNodes.length > 1) {
+        const color = config.routes.find(rt => rt.type === selectedVehicle.rtype)?.color || 'gray';
+        selectedVehicleGeoJson = {
+            type: "FeatureCollection" as const,
+            features: [
+                {
+                    type: "Feature" as const,
+                    geometry: {
+                        type: "LineString" as const,
+                        coordinates: selectedVehicleRouteNodes.map(node => [
+                            node.lng / 1e6,
+                            node.lat / 1e6,
+                        ]) as [number, number][],
+                    },
+                    properties: { stroke: color },
+                },
+            ],
+        };
+    }
 
     const debouncedOnBoundsChanged = useMemo(() => {
         let timeoutId: ReturnType<typeof setTimeout>;
@@ -91,10 +119,31 @@ export function MapContainer({
                         })}
                     />
                 )}
+
+                {selectedVehicleGeoJson && (
+                    <GeoJson
+                        data={selectedVehicleGeoJson}
+                        styleCallback={(feature: { properties: { stroke: any; }; }) => ({
+                            stroke: feature.properties?.stroke,
+                            strokeWidth: 5,
+                            strokeOpacity: 0.8,
+                            fill: "none",
+                        })}
+                    />
+                )}
+
                 {vehiclePositions && vehiclePositions.anims.map(anim =>
                     <Marker
                         key={`${anim.id}-${anim.lasttime}`}
                         anchor={[anim.lat / 1e6, anim.lon / 1e6]}
+                        onClick={(e) => {
+                            e.event.stopPropagation();
+                            if (selectedVehicle?.rid === anim.rid) {
+                                setSelectedVehicle(null);
+                            } else {
+                                setSelectedVehicle({ rid: anim.rid, rtype: anim.rtype });
+                            }
+                        }}
                     >
                         <div
                             className="vehicle-marker"
@@ -126,6 +175,7 @@ export function MapContainer({
             <div style={{ position: 'absolute', top: 10, left: 10, zIndex: 1000 }}>
                 {routeNodes.some(rd => rd.isLoading) && <p>Загрузка маршрутов...</p>}
                 {!vehiclePositions && rids && <p>Загрузка позиций транспорта...</p>}
+                {selectedVehicle && <p>Маршрут {selectedVehicle.rid} выделен</p>}
             </div>
         </div>
     )
