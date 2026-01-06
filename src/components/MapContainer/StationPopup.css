@@ -41,6 +41,22 @@
     max-height: 220px;
     overflow-y: auto;
     display: block;
+    scrollbar-width: thin;
+    scrollbar-color: #888 #f1f1f1;
+}
+
+.tbody-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.tbody-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.tbody-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
 }
 
 .forecast-table tbody {
