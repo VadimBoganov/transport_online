@@ -21,6 +21,7 @@ export function useRouteNodesBatch(routes: SelectedRoute[]) {
       },
       enabled: !!id,
       staleTime: 1000 * 60 * 5,
+      gcTime: 1000 * 60 * 15,
       placeholderData: [],
     })),
   });

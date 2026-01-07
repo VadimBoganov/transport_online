@@ -69,8 +69,8 @@ export function StationPopup({
     }, []);
 
     return (
-        <Overlay anchor={[lat / 1e6, lng / 1e6]} offset={[0, -40]}>
-            <div ref={popupRef} className="station-popup">
+        <Overlay anchor={[lat / 1e6, lng / 1e6]} offset={[-10, -10]}>
+            <div ref={popupRef} className="station-popup station-popup--top-left">
                 <h4>{stationName}</h4>
 
                 {forecastsLoading ? (

@@ -23,11 +23,15 @@ export function useVehiclePositions(rids: string) {
     return useQuery<VehiclePosition, Error>({
         queryKey: ['vehiclePositions', rids],
         queryFn: async (): Promise<VehiclePosition> => {
+            if (!rids) {
+                throw new Error('No route IDs provided');
+            }
+
             const baseUrl = 'http://localhost:8000/api/vehicles/';
             const encodedRids = encodeURIComponent(rids);
             const url = baseUrl + encodedRids;
 
-            const res = await fetch(url.toString(), {
+            const res = await fetch(url, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -44,5 +48,12 @@ export function useVehiclePositions(rids: string) {
         },
         enabled: !!rids,
         refetchInterval: 10000,
+        staleTime: 10 * 1000,
+        retry: 1,
+        placeholderData: {
+            maxk: 0,
+            anims: [],
+        } as VehiclePosition,
+        refetchOnWindowFocus: false, 
     });
 }

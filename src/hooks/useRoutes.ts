@@ -25,8 +25,12 @@ export function useRoutes() {
             }
 
             const data = await res.json();
-
             return Array.isArray(data) ? data : data.routes;
         },
+        staleTime: 1000 * 60 * 5,
+        gcTime: 1000 * 60 * 15,
+        placeholderData: [] as Route[],
+        refetchOnWindowFocus: false,
+        retry: 1,
     });
 }

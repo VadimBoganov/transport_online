@@ -15,6 +15,7 @@ export function useRouteNodes({ routeId }: { routeId: number | null }) {
         },
         enabled: !!routeId,
         staleTime: 1000 * 60 * 5,
+        gcTime: 1000 * 60 * 15,
         placeholderData: [] as RouteNode[],
     });
 }

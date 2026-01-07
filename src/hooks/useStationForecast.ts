@@ -15,7 +15,7 @@ interface UseStationForecastProps {
 }
 
 export default function useStationForecast({ stationId }: UseStationForecastProps) {
-    return useQuery<Forecast[], Error>({
+     return useQuery<Forecast[], Error>({
         queryKey: ['station-forecast', stationId],
         queryFn: async () => {
             if (!stationId) throw new Error('No station ID');
@@ -35,8 +35,10 @@ export default function useStationForecast({ stationId }: UseStationForecastProp
             return Array.isArray(data) ? data : [];
         },
         enabled: !!stationId,
-        staleTime: 30 * 1000,
-        refetchInterval: 30 * 1000, 
+        staleTime: 30 * 1000,           
+        refetchInterval: 30 * 1000,     
         retry: 1,
+        placeholderData: [] as Forecast[],
+        refetchOnWindowFocus: false,    
     });
 }

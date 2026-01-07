@@ -25,8 +25,12 @@ export function useStations() {
             }
 
             const data = await res.json();
-
             return Array.isArray(data) ? data : data.stations;
         },
+        staleTime: 1000 * 60 * 5,
+        gcTime: 1000 * 60 * 15,
+        placeholderData: [] as Station[],
+        refetchOnWindowFocus: false,
+        retry: 1,
     });
 }

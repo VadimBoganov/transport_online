@@ -18,6 +18,11 @@
     font-size: 16px;
 }
 
+.station-popup--top-left {
+    position: relative !important;
+    transform: translateX(-100%) translateY(-100%) !important;
+}
+
 .forecast-table {
     width: 100%;
     border-collapse: collapse;
@@ -90,4 +95,11 @@
 
 .close-button:hover {
     background-color: #0056b3;
+}
+
+@media (max-width: 480px) {
+    .station-popup {
+        min-width: 300px;
+        max-width: 320px;
+    }
 }

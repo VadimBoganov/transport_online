@@ -175,7 +175,6 @@ export function MapContainer({
             <div style={{ position: 'absolute', top: 10, left: 10, zIndex: 1000 }}>
                 {routeNodes.some(rd => rd.isLoading) && <p>Загрузка маршрутов...</p>}
                 {!vehiclePositions && rids && <p>Загрузка позиций транспорта...</p>}
-                {selectedVehicle && <p>Маршрут {selectedVehicle.rid} выделен</p>}
             </div>
         </div>
     )
