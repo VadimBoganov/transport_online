@@ -30,6 +30,7 @@
     box-sizing: border-box;
     pointer-events: auto;
     z-index: 1000;
+    cursor: pointer;
 }
 
 .station-marker {
@@ -39,6 +40,11 @@
     background-color: red;
     border: 3px solid white;
     box-shadow: 0 0 6px rgba(0, 0, 0, 0.5);
+    position: absolute;
+    top: 0;
+    left: 0;
     transform: translate(-50%, -50%);
     pointer-events: auto;
+    z-index: 1000;
+    cursor: pointer;
 }

@@ -1,20 +1,15 @@
-import { Overlay } from "pigeon-maps";
 import useStationForecast from "@/hooks/useStationForecast";
 import type { Forecast } from "@/hooks/useStationForecast";
 import "./StationPopup.css";
 import { useRef, useEffect } from "react";
 
 interface StationPopupProps {
-    lat: number;
-    lng: number;
     stationId: number;
     stationName: string;
     onDeselect: () => void;
 }
 
 export function StationPopup({
-    lat,
-    lng,
     stationId,
     stationName,
     onDeselect
@@ -69,56 +64,54 @@ export function StationPopup({
     }, []);
 
     return (
-        <Overlay anchor={[lat / 1e6, lng / 1e6]} offset={[-10, -10]}>
-            <div ref={popupRef} className="station-popup station-popup--top-left">
-                <h4>{stationName}</h4>
+        <div ref={popupRef} className="station-popup station-popup--top-left">
+            <h4>{stationName}</h4>
 
-                {forecastsLoading ? (
-                    <p>Загрузка прогнозов...</p>
-                ) : routeSummaries.length === 0 ? (
-                    <p>Нет данных о прибытии</p>
-                ) : (
-                    <div className="forecast-container">
+            {forecastsLoading ? (
+                <p>Загрузка прогнозов...</p>
+            ) : routeSummaries.length === 0 ? (
+                <p>Нет данных о прибытии</p>
+            ) : (
+                <div className="forecast-container">
+                    <table className="forecast-table">
+                        <thead>
+                            <tr>
+                                <th>Маршрут</th>
+                                <th>Куда</th>
+                                <th>Прибытие</th>
+                            </tr>
+                        </thead>
+                    </table>
+
+                    <div ref={tbodyRef} className="tbody-container">
                         <table className="forecast-table">
-                            <thead>
-                                <tr>
-                                    <th>Маршрут</th>
-                                    <th>Куда</th>
-                                    <th>Прибытие</th>
-                                </tr>
-                            </thead>
+                            <tbody>
+                                {routeSummaries.map((route, i) => {
+                                    const { current, next } = route;
+                                    if (!current) return null;
+
+                                    return (
+                                        <tr key={i}>
+                                            <td>
+                                                <strong>{current.rtype}-{current.rnum}</strong>
+                                            </td>
+                                            <td>{current.where || '—'}</td>
+                                            <td>
+                                                {Math.round(current.arrt / 60)} мин
+                                                {next ? (
+                                                    <><br /><small>→ {Math.round(next.arrt / 60)} мин</small></>
+                                                ) : <><br /><small>→ отсутствует</small></>}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
                         </table>
-
-                        <div ref={tbodyRef} className="tbody-container">
-                            <table className="forecast-table">
-                                <tbody>
-                                    {routeSummaries.map((route, i) => {
-                                        const { current, next } = route;
-                                        if (!current) return null;
-
-                                        return (
-                                            <tr key={i}>
-                                                <td>
-                                                    <strong>{current.rtype}-{current.rnum}</strong>
-                                                </td>
-                                                <td>{current.where || '—'}</td>
-                                                <td>
-                                                    {Math.round(current.arrt / 60)} мин
-                                                    {next ? (
-                                                        <><br /><small>→ {Math.round(next.arrt / 60)} мин</small></>
-                                                    ) : <><br /><small>→ отсутствует</small></>}
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                        </div>
                     </div>
-                )}
+                </div>
+            )}
 
-                <button onClick={onDeselect} className="close-button">Закрыть</button>
-            </div>
-        </Overlay>
+            <button onClick={onDeselect} className="close-button">Закрыть</button>
+        </div>
     );
 }

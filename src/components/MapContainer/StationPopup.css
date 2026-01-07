@@ -3,8 +3,8 @@
     padding: 10px;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    min-width: 420px;
-    max-width: 640px;
+    min-width: 280px;
+    max-width: 420px;
     font-size: 14px;
     color: #333;
     pointer-events: auto;

@@ -1,4 +1,4 @@
-import { GeoJson, Map, Marker, Overlay } from "pigeon-maps"
+import { GeoJson, Map, Overlay } from "pigeon-maps"
 import '@config'
 import config from "@config"
 import { useMemo, useState } from "react"
@@ -133,37 +133,37 @@ export function MapContainer({
                 )}
 
                 {vehiclePositions && vehiclePositions.anims.map(anim =>
-                    <Marker
+                    <Overlay
                         key={`${anim.id}-${anim.lasttime}`}
                         anchor={[anim.lat / 1e6, anim.lon / 1e6]}
-                        onClick={(e) => {
-                            e.event.stopPropagation();
-                            if (selectedVehicle?.rid === anim.rid) {
-                                setSelectedVehicle(null);
-                            } else {
-                                setSelectedVehicle({ rid: anim.rid, rtype: anim.rtype });
-                            }
-                        }}
                     >
                         <div
                             className="vehicle-marker"
                             style={{
                                 backgroundColor: config.routes.find(r => r.type === anim.rtype)?.color || 'gray',
                             }}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                if (selectedVehicle?.rid === anim.rid) {
+                                    setSelectedVehicle(null);
+                                } else {
+                                    setSelectedVehicle({ rid: anim.rid, rtype: anim.rtype });
+                                }
+                            }}
                         >
                             {anim.rnum}
                         </div>
-                    </Marker>
+                    </Overlay>
                 )}
 
                 {selectedStation && (
-                    <Overlay anchor={[selectedStation.lat / 1e6, selectedStation.lng / 1e6]} offset={[0, -40]}>
-                        <Marker anchor={[selectedStation.lat / 1e6, selectedStation.lng / 1e6]}>
-                            <div className="station-marker" />
-                        </Marker>
+                    <Overlay
+                        key="selected-station"
+                        anchor={[selectedStation.lat / 1e6, selectedStation.lng / 1e6]}
+                        offset={[0, -40]} 
+                    >
+                        <div className="station-marker" />
                         <StationPopup
-                            lat={selectedStation.lat}
-                            lng={selectedStation.lng}
                             stationId={selectedStation.id}
                             stationName={selectedStation.name}
                             onDeselect={onStationDeselect}
