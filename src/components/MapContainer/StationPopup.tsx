@@ -64,7 +64,7 @@ export function StationPopup({
     }, []);
 
     return (
-        <div ref={popupRef} className="station-popup station-popup--top-left">
+        <div ref={popupRef} className="station-popup">
             <h4>{stationName}</h4>
 
             {forecastsLoading ? (

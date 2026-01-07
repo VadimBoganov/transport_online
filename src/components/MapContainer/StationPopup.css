@@ -11,16 +11,13 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
+    margin: 0;
+    transform: none;
 }
 
 .station-popup h4 {
     margin: 0;
     font-size: 16px;
-}
-
-.station-popup--top-left {
-    position: relative !important;
-    transform: translateX(-100%) translateY(-100%) !important;
 }
 
 .forecast-table {
