@@ -48,3 +48,9 @@
     z-index: 1000;
     cursor: pointer;
 }
+
+.wrapper {
+    position: absolute;
+    transform: translate(-100%, -100%);
+    pointer-events: auto;
+}

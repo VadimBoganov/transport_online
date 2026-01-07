@@ -19,7 +19,7 @@ interface Animation {
     low_floor: boolean;
 }
 
-export function useVehiclePositions(rids: string) {
+export function useVehiclePositions(rids: string | null) {
     return useQuery<VehiclePosition, Error>({
         queryKey: ['vehiclePositions', rids],
         queryFn: async (): Promise<VehiclePosition> => {

@@ -1,7 +1,6 @@
-import { GeoJson, Map, Overlay } from "pigeon-maps"
-import '@config'
+import { GeoJson, Map as PigeonMap, Overlay } from "pigeon-maps"
 import config from "@config"
-import { useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import "./MapContainer.css";
 import { useRouteNodesBatch } from "@/hooks/useRouteNodesBatch";
 import { useVehiclePositions } from "@/hooks/useVehiclePositions";
@@ -33,11 +32,34 @@ export function MapContainer({
     selectedStation,
     onStationDeselect
 }: MapContainerProps) {
-    const routeNodes = useRouteNodesBatch(selectedRoutes);
+    const [mapWidth, setMapWidth] = useState<number>(1024);
 
-    const effectiveRoutes = selectedRoutes.length > 0 ? selectedRoutes : routes || [];
-    const rids = effectiveRoutes.length > 0 ? effectiveRoutes.map(r => `${r.id}-0`).join(',') : '';
-    const { data: vehiclePositions } = useVehiclePositions(rids);
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const handleResize = () => {
+                setMapWidth(window.innerWidth);
+            };
+            handleResize();
+            window.addEventListener('resize', handleResize);
+            return () => window.removeEventListener('resize', handleResize);
+        }
+    }, []);
+
+
+    const routeNodes = useRouteNodesBatch(selectedRoutes);
+    const routeNodesMap = useMemo(() => {
+        const map = new Map<number, typeof routeNodes[number]['data']>();
+        routeNodes.forEach((result, index) => {
+            if (result?.data && selectedRoutes[index]?.id) {
+                map.set(selectedRoutes[index].id, result.data);
+            }
+        });
+        return map;
+    }, [routeNodes, selectedRoutes]);
+
+    const activeRoutes = selectedRoutes.length > 0 ? selectedRoutes : routes || [];
+    const rids = activeRoutes.length > 0 ? activeRoutes.map(r => `${r.id}-0`).join(',') : null;
+    const { data: vehiclePositions, isLoading } = useVehiclePositions(rids);
 
     const [selectedVehicle, setSelectedVehicle] = useState<{ rid: number; rtype: string } | null>(null);
 
@@ -45,12 +67,10 @@ export function MapContainer({
         routeId: selectedVehicle?.rid ?? null
     });
 
-    const features = effectiveRoutes
-        .map((route, index) => {
-            const result = routeNodes[index];
-            if (!result || !result.data || result.data.length < 2) return null;
-
-            const data = result.data;
+    const features = activeRoutes
+        .map((route) => {
+            const data = routeNodesMap.get(route.id);
+            if (!data || data.length < 2) return null;
 
             const color = config.routes.find(rt => rt.type === route.type)?.color;
 
@@ -68,12 +88,17 @@ export function MapContainer({
         })
         .filter((feature): feature is NonNullable<typeof feature> => feature !== null);
 
-    const geoJsonData = features.length > 0 ? { type: "FeatureCollection" as const, features } : null;
+    const geoJsonData = useMemo(() =>
+        features.length > 0 ? ({ type: "FeatureCollection" as const, features }) : null,
+        [features]
+    );
 
-    let selectedVehicleGeoJson = null;
-    if (selectedVehicle && selectedVehicleRouteNodes && selectedVehicleRouteNodes.length > 1) {
+    const selectedVehicleGeoJson = useMemo(() => {
+        if (!selectedVehicle || !selectedVehicleRouteNodes || selectedVehicleRouteNodes.length <= 1) {
+            return null;
+        }
         const color = config.routes.find(rt => rt.type === selectedVehicle.rtype)?.color || 'gray';
-        selectedVehicleGeoJson = {
+        return {
             type: "FeatureCollection" as const,
             features: [
                 {
@@ -89,9 +114,13 @@ export function MapContainer({
                 },
             ],
         };
-    }
+    }, [selectedVehicle, selectedVehicleRouteNodes]);
 
-    const debouncedOnBoundsChanged = useMemo(() => {
+    useEffect(() => {
+        setSelectedVehicle(null);
+    }, [selectedRoutes]);
+
+    const debouncedOnBoundsChanged = useCallback(() => {
         let timeoutId: ReturnType<typeof setTimeout>;
         return ({ center, zoom }: { center: [number, number]; zoom: number }) => {
             clearTimeout(timeoutId);
@@ -103,16 +132,16 @@ export function MapContainer({
 
     return (
         <div className="map-container">
-            <Map
+            <PigeonMap
                 center={center}
                 zoom={zoom}
                 onBoundsChanged={debouncedOnBoundsChanged}
-                defaultWidth={window.innerWidth}
+                defaultWidth={mapWidth}
             >
                 {geoJsonData && (
                     <GeoJson
                         data={geoJsonData}
-                        styleCallback={(feature: { properties: { stroke: any; }; }) => ({
+                        styleCallback={(feature: { properties?: { stroke?: string } }) => ({
                             stroke: feature.properties?.stroke,
                             strokeWidth: 4,
                             fill: "none",
@@ -123,7 +152,7 @@ export function MapContainer({
                 {selectedVehicleGeoJson && (
                     <GeoJson
                         data={selectedVehicleGeoJson}
-                        styleCallback={(feature: { properties: { stroke: any; }; }) => ({
+                        styleCallback={(feature: { properties?: { stroke?: string } }) => ({
                             stroke: feature.properties?.stroke,
                             strokeWidth: 5,
                             strokeOpacity: 0.8,
@@ -169,20 +198,21 @@ export function MapContainer({
                     <Overlay
                         key="station-popup"
                         anchor={[selectedStation.lat / 1e6, selectedStation.lng / 1e6]}
-                        offset={[420, 340]}
                     >
-                        <StationPopup
-                            stationId={selectedStation.id}
-                            stationName={selectedStation.name}
-                            onDeselect={onStationDeselect}
-                        />
+                        <div className="wrapper">
+                            <StationPopup
+                                stationId={selectedStation.id}
+                                stationName={selectedStation.name}
+                                onDeselect={onStationDeselect}
+                            />
+                        </div>
                     </Overlay>
                 )}
-            </Map>
+            </PigeonMap>
 
             <div style={{ position: 'absolute', top: 10, left: 10, zIndex: 1000 }}>
                 {routeNodes.some(rd => rd.isLoading) && <p>Загрузка маршрутов...</p>}
-                {!vehiclePositions && rids && <p>Загрузка позиций транспорта...</p>}
+                {isLoading && <p>Загрузка позиций транспорта...</p>}
             </div>
         </div>
     )
