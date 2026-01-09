@@ -7,6 +7,7 @@ import { useVehiclePositions } from "@/hooks/useVehiclePositions";
 import type { Route } from "@/hooks/useRoutes";
 import { StationPopup } from "@components/MapContainer/StationPopup";
 import { useRouteNodes } from "@/hooks/useRouteNodes";
+import useVehicleForecasts from "@/hooks/useVehicleForecasts";
 
 interface SelectedRoute {
     id: number;
@@ -61,11 +62,17 @@ export function MapContainer({
     const rids = activeRoutes.length > 0 ? activeRoutes.map(r => `${r.id}-0`).join(',') : null;
     const { data: vehiclePositions, isLoading } = useVehiclePositions(rids);
 
-    const [selectedVehicle, setSelectedVehicle] = useState<{ rid: number; rtype: string } | null>(null);
+    const [selectedVehicle, setSelectedVehicle] = useState<{ id: string, rid: number; rtype: string } | null>(null);
 
     const { data: selectedVehicleRouteNodes } = useRouteNodes({
         routeId: selectedVehicle?.rid ?? null
     });
+
+    const { data: forecasts, isLoading: forecastsLoading } = useVehicleForecasts({ vid: selectedVehicle?.id ?? null });
+    const sortedForecasts = useMemo(() => {
+        if (!forecasts) return [];
+        return [...forecasts].sort((a, b) => a.arrt - b.arrt);
+    }, [forecasts]);
 
     const features = activeRoutes
         .map((route) => {
@@ -176,7 +183,7 @@ export function MapContainer({
                                 if (selectedVehicle?.rid === anim.rid) {
                                     setSelectedVehicle(null);
                                 } else {
-                                    setSelectedVehicle({ rid: anim.rid, rtype: anim.rtype });
+                                    setSelectedVehicle({ id: anim.id, rid: anim.rid, rtype: anim.rtype });
                                 }
                             }}
                         >
@@ -184,6 +191,20 @@ export function MapContainer({
                         </div>
                     </Overlay>
                 )}
+
+                {sortedForecasts &&
+                    sortedForecasts.map((forecast, index) =>
+                        <Overlay
+                            key={`forecast-${selectedVehicle?.id}-${forecast.stid}-${index}`}
+                            anchor={[forecast.lat0 / 1e6, forecast.lng0 / 1e6]}
+                        >
+                            <div className="forecast-popup-station">
+                                <div className="forecast-time">
+                                    <strong>{Math.round(forecast.arrt / 60)} мин</strong>
+                                </div>
+                            </div>
+                        </Overlay>
+                    )}
 
                 {selectedStation && (
                     <Overlay
@@ -213,6 +234,7 @@ export function MapContainer({
             <div style={{ position: 'absolute', top: 10, left: 10, zIndex: 1000 }}>
                 {routeNodes.some(rd => rd.isLoading) && <p>Загрузка маршрутов...</p>}
                 {isLoading && <p>Загрузка позиций транспорта...</p>}
+                {forecastsLoading && selectedVehicle && <div className="forecast-popup">Загрузка прогнозов...</div>}
             </div>
         </div>
     )
