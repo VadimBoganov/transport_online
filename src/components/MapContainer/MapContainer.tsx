@@ -35,6 +35,29 @@ export function MapContainer({
 }: MapContainerProps) {
     const [mapWidth, setMapWidth] = useState<number>(1024);
 
+    const [forecastSelectedStation, setForecastSelectedStation] = useState<{
+        id: number;
+        name: string;
+        lat: number;
+        lng: number;
+    } | null>(null);
+
+    useEffect(() => {
+        if (selectedStation) {
+            setForecastSelectedStation(null);
+        }
+    }, [selectedStation]);
+
+    const activeSelectedStation = useMemo(() => {
+        if (selectedStation) return selectedStation;
+        return forecastSelectedStation;
+    }, [selectedStation, forecastSelectedStation]);
+
+    const closeStationPopup = () => {
+        setForecastSelectedStation(null);
+        onStationDeselect();
+    };
+
     useEffect(() => {
         if (typeof window !== 'undefined') {
             const handleResize = () => {
@@ -127,6 +150,8 @@ export function MapContainer({
         setSelectedVehicle(null);
     }, [selectedRoutes]);
 
+
+
     const debouncedOnBoundsChanged = useCallback(() => {
         let timeoutId: ReturnType<typeof setTimeout>;
         return ({ center, zoom }: { center: [number, number]; zoom: number }) => {
@@ -192,13 +217,24 @@ export function MapContainer({
                     </Overlay>
                 )}
 
-                {sortedForecasts &&
+                {sortedForecasts && !activeSelectedStation &&
                     sortedForecasts.map((forecast, index) =>
                         <Overlay
                             key={`forecast-${selectedVehicle?.id}-${forecast.stid}-${index}`}
                             anchor={[forecast.lat0 / 1e6, forecast.lng0 / 1e6]}
                         >
-                            <div className="forecast-popup-station">
+
+                            <div className="forecast-popup-station"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onStationDeselect();
+                                    setForecastSelectedStation({
+                                        id: forecast.stid,
+                                        name: forecast.stname,
+                                        lat: forecast.lat0,
+                                        lng: forecast.lng0,
+                                    });
+                                }}>
                                 <div className="forecast-time">
                                     <strong>{Math.round(forecast.arrt / 60)} мин</strong>
                                 </div>
@@ -206,25 +242,25 @@ export function MapContainer({
                         </Overlay>
                     )}
 
-                {selectedStation && (
+                {activeSelectedStation && (
                     <Overlay
                         key="station-marker"
-                        anchor={[selectedStation.lat / 1e6, selectedStation.lng / 1e6]}
+                        anchor={[activeSelectedStation.lat / 1e6, activeSelectedStation.lng / 1e6]}
                     >
                         <div className="station-marker" />
                     </Overlay>
                 )}
 
-                {selectedStation && (
+                {activeSelectedStation && (
                     <Overlay
                         key="station-popup"
-                        anchor={[selectedStation.lat / 1e6, selectedStation.lng / 1e6]}
+                        anchor={[activeSelectedStation.lat / 1e6, activeSelectedStation.lng / 1e6]}
                     >
                         <div className="wrapper">
                             <StationPopup
-                                stationId={selectedStation.id}
-                                stationName={selectedStation.name}
-                                onDeselect={onStationDeselect}
+                                stationId={activeSelectedStation.id}
+                                stationName={activeSelectedStation.name}
+                                onDeselect={closeStationPopup}
                             />
                         </div>
                     </Overlay>

@@ -56,23 +56,24 @@
 }
 
 .forecast-popup-station {
-    background-color: rgba(0, 0, 0, 0.85);
-    color: white;
+    background-color: white;
+    color: black;
     padding: 8px 12px;
     border-radius: 6px;
     font-size: 12px;
     font-weight: 500;
     text-align: center;
     white-space: nowrap;
-    max-width: 150px;
+    max-width: 180px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     pointer-events: auto;
     z-index: 1000;
     position: absolute;
     top: 0;
     left: 0;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, -100%);
     cursor: pointer;
+    user-select: none;
 }
 
 .forecast-popup-station::after {
@@ -85,15 +86,4 @@
     height: 0;
     border: 5px solid transparent;
     border-top-color: rgba(0, 0, 0, 0.85);
-}
-
-.forecast-title {
-    font-weight: 600;
-    margin-bottom: 2px;
-}
-
-.forecast-descr {
-    font-size: 10px;
-    opacity: 0.9;
-    line-height: 1.2;
 }
