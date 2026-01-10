@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
-interface VehicleForecast {
+export interface VehicleForecast {
     arrt: number;
     stid: number;
     stname: string;

@@ -10,6 +10,7 @@ import { useRouteNodes } from "@/hooks/useRouteNodes";
 import useVehicleForecasts from "@/hooks/useVehicleForecasts";
 import { buildRouteNodesMap, buildRouteGeoJSON, getActiveRoutes } from "@/services/routeService";
 import { filterVehiclesBySelectedRoutes } from "@/services/vehicleFilterService";
+import { formatArrivalMinutes, processForecasts } from "@/services/forecastService";
 
 export interface SelectedRoute {
     id: number;
@@ -93,9 +94,9 @@ export function MapContainer({
     });
 
     const { data: forecasts, isLoading: forecastsLoading } = useVehicleForecasts({ vid: selectedVehicle?.id ?? null });
+
     const sortedForecasts = useMemo(() => {
-        if (!forecasts) return [];
-        return [...forecasts].sort((a, b) => a.arrt - b.arrt);
+        return processForecasts(forecasts);
     }, [forecasts]);
 
     const selectedVehicleGeoJson = useMemo(() => {
@@ -211,7 +212,7 @@ export function MapContainer({
                                 }}
                             >
                                 <div className="forecast-time">
-                                    <strong>{Math.round(forecast.arrt / 60)} мин</strong>
+                                    <strong>{formatArrivalMinutes(forecast.arrt)} мин</strong>
                                 </div>
                             </div>
                         </Overlay>
