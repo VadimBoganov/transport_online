@@ -1,18 +1,12 @@
 import { GeoJson, Map as PigeonMap, Overlay } from "pigeon-maps";
 import config from "@config";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import "./MapContainer.css";
-import { useRouteNodesBatch } from "@/hooks/useRouteNodesBatch";
-import { useVehiclePositions } from "@/hooks/useVehiclePositions";
 import type { Route } from "@/hooks/useRoutes";
 import { StationPopup } from "@components/MapContainer/StationPopup";
-import { useRouteNodes } from "@/hooks/useRouteNodes";
-import useVehicleForecasts from "@/hooks/useVehicleForecasts";
-import { buildRouteNodesMap, buildRouteGeoJSON, getActiveRoutes } from "@/services/routeService";
-import { filterVehiclesBySelectedRoutes } from "@/services/vehicleFilterService";
-import { formatArrivalMinutes, processForecasts } from "@/services/forecastService";
-import { useStationPopup } from "@/hooks/useStationPopup";
+import { formatArrivalMinutes } from "@/services/forecastService";
 import type { Station } from "@/hooks/useStations";
+import { useMapData } from "@/hooks/useMapData";
 
 export interface SelectedRoute {
     id: number;
@@ -41,12 +35,21 @@ export function MapContainer({
     const [mapWidth, setMapWidth] = useState<number>(1024);
 
     const {
+        geoJsonData,
+        vehicles,
+        selectedVehicle,
+        setSelectedVehicle,
+        selectedVehicleGeoJson,
+        sortedForecasts,
         activeSelectedStation,
-        openForecastStationPopup,
         closeStationPopup,
-    } = useStationPopup({
-        selectedStationFromProps: selectedStation,
-        onDeselect: onStationDeselect,
+        openForecastStationPopup,
+        isLoading,
+    } = useMapData({
+        selectedRoutes,
+        routes,
+        selectedStation,
+        onStationDeselect,
     });
 
     useEffect(() => {
@@ -57,62 +60,6 @@ export function MapContainer({
             return () => window.removeEventListener('resize', handleResize);
         }
     }, []);
-
-    const routeNodes = useRouteNodesBatch(selectedRoutes);
-
-    const { routeNodesMap, isLoading: nodesLoading } = useMemo(() => {
-        return buildRouteNodesMap(routeNodes, selectedRoutes);
-    }, [routeNodes, selectedRoutes]);
-
-    const activeRoutes = useMemo(() => {
-        return getActiveRoutes(selectedRoutes, routes);
-    }, [selectedRoutes, routes]);
-
-    const geoJsonData = useMemo(() => {
-        return buildRouteGeoJSON(activeRoutes, routeNodesMap);
-    }, [activeRoutes, routeNodesMap]);
-
-    const rids = activeRoutes.length > 0 ? activeRoutes.map(r => `${r.id}-0`).join(',') : null;
-    const { data: vehiclePositions, isLoading: vehiclesLoading } = useVehiclePositions(rids);
-
-    const [selectedVehicle, setSelectedVehicle] = useState<{ id: string; rid: number; rtype: string } | null>(null);
-
-    const { data: selectedVehicleRouteNodes } = useRouteNodes({
-        routeId: selectedVehicle?.rid ?? null,
-    });
-
-    const { data: forecasts, isLoading: forecastsLoading } = useVehicleForecasts({ vid: selectedVehicle?.id ?? null });
-
-    const sortedForecasts = useMemo(() => {
-        return processForecasts(forecasts);
-    }, [forecasts]);
-
-    const selectedVehicleGeoJson = useMemo(() => {
-        if (!selectedVehicle || !selectedVehicleRouteNodes || selectedVehicleRouteNodes.length <= 1) {
-            return null;
-        }
-        const color = config.routes.find(rt => rt.type === selectedVehicle.rtype)?.color || 'gray';
-        return {
-            type: "FeatureCollection" as const,
-            features: [
-                {
-                    type: "Feature" as const,
-                    geometry: {
-                        type: "LineString" as const,
-                        coordinates: selectedVehicleRouteNodes.map(node => [
-                            node.lng / 1e6,
-                            node.lat / 1e6,
-                        ]) as [number, number][],
-                    },
-                    properties: { stroke: color },
-                },
-            ],
-        };
-    }, [selectedVehicle, selectedVehicleRouteNodes]);
-
-    useEffect(() => {
-        setSelectedVehicle(null);
-    }, [selectedRoutes]);
 
     const debouncedOnBoundsChanged = useCallback(() => {
         let timeoutId: ReturnType<typeof setTimeout>;
@@ -155,30 +102,29 @@ export function MapContainer({
                     />
                 )}
 
-                {vehiclePositions &&
-                    filterVehiclesBySelectedRoutes(vehiclePositions.anims, selectedRoutes).map((anim) => (
-                        <Overlay
-                            key={`${anim.id}-${anim.lasttime}`}
-                            anchor={[anim.lat / 1e6, anim.lon / 1e6]}
+                {vehicles.map((anim) => (
+                    <Overlay
+                        key={`${anim.id}-${anim.lasttime}`}
+                        anchor={[anim.lat / 1e6, anim.lon / 1e6]}
+                    >
+                        <div
+                            className="vehicle-marker"
+                            style={{
+                                backgroundColor: config.routes.find((r) => r.type === anim.rtype)?.color || 'gray',
+                            }}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                if (selectedVehicle?.rid === anim.rid) {
+                                    setSelectedVehicle(null);
+                                } else {
+                                    setSelectedVehicle({ id: anim.id, rid: anim.rid, rtype: anim.rtype });
+                                }
+                            }}
                         >
-                            <div
-                                className="vehicle-marker"
-                                style={{
-                                    backgroundColor: config.routes.find((r) => r.type === anim.rtype)?.color || 'gray',
-                                }}
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    if (selectedVehicle?.rid === anim.rid) {
-                                        setSelectedVehicle(null);
-                                    } else {
-                                        setSelectedVehicle({ id: anim.id, rid: anim.rid, rtype: anim.rtype });
-                                    }
-                                }}
-                            >
-                                {anim.rnum}
-                            </div>
-                        </Overlay>
-                    ))}
+                            {anim.rnum}
+                        </div>
+                    </Overlay>
+                ))}
 
                 {sortedForecasts && !activeSelectedStation &&
                     sortedForecasts.map((forecast, index) => (
@@ -232,9 +178,9 @@ export function MapContainer({
             </PigeonMap>
 
             <div style={{ position: 'absolute', top: 10, left: 10, zIndex: 1000 }}>
-                {nodesLoading && <p>Загрузка маршрутов...</p>}
-                {vehiclesLoading && <p>Загрузка позиций транспорта...</p>}
-                {forecastsLoading && selectedVehicle && <div className="forecast-popup">Загрузка прогнозов...</div>}
+                {isLoading.routes && <p>Загрузка маршрутов...</p>}
+                {isLoading.vehicles && <p>Загрузка ТС...</p>}
+                {isLoading.forecasts && selectedVehicle && <div className="forecast-popup">Загрузка прогнозов...</div>}
             </div>
         </div>
     );
