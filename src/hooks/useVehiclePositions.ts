@@ -1,11 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 
-interface VehiclePosition {
+export interface VehiclePosition {
     maxk: number;
     anims: Animation[];
 }
 
-interface Animation {
+export interface Animation {
     id: string;
     lat: number;
     lon: number;

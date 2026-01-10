@@ -9,6 +9,7 @@ import { StationPopup } from "@components/MapContainer/StationPopup";
 import { useRouteNodes } from "@/hooks/useRouteNodes";
 import useVehicleForecasts from "@/hooks/useVehicleForecasts";
 import { buildRouteNodesMap, buildRouteGeoJSON, getActiveRoutes } from "@/services/routeService";
+import { filterVehiclesBySelectedRoutes } from "@/services/vehicleFilterService";
 
 export interface SelectedRoute {
     id: number;
@@ -142,7 +143,6 @@ export function MapContainer({
                 onBoundsChanged={debouncedOnBoundsChanged}
                 defaultWidth={mapWidth}
             >
-                {/* Основные маршруты */}
                 {geoJsonData && (
                     <GeoJson
                         data={geoJsonData}
@@ -154,7 +154,6 @@ export function MapContainer({
                     />
                 )}
 
-                {/* Маршрут выбранного ТС */}
                 {selectedVehicleGeoJson && (
                     <GeoJson
                         data={selectedVehicleGeoJson}
@@ -167,38 +166,31 @@ export function MapContainer({
                     />
                 )}
 
-                {/* Маркеры транспорта */}
                 {vehiclePositions &&
-                    vehiclePositions.anims
-                        .filter((anim) => {
-                            if (selectedRoutes.length === 0) return true;
-                            return selectedRoutes.some((route) => route.id === anim.rid);
-                        })
-                        .map((anim) => (
-                            <Overlay
-                                key={`${anim.id}-${anim.lasttime}`}
-                                anchor={[anim.lat / 1e6, anim.lon / 1e6]}
+                    filterVehiclesBySelectedRoutes(vehiclePositions.anims, selectedRoutes).map((anim) => (
+                        <Overlay
+                            key={`${anim.id}-${anim.lasttime}`}
+                            anchor={[anim.lat / 1e6, anim.lon / 1e6]}
+                        >
+                            <div
+                                className="vehicle-marker"
+                                style={{
+                                    backgroundColor: config.routes.find((r) => r.type === anim.rtype)?.color || 'gray',
+                                }}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (selectedVehicle?.rid === anim.rid) {
+                                        setSelectedVehicle(null);
+                                    } else {
+                                        setSelectedVehicle({ id: anim.id, rid: anim.rid, rtype: anim.rtype });
+                                    }
+                                }}
                             >
-                                <div
-                                    className="vehicle-marker"
-                                    style={{
-                                        backgroundColor: config.routes.find((r) => r.type === anim.rtype)?.color || 'gray',
-                                    }}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        if (selectedVehicle?.rid === anim.rid) {
-                                            setSelectedVehicle(null);
-                                        } else {
-                                            setSelectedVehicle({ id: anim.id, rid: anim.rid, rtype: anim.rtype });
-                                        }
-                                    }}
-                                >
-                                    {anim.rnum}
-                                </div>
-                            </Overlay>
-                        ))}
-
-                {/* Прогнозы прибытия */}
+                                {anim.rnum}
+                            </div>
+                        </Overlay>
+                    ))}
+                    
                 {sortedForecasts && !activeSelectedStation &&
                     sortedForecasts.map((forecast, index) => (
                         <Overlay
@@ -225,7 +217,6 @@ export function MapContainer({
                         </Overlay>
                     ))}
 
-                {/* Маркер станции */}
                 {activeSelectedStation && (
                     <Overlay
                         key="station-marker"
@@ -235,7 +226,6 @@ export function MapContainer({
                     </Overlay>
                 )}
 
-                {/* Попап станции */}
                 {activeSelectedStation && (
                     <Overlay
                         key="station-popup"
@@ -252,7 +242,6 @@ export function MapContainer({
                 )}
             </PigeonMap>
 
-            {/* Индикаторы загрузки */}
             <div style={{ position: 'absolute', top: 10, left: 10, zIndex: 1000 }}>
                 {nodesLoading && <p>Загрузка маршрутов...</p>}
                 {vehiclesLoading && <p>Загрузка позиций транспорта...</p>}
