@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@tanstack/react-query": "^5.90.16",
+    "@types/geojson": "^7946.0.16",
     "bootstrap": "^5.3.8",
     "pigeon-maps": "^0.22.1",
     "react": "^19.2.0",
