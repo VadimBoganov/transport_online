@@ -117,7 +117,19 @@ export function MapContainer({
                                 if (selectedVehicle?.rid === anim.rid) {
                                     setSelectedVehicle(null);
                                 } else {
-                                    setSelectedVehicle({ id: anim.id, rid: anim.rid, rtype: anim.rtype });
+                                    setSelectedVehicle({
+                                        id: anim.id,
+                                        rid: anim.rid,
+                                        rtype: anim.rtype,
+                                        lat: anim.lat,
+                                        lon: anim.lon,
+                                        dir: anim.dir,
+                                        speed: anim.speed,
+                                        lasttime: anim.lasttime,
+                                        gos_num: anim.gos_num,
+                                        rnum: anim.rnum,
+                                        low_floor: anim.low_floor,
+                                    });
                                 }
                             }}
                         >

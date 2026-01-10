@@ -29,7 +29,7 @@ export interface UseMapDataResult {
     // Транспорт
     vehicles: Animation[];
     selectedVehicle: { id: string; rid: number; rtype: string } | null;
-    setSelectedVehicle: (v: { id: string; rid: number; rtype: string } | null) => void;
+    setSelectedVehicle: (v: Animation | null) => void;
     // Прогнозы
     sortedForecasts: ReturnType<typeof processForecasts>;
     formatArrivalMinutes: (arrt: number) => number;
@@ -52,7 +52,7 @@ export const useMapData = ({
     onStationDeselect,
 }: UseMapDataProps): UseMapDataResult => {
     // === Состояние выбранного ТС ===
-    const [selectedVehicle, setSelectedVehicle] = useState<{ id: string; rid: number; rtype: string } | null>(null);
+    const [selectedVehicle, setSelectedVehicle] = useState<Animation | null>(null);
 
     // === Управление попапом станции ===
     const { activeSelectedStation, closeStationPopup, openForecastStationPopup } = useStationPopup({
