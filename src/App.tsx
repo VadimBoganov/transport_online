@@ -4,19 +4,20 @@ import { useState } from "react";
 import type { TransportType } from "@config";
 import { useRoutes } from "./hooks/useRoutes";
 import config from "@config";
+import type { Station } from "./hooks/useStations";
 
 function App() {
   const [selectedRoutes, setSelectedRoutes] = useState<Array<{ id: number; type: TransportType }>>([]);
   const [mapCenter, setMapCenter] = useState<[number, number]>([config.map.lat, config.map.lng]);
   const [mapZoom, setMapZoom] = useState<number>(config.map.zoom);
-  const [selectedStation, setSelectedStation] = useState<{ lat: number; lng: number, id: number, name: string } | null>(null);
+  const [selectedStation, setSelectedStation] = useState<Station | null>(null);
 
   const { data: routes, isLoading, error } = useRoutes();
 
   const handleStationSelect = (lat: number, lng: number, id: number, name: string) => {
     setMapCenter([lat / 1e6, lng / 1e6]);
     setMapZoom(config.map.stationSelectZoom ?? 17);
-    setSelectedStation({ lat, lng, id, name });
+    setSelectedStation({ lat, lng, id, name } as Station);
   };
 
   const handleCenterChange = (center: [number, number], zoom: number) => {

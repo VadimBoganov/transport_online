@@ -11,6 +11,8 @@ import useVehicleForecasts from "@/hooks/useVehicleForecasts";
 import { buildRouteNodesMap, buildRouteGeoJSON, getActiveRoutes } from "@/services/routeService";
 import { filterVehiclesBySelectedRoutes } from "@/services/vehicleFilterService";
 import { formatArrivalMinutes, processForecasts } from "@/services/forecastService";
+import { useStationPopup } from "@/hooks/useStationPopup";
+import type { Station } from "@/hooks/useStations";
 
 export interface SelectedRoute {
     id: number;
@@ -23,7 +25,7 @@ interface MapContainerProps {
     center: [number, number];
     zoom: number;
     onCenterChange?: (center: [number, number], zoom: number) => void;
-    selectedStation: { lat: number; lng: number; id: number; name: string } | null;
+    selectedStation: Station | null;
     onStationDeselect: () => void;
 }
 
@@ -38,28 +40,14 @@ export function MapContainer({
 }: MapContainerProps) {
     const [mapWidth, setMapWidth] = useState<number>(1024);
 
-    const [forecastSelectedStation, setForecastSelectedStation] = useState<{
-        id: number;
-        name: string;
-        lat: number;
-        lng: number;
-    } | null>(null);
-
-    useEffect(() => {
-        if (selectedStation) {
-            setForecastSelectedStation(null);
-        }
-    }, [selectedStation]);
-
-    const activeSelectedStation = useMemo(() => {
-        if (selectedStation) return selectedStation;
-        return forecastSelectedStation;
-    }, [selectedStation, forecastSelectedStation]);
-
-    const closeStationPopup = () => {
-        setForecastSelectedStation(null);
-        onStationDeselect();
-    };
+    const {
+        activeSelectedStation,
+        openForecastStationPopup,
+        closeStationPopup,
+    } = useStationPopup({
+        selectedStationFromProps: selectedStation,
+        onDeselect: onStationDeselect,
+    });
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -191,7 +179,7 @@ export function MapContainer({
                             </div>
                         </Overlay>
                     ))}
-                    
+
                 {sortedForecasts && !activeSelectedStation &&
                     sortedForecasts.map((forecast, index) => (
                         <Overlay
@@ -203,12 +191,12 @@ export function MapContainer({
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     onStationDeselect();
-                                    setForecastSelectedStation({
+                                    openForecastStationPopup({
                                         id: forecast.stid,
                                         name: forecast.stname,
                                         lat: forecast.lat0,
                                         lng: forecast.lng0,
-                                    });
+                                    } as Station);
                                 }}
                             >
                                 <div className="forecast-time">
