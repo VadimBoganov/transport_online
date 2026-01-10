@@ -20,10 +20,25 @@ export default function Sidebar({ routes, loading, error, onRoutesChange, onStat
     const [selectedRoutes, setSelectedRoutes] = useState<Array<{ id: number; type: TransportType }>>([]);
     const [activeTab, setActiveTab] = useState('routes');
 
-    const handleRouteToggle = (id: number, type: TransportType) => {
-        const updated = selectedRoutes.find(r => r.id === id)
-            ? selectedRoutes.filter(r => r.id !== id)
-            : [...selectedRoutes, { id, type }];
+    const handleRouteToggle = (type: TransportType, num: string) => {
+        const routesWithSameNum = routes.filter(r => r.num === num && r.type === type);
+
+        const isAnySelected = selectedRoutes.some(sr =>
+            routesWithSameNum.some(r => r.id === sr.id)
+        );
+
+        let updated: Array<{ id: number; type: TransportType }>;
+
+        if (isAnySelected) {
+            updated = selectedRoutes.filter(sr =>
+                !routesWithSameNum.some(r => r.id === sr.id)
+            );
+        } else {
+            updated = [
+                ...selectedRoutes,
+                ...routesWithSameNum.map(r => ({ id: r.id, type: r.type as TransportType }))
+            ];
+        }
 
         setSelectedRoutes(updated);
         onRoutesChange(updated);
@@ -68,7 +83,7 @@ export default function Sidebar({ routes, loading, error, onRoutesChange, onStat
 
                         <Tab eventKey="stops" title="Остановки">
                             <div className="tab-content-area">
-                                <Stations onStationSelect={onStationSelect}/>
+                                <Stations onStationSelect={onStationSelect} />
                             </div>
                         </Tab>
                     </Tabs>

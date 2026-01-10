@@ -11,7 +11,7 @@ import RouteItem from '../RouteItem/RouteItem';
 interface RoutesListProps {
     routes: Route[];
     selectedRoutes: Array<{ id: number; type: TransportType }>;
-    onRouteToggle: (id: number, type: TransportType) => void;
+    onRouteToggle: (type: TransportType, num: string) => void;
 }
 
 const RouteIcons: Record<TransportType, React.ReactNode> = {
@@ -45,7 +45,7 @@ export default function Routes({ routes, selectedRoutes, onRouteToggle }: Routes
                                         <RouteItem
                                             key={item.id}
                                             {...item}
-                                            onClick={() => onRouteToggle(item.id, item.type as TransportType)}
+                                            onClick={() => onRouteToggle(item.type as TransportType, item.num)}
                                             checked={!!selectedRoutes.find(r => r.id === item.id)}
                                         />
                                     ))}

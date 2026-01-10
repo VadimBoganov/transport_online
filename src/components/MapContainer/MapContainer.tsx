@@ -150,8 +150,6 @@ export function MapContainer({
         setSelectedVehicle(null);
     }, [selectedRoutes]);
 
-
-
     const debouncedOnBoundsChanged = useCallback(() => {
         let timeoutId: ReturnType<typeof setTimeout>;
         return ({ center, zoom }: { center: [number, number]; zoom: number }) => {
@@ -193,7 +191,10 @@ export function MapContainer({
                     />
                 )}
 
-                {vehiclePositions && vehiclePositions.anims.map(anim =>
+                {vehiclePositions && vehiclePositions.anims.filter(anim => {
+                    if (selectedRoutes.length === 0) return true;
+                    return selectedRoutes.some(route => route.id === anim.rid);
+                }).map(anim =>
                     <Overlay
                         key={`${anim.id}-${anim.lasttime}`}
                         anchor={[anim.lat / 1e6, anim.lon / 1e6]}
