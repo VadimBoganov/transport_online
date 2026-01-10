@@ -8,7 +8,7 @@ test("opens forecast-selected station via openForecastStationPopup", () => {
     const { result } = renderHook(() =>
         useStationPopup({
             selectedStationFromProps: null,
-            onDeselect: jest.fn(),
+            onDeselect: vi.fn(),
         })
     );
 
@@ -20,7 +20,7 @@ test("opens forecast-selected station via openForecastStationPopup", () => {
 });
 
 test("closeStationPopup resets state and calls onDeselect", () => {
-    const onDeselect = jest.fn();
+    const onDeselect = vi.fn();
     const { result } = renderHook(() =>
         useStationPopup({
             selectedStationFromProps: null,
@@ -39,22 +39,3 @@ test("closeStationPopup resets state and calls onDeselect", () => {
     expect(result.current.activeSelectedStation).toBeNull();
     expect(onDeselect).toHaveBeenCalled();
 });
-
-// test("resets forecast station when prop station appears", () => {
-//     const { result, rerender } = renderHook(
-//         ({ selectedStationFromProps }) =>
-//             useStationPopup({
-//                 selectedStationFromProps,
-//                 onDeselect: jest.fn(),
-//             }),
-//         { initialProps: { selectedStationFromProps: null } }
-//     );
-
-//     act(() => {
-//         result.current.openForecastStationPopup(mockStation);
-//     });
-
-//     rerender({ selectedStationFromProps: mockStation });
-
-//     expect(result.current.activeSelectedStation).toEqual(mockStation);
-// });
