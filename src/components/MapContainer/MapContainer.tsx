@@ -114,6 +114,7 @@ export function MapContainer({
                             }}
                             onClick={(e) => {
                                 e.stopPropagation();
+                                closeStationPopup();
                                 if (selectedVehicle?.rid === anim.rid) {
                                     setSelectedVehicle(null);
                                 } else {
