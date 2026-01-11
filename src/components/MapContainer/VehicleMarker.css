@@ -20,7 +20,6 @@
     pointer-events: auto;
     z-index: 1000;
     cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .vehicle-marker.selected {

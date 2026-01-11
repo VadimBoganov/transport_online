@@ -150,6 +150,7 @@ export function MapContainer({
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     onStationDeselect();
+                                    onCenterChange?.([forecast.lat0 / 1e6, forecast.lng0 / 1e6], zoom);
                                     openForecastStationPopup({
                                         id: forecast.stid,
                                         name: forecast.stname,
