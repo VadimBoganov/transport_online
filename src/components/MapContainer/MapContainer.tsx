@@ -135,6 +135,25 @@ export function MapContainer({
                             }}
                         >
                             {anim.rnum}
+
+                            <div
+                                style={{
+                                    position: 'absolute',
+                                    top: '50%',
+                                    left: '50%',
+                                    width: '0',
+                                    height: '0',
+                                    borderLeft: '4px solid transparent',
+                                    borderRight: '4px solid transparent',
+                                    borderBottom: '8px solid black',
+                                    transform: `translate(-50%, -50%) 
+                                translate(${Math.cos((anim.dir * Math.PI) / 180) * 14}px, 
+                                          ${Math.sin((anim.dir * Math.PI) / 180) * 14}px)
+                                rotate(${anim.dir}deg)`,
+                                    pointerEvents: 'none',
+                                    zIndex: 2,
+                                }}
+                            />
                         </div>
                     </Overlay>
                 ))}
