@@ -134,6 +134,7 @@ export function MapContainer({
                                     });
                                 }
                             }}
+                            isSelected={selectedVehicle?.rid === anim.rid}
                         />
                     </Overlay>
                 ))}

@@ -7,6 +7,7 @@ interface VehicleMarkerProps {
     dir: number;
     onClick: (e: React.MouseEvent) => void;
     color: string;
+    isSelected: boolean;
 }
 
 export const VehicleMarker: React.FC<VehicleMarkerProps> = ({
@@ -14,9 +15,12 @@ export const VehicleMarker: React.FC<VehicleMarkerProps> = ({
     dir,
     onClick,
     color,
+    isSelected
 }) => {
     return (
-        <div className="vehicle-marker" style={{ backgroundColor: color }} onClick={onClick}>
+        <div className={`vehicle-marker ${isSelected ? 'selected' : ''}`}
+            style={{ backgroundColor: color }}
+            onClick={onClick}>
             {rnum}
             <div
                 className="vehicle-marker-arrow"
