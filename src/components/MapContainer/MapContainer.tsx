@@ -7,6 +7,7 @@ import { StationPopup } from "@components/MapContainer/StationPopup";
 import { formatArrivalMinutes } from "@/services/forecastService";
 import type { Station } from "@/hooks/useStations";
 import { useMapData } from "@/hooks/useMapData";
+import { VehicleMarker } from "./VehicleMarker";
 
 export interface SelectedRoute {
     id: number;
@@ -107,11 +108,11 @@ export function MapContainer({
                         key={`${anim.id}-${anim.lasttime}`}
                         anchor={[anim.lat / 1e6, anim.lon / 1e6]}
                     >
-                        <div
-                            className="vehicle-marker"
-                            style={{
-                                backgroundColor: config.routes.find((r) => r.type === anim.rtype)?.color || 'gray',
-                            }}
+                        <VehicleMarker
+                            rnum={anim.rnum}
+                            dir={anim.dir}
+                            rtype={anim.rtype}
+                            color={config.routes.find((r) => r.type === anim.rtype)?.color || 'gray'}
                             onClick={(e) => {
                                 e.stopPropagation();
                                 closeStationPopup();
@@ -133,28 +134,7 @@ export function MapContainer({
                                     });
                                 }
                             }}
-                        >
-                            {anim.rnum}
-
-                            <div
-                                style={{
-                                    position: 'absolute',
-                                    top: '50%',
-                                    left: '50%',
-                                    width: '0',
-                                    height: '0',
-                                    borderLeft: '4px solid transparent',
-                                    borderRight: '4px solid transparent',
-                                    borderBottom: '8px solid black',
-                                    transform: `translate(-50%, -50%) 
-                                translate(${Math.cos((anim.dir * Math.PI) / 180) * 14}px, 
-                                          ${Math.sin((anim.dir * Math.PI) / 180) * 14}px)
-                                rotate(${anim.dir}deg)`,
-                                    pointerEvents: 'none',
-                                    zIndex: 2,
-                                }}
-                            />
-                        </div>
+                        />
                     </Overlay>
                 ))}
 
