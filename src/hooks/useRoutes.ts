@@ -1,13 +1,5 @@
+import type { Route } from "@/types/transport";
 import { useQuery } from "@tanstack/react-query";
-
-export interface Route {
-    id: number;
-    name: string;
-    num: string;
-    type: string;
-    fromst: string;
-    tost: string;
-}
 
 export function useRoutes() {
     return useQuery<Route[], Error>({

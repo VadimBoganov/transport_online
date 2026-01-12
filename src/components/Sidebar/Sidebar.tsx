@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { IoMenu, IoClose } from 'react-icons/io5';
 import './Sidebar.css';
-import type { Route } from '@/hooks/useRoutes';
 import type { TransportType } from '@config';
 import Routes from './Routes/Routes';
 import { Tab, Tabs } from 'react-bootstrap';
 import Stations from './Stations/Stations';
+import type { Route } from '@/types/transport';
 
 interface SidebarProps {
     routes: Route[];

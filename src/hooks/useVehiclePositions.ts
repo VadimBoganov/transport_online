@@ -1,23 +1,5 @@
+import type { VehiclePosition } from '@/types/transport';
 import { useQuery } from '@tanstack/react-query';
-
-export interface VehiclePosition {
-    maxk: number;
-    anims: Animation[];
-}
-
-export interface Animation {
-    id: string;
-    lat: number;
-    lon: number;
-    rid: number;
-    dir: number;
-    speed: number;
-    lasttime: string;
-    gos_num: string;
-    rnum: string;
-    rtype: string;
-    low_floor: boolean;
-}
 
 export function useVehiclePositions(rids: string | null) {
     return useQuery<VehiclePosition, Error>({

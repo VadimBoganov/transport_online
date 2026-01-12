@@ -1,9 +1,10 @@
 import { useState, useCallback } from "react";
+import type { SelectedRoute, SelectedStation, SelectedVehicle } from "@/types/transport";
 
 export interface MapSelection {
-    selectedStation: { id: number; name: string; lat: number; lng: number } | null;
-    selectedVehicle: { id: string; rid: number, rtype: string } | null;
-    selectedRoutes: Array<{ id: number; type: "А" | "Т" | "М" }>;
+    selectedStation: SelectedStation | null;
+    selectedVehicle: SelectedVehicle | null;
+    selectedRoutes: SelectedRoute[];
 }
 
 export function useMapControls() {
@@ -13,7 +14,7 @@ export function useMapControls() {
         selectedRoutes: [],
     });
 
-    const setSelectedStation = useCallback((station: MapSelection['selectedStation']) => {
+    const setSelectedStation = useCallback((station: SelectedStation | null) => {
         setSelection(prev => ({
             ...prev,
             selectedStation: station,
@@ -21,18 +22,18 @@ export function useMapControls() {
         }));
     }, []);
 
-    const setSelectedVehicle = useCallback((vehicle: MapSelection['selectedVehicle']) => {
+    const setSelectedVehicle = useCallback((vehicle: SelectedVehicle | null) => {
         setSelection(prev => ({
             ...prev,
             selectedVehicle: vehicle,
         }));
     }, []);
 
-    const setSelectedRoutes = useCallback((routes: MapSelection['selectedRoutes']) => {
+    const setSelectedRoutes = useCallback((routes: SelectedRoute[]) => {
         setSelection(prev => ({
             ...prev,
             selectedRoutes: routes,
-            selectedStation: null, 
+            selectedStation: null,
             selectedVehicle: null,
         }));
     }, []);

@@ -1,6 +1,7 @@
-import { useStations, type Station } from '@/hooks/useStations';
+import { useStations } from '@/hooks/useStations';
 import './Stations.css';
 import { useState } from 'react';
+import type { Station } from '@/types/transport';
 
 interface StationsProps {
     onStationSelect?: (lat: number, lng: number, id: number, name: string) => void;

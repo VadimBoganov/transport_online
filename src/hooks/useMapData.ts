@@ -8,31 +8,24 @@ import { buildRouteNodesMap, buildRouteGeoJSON, getActiveRoutes } from "@/servic
 import { filterVehiclesBySelectedRoutes } from "@/services/vehicleFilterService";
 import { processForecasts } from "@/services/forecastService";
 
-import type { Route } from "@/hooks/useRoutes";
-import type { Animation } from "@/hooks/useVehiclePositions";
+import type { Animation, Route, SelectedRoute, SelectedStation, SelectedVehicle } from "@/types/transport";
 import config from "@config";
-import type { SelectedRoute } from "@/components/MapContainer/MapContainer";
 
 interface UseMapDataProps {
     selectedRoutes: SelectedRoute[];
     routes: Route[] | undefined;
-    selectedStation: { id: number; name: string; lat: number; lng: number } | null;
-    selectedVehicle: { id: string; rid: number; rtype: string } | null;
+    selectedStation: SelectedStation | null;
+    selectedVehicle: SelectedVehicle | null;
 }
 
 export interface UseMapDataResult {
-    // Геометрия
     geoJsonData: any | null;
     selectedVehicleGeoJson: any | null;
-    // Транспорт
     vehicles: Animation[];
-    // Прогнозы
     sortedForecasts: ReturnType<typeof processForecasts> | null;
-    // Управление попапом остановки
-    activeSelectedStation: { id: number; name: string; lat: number; lng: number } | null;
+    activeSelectedStation: SelectedStation | null;
     closeStationPopup: () => void;
-    openForecastStationPopup: (station: { id: number; name: string; lat: number; lng: number }) => void;
-    // Состояние загрузки
+    openForecastStationPopup: (station: SelectedStation) => void;
     isLoading: {
         routes: boolean;
         vehicles: boolean;
@@ -46,9 +39,9 @@ export const useMapData = ({
     selectedStation,
     selectedVehicle,
 }: UseMapDataProps): UseMapDataResult => {
-    const [activeSelectedStation, setActiveSelectedStation] = useState<UseMapDataResult['activeSelectedStation']>(null);
+    const [activeSelectedStation, setActiveSelectedStation] = useState<SelectedStation | null>(null);
 
-    const openForecastStationPopup = useCallback((station: { id: number; name: string; lat: number; lng: number }) => {
+    const openForecastStationPopup = useCallback((station: SelectedStation) => {
         setActiveSelectedStation(station);
     }, []);
 
@@ -56,24 +49,20 @@ export const useMapData = ({
         setActiveSelectedStation(null);
     }, []);
 
-    // === Активные маршруты ===
     const activeRoutes = useMemo(() => {
         if (!routes) return [];
         return getActiveRoutes(selectedRoutes, routes);
     }, [selectedRoutes, routes]);
 
-    // === Узлы маршрутов ===
     const routeNodes = useRouteNodesBatch(selectedRoutes);
     const { routeNodesMap, isLoading: nodesLoading } = useMemo(() => {
         return buildRouteNodesMap(routeNodes, selectedRoutes);
     }, [routeNodes, selectedRoutes]);
 
-    // === GeoJSON активных маршрутов ===
     const geoJsonData = useMemo(() => {
         return buildRouteGeoJSON(activeRoutes, routeNodesMap);
     }, [activeRoutes, routeNodesMap]);
 
-    // === Позиции транспорта ===
     const rids = activeRoutes.length > 0 ? activeRoutes.map(r => `${r.id}-0`).join(',') : null;
     const { data: vehiclePositions, isLoading: vehiclesLoading } = useVehiclePositions(rids);
 
@@ -81,7 +70,6 @@ export const useMapData = ({
         return filterVehiclesBySelectedRoutes(vehiclePositions?.anims, selectedRoutes);
     }, [vehiclePositions, selectedRoutes]);
 
-    // === GeoJSON для выбранного ТС ===
     const { data: selectedVehicleRouteNodes } = useRouteNodes({
         routeId: selectedVehicle?.rid ?? null,
     });
@@ -109,7 +97,6 @@ export const useMapData = ({
         };
     }, [selectedVehicle, selectedVehicleRouteNodes]);
 
-    // === Прогнозы для выбранного ТС ===
     const { data: forecasts, isLoading: forecastsLoading } = useVehicleForecasts({
         vid: selectedVehicle?.id ?? null,
     });
@@ -125,18 +112,13 @@ export const useMapData = ({
     }, [selectedStation]);
 
     return {
-        // Геометрия
         geoJsonData,
         selectedVehicleGeoJson,
-        // Транспорт
         vehicles,
-        // Прогнозы
         sortedForecasts,
-        // Попап остановки
         activeSelectedStation,
         closeStationPopup,
         openForecastStationPopup,
-        // Загрузка
         isLoading: {
             routes: nodesLoading,
             vehicles: vehiclesLoading,

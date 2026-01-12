@@ -2,17 +2,11 @@ import { GeoJson, Map as PigeonMap, Overlay } from "pigeon-maps";
 import config from "@config";
 import { useCallback, useEffect, useState } from "react";
 import "./MapContainer.css";
-import type { Route } from "@/hooks/useRoutes";
+import type { Route, SelectedRoute, SelectedStation, SelectedVehicle, TransportType } from "@/types/transport"; // ✅ Обновлено
 import { StationPopup } from "@components/MapContainer/StationPopup";
 import { formatArrivalMinutes } from "@/services/forecastService";
-import type { Station } from "@/hooks/useStations";
 import { useMapData } from "@/hooks/useMapData";
 import { VehicleMarker } from "./VehicleMarker";
-
-export interface SelectedRoute {
-    id: number;
-    type: "А" | "Т" | "М";
-}
 
 interface MapContainerProps {
     selectedRoutes: SelectedRoute[];
@@ -20,10 +14,10 @@ interface MapContainerProps {
     center: [number, number];
     zoom: number;
     onCenterChange?: (center: [number, number], zoom: number) => void;
-    selectedStation: { id: number; name: string; lat: number; lng: number } | null;
-    selectedVehicle: { id: string; rid: number; rtype: string } | null;
+    selectedStation: SelectedStation | null;
+    selectedVehicle: SelectedVehicle | null;
     onStationDeselect: () => void;
-    setSelectedVehicle: (vehicle: { id: string; rid: number; rtype: string } | null) => void;
+    setSelectedVehicle: (vehicle: SelectedVehicle | null) => void;
 }
 
 export function MapContainer({
@@ -107,7 +101,7 @@ export function MapContainer({
 
                 {vehicles.map((anim) => (
                     <Overlay
-                        key={`${anim.id}-${anim.lasttime}`}
+                        key={anim.id} // ✅ Упрощён ключ
                         anchor={[anim.lat / 1e6, anim.lon / 1e6]}
                     >
                         <VehicleMarker
@@ -124,7 +118,7 @@ export function MapContainer({
                                     setSelectedVehicle({
                                         id: anim.id,
                                         rid: anim.rid,
-                                        rtype: anim.rtype,
+                                        rtype: anim.rtype as TransportType,
                                     });
                                 }
                             }}
@@ -150,7 +144,7 @@ export function MapContainer({
                                         name: forecast.stname,
                                         lat: forecast.lat0,
                                         lng: forecast.lng0,
-                                    } as Station);
+                                    });
                                 }}
                             >
                                 <div className="forecast-time">

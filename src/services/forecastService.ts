@@ -1,4 +1,4 @@
-import type { VehicleForecast } from "@/hooks/useVehicleForecasts";
+import type { VehicleForecast } from "@/types/transport";
 
 export const sortForecastsByArrivalTime = (forecasts: VehicleForecast[] | undefined): VehicleForecast[] => {
     if (!forecasts) return [];

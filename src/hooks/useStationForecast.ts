@@ -1,14 +1,7 @@
+import type { Forecast } from '@/types/transport';
 import { useQuery } from '@tanstack/react-query';
 
-export interface Forecast {
-    arrt: number;          
-    where: string;         
-    vehid: string;         
-    rid: number;           
-    rtype: 'А' | 'Т' | 'М'; 
-    rnum: string;          
-    lastst: string;        
-}
+
 
 interface UseStationForecastProps {
     stationId: number | null; 

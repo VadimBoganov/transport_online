@@ -1,6 +1,5 @@
-import type { SelectedRoute } from "@/components/MapContainer/MapContainer";
-import type { Animation } from "@/hooks/useVehiclePositions";
 import { filterVehiclesBySelectedRoutes } from "@/services/vehicleFilterService";
+import type { Animation, SelectedRoute } from "@/types/transport";
 
 const vehicles = [
     { id: "1", rid: 1, rtype: "А", rnum: "1А" },

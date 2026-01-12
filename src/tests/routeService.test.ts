@@ -1,5 +1,5 @@
-import type { SelectedRoute } from "@/components/MapContainer/MapContainer";
 import { buildRouteGeoJSON } from "@/services/routeService";
+import type { SelectedRoute } from "@/types/transport";
 
 test('builds valid GeoJSON for routes', () => {
     const routeNodesMap = new Map([

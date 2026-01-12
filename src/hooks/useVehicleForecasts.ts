@@ -1,15 +1,7 @@
+import type { VehicleForecast } from '@/types/transport';
 import { useQuery } from '@tanstack/react-query';
 
-export interface VehicleForecast {
-    arrt: number;
-    stid: number;
-    stname: string;
-    stdescr: string;
-    lat0: number;
-    lng0: number;
-    lat1: number;
-    lng1: number;
-}
+
 
 interface UseVehicleForecastsProps {
     vid: string | null;

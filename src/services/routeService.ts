@@ -1,7 +1,7 @@
 import type { UseQueryResult } from "@tanstack/react-query";
-import type { Route } from "@/hooks/useRoutes";
 import config from "@config";
-import type { SelectedRoute } from "@/components/MapContainer/MapContainer";
+import type { Route, SelectedRoute } from "@/types/transport";
+
 
 export interface RouteNode {
     lat: number;

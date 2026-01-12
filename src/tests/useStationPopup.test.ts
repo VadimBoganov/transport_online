@@ -1,6 +1,6 @@
 import { renderHook, act } from "@testing-library/react";
 import { useStationPopup } from "@/hooks/useStationPopup";
-import type { Station } from "@/hooks/useStations";
+import type { Station } from "@/types/transport";
 
 const mockStation = { id: 1, name: "Test", lat: 60, lng: 30 } as Station;
 

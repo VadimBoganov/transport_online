@@ -1,5 +1,5 @@
-import type { VehicleForecast } from "@/hooks/useVehicleForecasts";
 import { sortForecastsByArrivalTime, formatArrivalMinutes, processForecasts } from "@/services/forecastService";
+import type { VehicleForecast } from "@/types/transport";
 
 const mockForecasts = [
     { arrt: 1800, stid: 1, stname: "A" },

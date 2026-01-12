@@ -1,5 +1,4 @@
-import type { Animation } from "@/hooks/useVehiclePositions";
-import type { SelectedRoute } from "@/components/MapContainer/MapContainer"; // или определите локально
+import type { Animation, SelectedRoute } from "@/types/transport";
 
 export const filterVehiclesBySelectedRoutes = (
     vehicles: Animation[] | undefined,

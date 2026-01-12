@@ -1,9 +1,7 @@
+import type { RouteNode } from "@/types/transport";
 import { useQuery } from "@tanstack/react-query";
 
-export interface RouteNode {
-    lat: number;
-    lng: number;
-}
+
 
 export function useRouteNodes({ routeId }: { routeId: number | null }) {
     return useQuery<RouteNode[], Error>({

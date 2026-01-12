@@ -1,5 +1,5 @@
+import type { Station } from "@/types/transport";
 import { useEffect, useMemo, useState } from "react";
-import type { Station } from "./useStations";
 
 interface UseStationPopupProps {
     selectedStationFromProps: Station | null;

@@ -1,13 +1,5 @@
+import type { Station } from '@/types/transport';
 import { useQuery } from '@tanstack/react-query';
-
-export interface Station {
-    id: number;
-    name: string;
-    descr: string;
-    lat: number;
-    lng: number;
-    type: number;
-}
 
 export function useStations() {
     return useQuery<Station[], Error>({

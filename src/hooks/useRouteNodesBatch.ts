@@ -1,14 +1,5 @@
+import type { RouteNode, SelectedRoute } from "@/types/transport";
 import { useQueries } from "@tanstack/react-query";
-
-interface RouteNode {
-  lat: number;
-  lng: number;
-}
-
-interface SelectedRoute {
-  id: number;
-  type: "А" | "Т" | "М";
-}
 
 export function useRouteNodesBatch(routes: SelectedRoute[]) {
   return useQueries({
