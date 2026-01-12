@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { startTransition, useState } from 'react';
 import { IoMenu, IoClose } from 'react-icons/io5';
 import './Sidebar.css';
 import type { TransportType } from '@config';
@@ -13,7 +13,7 @@ interface SidebarProps {
     loading: boolean;
     error: Error | null;
     onRoutesChange: (routes: Array<{ id: number; type: TransportType }>) => void;
-    onStationSelect?: (lat: number, lng: number, id: number, name: string) => void;
+    onStationSelect: (lat: number, lng: number, id: number, name: string) => void;
 }
 
 export default function Sidebar({ routes, stations, loading, error, onRoutesChange, onStationSelect }: SidebarProps) {
@@ -43,6 +43,12 @@ export default function Sidebar({ routes, stations, loading, error, onRoutesChan
 
         setSelectedRoutes(updated);
         onRoutesChange(updated);
+    };
+
+    const handleStationSelect = (lat: number, lng: number, id: number, name: string) => {
+        startTransition(() => {
+            onStationSelect(lat, lng, id, name)
+        });
     };
 
     return (
@@ -85,7 +91,7 @@ export default function Sidebar({ routes, stations, loading, error, onRoutesChan
                         <Tab eventKey="stops" title="Остановки">
                             {activeTab === 'stops' && (
                                 <div className="tab-content-area">
-                                    <Stations stations={stations} onStationSelect={onStationSelect} />
+                                    <Stations stations={stations} onStationSelect={handleStationSelect} />
                                 </div>
                             )}
                         </Tab>

@@ -5,7 +5,6 @@ import config from "@config";
 import { useMapControls } from "./hooks/useMapControls";
 import { useMapData } from "./hooks/useMapData";
 import { useStations } from "./hooks/useStations";
-import { startTransition } from "react";
 
 function App() {
   const {
@@ -27,13 +26,6 @@ function App() {
     selectedVehicle,
   });
 
-  const handleStationSelect = (lat: number, lng: number, id: number, name: string) => {
-    startTransition(() => {
-        setSelectedStation({ lat, lng, id, name });
-        openForecastStationPopup({ id, name, lat, lng });
-    });
-};
-
   const handleCenterChange = () => {
     // Состояние центра теперь управляется внутри Map, но нам не нужно его сохранять отдельно
   };
@@ -45,7 +37,10 @@ function App() {
         loading={isLoading}
         error={error}
         onRoutesChange={setSelectedRoutes}
-        onStationSelect={handleStationSelect}
+        onStationSelect={(lat, lng, id, name) => {
+          setSelectedStation({ lat, lng, id, name });
+          openForecastStationPopup({ id, name, lat, lng });
+        }}
         stations={stations}
       />
       <MapContainer
