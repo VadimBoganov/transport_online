@@ -45,7 +45,7 @@ function Routes({ routes, selectedRoutes, onRouteToggle }: RoutesListProps) {
                 <Accordion.Item key={group.type} eventKey={index.toString()}>
                     <Accordion.Header>
                         <div className="accordion-header__icon">{RouteIcons[group.type]}</div>
-                        {group.title} ({group.routes.length})
+                        {group.title}
                     </Accordion.Header>
                     <Accordion.Body>
                         {group.routes.length === 0 ? (
