@@ -101,7 +101,7 @@ export function MapContainer({
 
                 {vehicles.map((anim) => (
                     <Overlay
-                        key={anim.id} // ✅ Упрощён ключ
+                        key={anim.id}
                         anchor={[anim.lat / 1e6, anim.lon / 1e6]}
                     >
                         <VehicleMarker

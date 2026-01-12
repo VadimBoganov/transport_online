@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { startTransition, useCallback, useEffect, useMemo, useState } from "react";
 import { useRouteNodesBatch } from "@/hooks/useRouteNodesBatch";
 import { useVehiclePositions } from "@/hooks/useVehiclePositions";
 import { useRouteNodes } from "@/hooks/useRouteNodes";
@@ -45,9 +45,11 @@ export const useMapData = ({
         setActiveSelectedStation(station);
     }, []);
 
-    const closeStationPopup = useCallback(() => {
-        setActiveSelectedStation(null);
-    }, []);
+    function closeStationPopup() {
+        startTransition(() => {
+            setActiveSelectedStation(null);
+        });
+    }
 
     const activeRoutes = useMemo(() => {
         if (!routes) return [];

@@ -1,6 +1,6 @@
 import useStationForecast from "@/hooks/useStationForecast";
 import "./StationPopup.css";
-import { useRef, useEffect, useMemo } from "react";
+import { useRef, useEffect, useMemo, startTransition } from "react";
 import type { Forecast } from "@/types/transport";
 import React from "react";
 
@@ -111,7 +111,11 @@ export function StationPopup({ stationId, stationName, onDeselect }: StationPopu
                 <StationPopupContent forecasts={forecasts || null} />
             )}
 
-            <button onClick={onDeselect} className="close-button">Закрыть</button>
+            <button onClick={() => {
+                startTransition(() => {
+                    onDeselect();
+                });
+            }} className="close-button">Закрыть</button>
         </div>
     );
 }

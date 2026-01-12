@@ -5,6 +5,7 @@ import config from "@config";
 import { useMapControls } from "./hooks/useMapControls";
 import { useMapData } from "./hooks/useMapData";
 import { useStations } from "./hooks/useStations";
+import { startTransition } from "react";
 
 function App() {
   const {
@@ -27,9 +28,11 @@ function App() {
   });
 
   const handleStationSelect = (lat: number, lng: number, id: number, name: string) => {
-    setSelectedStation({ lat, lng, id, name });
-    openForecastStationPopup({ id, name, lat, lng });
-  };
+    startTransition(() => {
+        setSelectedStation({ lat, lng, id, name });
+        openForecastStationPopup({ id, name, lat, lng });
+    });
+};
 
   const handleCenterChange = () => {
     // Состояние центра теперь управляется внутри Map, но нам не нужно его сохранять отдельно
