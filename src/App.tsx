@@ -1,28 +1,36 @@
 import Sidebar from "@/components/Sidebar/Sidebar";
 import { MapContainer } from "@/components/MapContainer/MapContainer";
-import { useState } from "react";
-import type { TransportType } from "@config";
 import { useRoutes } from "./hooks/useRoutes";
 import config from "@config";
-import type { Station } from "./hooks/useStations";
+import { useMapControls } from "./hooks/useMapControls";
+import { useMapData } from "./hooks/useMapData";
 
 function App() {
-  const [selectedRoutes, setSelectedRoutes] = useState<Array<{ id: number; type: TransportType }>>([]);
-  const [mapCenter, setMapCenter] = useState<[number, number]>([config.map.lat, config.map.lng]);
-  const [mapZoom, setMapZoom] = useState<number>(config.map.zoom);
-  const [selectedStation, setSelectedStation] = useState<Station | null>(null);
+  const {
+    selectedRoutes,
+    selectedStation,
+    selectedVehicle,
+    setSelectedStation,
+    setSelectedRoutes,
+    setSelectedVehicle,
+  } = useMapControls();
 
   const { data: routes, isLoading, error } = useRoutes();
 
+  const { openForecastStationPopup } = useMapData({
+    selectedRoutes,
+    routes,
+    selectedStation,
+    selectedVehicle,
+  });
+
   const handleStationSelect = (lat: number, lng: number, id: number, name: string) => {
-    setMapCenter([lat / 1e6, lng / 1e6]);
-    setMapZoom(config.map.stationSelectZoom ?? 17);
-    setSelectedStation({ lat, lng, id, name } as Station);
+    setSelectedStation({ lat, lng, id, name });
+    openForecastStationPopup({ id, name, lat, lng });
   };
 
-  const handleCenterChange = (center: [number, number], zoom: number) => {
-    setMapCenter(center);
-    setMapZoom(zoom);
+  const handleCenterChange = () => {
+    // Состояние центра теперь управляется внутри Map, но нам не нужно его сохранять отдельно
   };
 
   return (
@@ -37,11 +45,19 @@ function App() {
       <MapContainer
         selectedRoutes={selectedRoutes}
         routes={routes || []}
-        center={mapCenter}
-        zoom={mapZoom}
+        center={
+          selectedStation
+            ? [selectedStation.lat / 1e6, selectedStation.lng / 1e6]
+            : [config.map.lat, config.map.lng]
+        }
+        zoom={
+          selectedStation ? (config.map.stationSelectZoom ?? 17) : config.map.zoom
+        }
         onCenterChange={handleCenterChange}
         selectedStation={selectedStation}
+        selectedVehicle={selectedVehicle}
         onStationDeselect={() => setSelectedStation(null)}
+        setSelectedVehicle={setSelectedVehicle}
       />
     </div>
   );

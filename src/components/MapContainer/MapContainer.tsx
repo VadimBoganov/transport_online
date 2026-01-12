@@ -20,8 +20,10 @@ interface MapContainerProps {
     center: [number, number];
     zoom: number;
     onCenterChange?: (center: [number, number], zoom: number) => void;
-    selectedStation: Station | null;
+    selectedStation: { id: number; name: string; lat: number; lng: number } | null;
+    selectedVehicle: { id: string; rid: number; rtype: string } | null;
     onStationDeselect: () => void;
+    setSelectedVehicle: (vehicle: { id: string; rid: number; rtype: string } | null) => void;
 }
 
 export function MapContainer({
@@ -31,15 +33,15 @@ export function MapContainer({
     zoom,
     onCenterChange,
     selectedStation,
+    selectedVehicle,
     onStationDeselect,
+    setSelectedVehicle
 }: MapContainerProps) {
     const [mapWidth, setMapWidth] = useState<number>(1024);
 
     const {
         geoJsonData,
         vehicles,
-        selectedVehicle,
-        setSelectedVehicle,
         selectedVehicleGeoJson,
         sortedForecasts,
         activeSelectedStation,
@@ -50,7 +52,7 @@ export function MapContainer({
         selectedRoutes,
         routes,
         selectedStation,
-        onStationDeselect,
+        selectedVehicle,
     });
 
     useEffect(() => {
@@ -123,14 +125,6 @@ export function MapContainer({
                                         id: anim.id,
                                         rid: anim.rid,
                                         rtype: anim.rtype,
-                                        lat: anim.lat,
-                                        lon: anim.lon,
-                                        dir: anim.dir,
-                                        speed: anim.speed,
-                                        lasttime: anim.lasttime,
-                                        gos_num: anim.gos_num,
-                                        rnum: anim.rnum,
-                                        low_floor: anim.low_floor,
                                     });
                                 }
                             }}

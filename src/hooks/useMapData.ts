@@ -1,4 +1,4 @@
-import { useMemo, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouteNodesBatch } from "@/hooks/useRouteNodesBatch";
 import { useVehiclePositions } from "@/hooks/useVehiclePositions";
 import { useRouteNodes } from "@/hooks/useRouteNodes";
@@ -6,38 +6,33 @@ import useVehicleForecasts from "@/hooks/useVehicleForecasts";
 
 import { buildRouteNodesMap, buildRouteGeoJSON, getActiveRoutes } from "@/services/routeService";
 import { filterVehiclesBySelectedRoutes } from "@/services/vehicleFilterService";
-import { processForecasts, formatArrivalMinutes } from "@/services/forecastService";
-import { useStationPopup } from "@/hooks/useStationPopup";
+import { processForecasts } from "@/services/forecastService";
 
 import type { Route } from "@/hooks/useRoutes";
 import type { Animation } from "@/hooks/useVehiclePositions";
 import config from "@config";
 import type { SelectedRoute } from "@/components/MapContainer/MapContainer";
-import type { Station } from "./useStations";
 
 interface UseMapDataProps {
     selectedRoutes: SelectedRoute[];
-    routes: Route[];
-    selectedStation: Station | null;
-    onStationDeselect: () => void;
+    routes: Route[] | undefined;
+    selectedStation: { id: number; name: string; lat: number; lng: number } | null;
+    selectedVehicle: { id: string; rid: number; rtype: string } | null;
 }
 
 export interface UseMapDataResult {
     // Геометрия
-    geoJsonData: any; // GeoJSON.FeatureCollection
+    geoJsonData: any | null;
     selectedVehicleGeoJson: any | null;
     // Транспорт
     vehicles: Animation[];
-    selectedVehicle: { id: string; rid: number; rtype: string } | null;
-    setSelectedVehicle: (v: Animation | null) => void;
     // Прогнозы
-    sortedForecasts: ReturnType<typeof processForecasts>;
-    formatArrivalMinutes: (arrt: number) => number;
-    // Станция
-    activeSelectedStation: Station | null;
+    sortedForecasts: ReturnType<typeof processForecasts> | null;
+    // Управление попапом остановки
+    activeSelectedStation: { id: number; name: string; lat: number; lng: number } | null;
     closeStationPopup: () => void;
-    openForecastStationPopup: (station: Station) => void;
-    // Загрузка
+    openForecastStationPopup: (station: { id: number; name: string; lat: number; lng: number }) => void;
+    // Состояние загрузки
     isLoading: {
         routes: boolean;
         vehicles: boolean;
@@ -49,29 +44,31 @@ export const useMapData = ({
     selectedRoutes,
     routes,
     selectedStation,
-    onStationDeselect,
+    selectedVehicle,
 }: UseMapDataProps): UseMapDataResult => {
-    // === Состояние выбранного ТС ===
-    const [selectedVehicle, setSelectedVehicle] = useState<Animation | null>(null);
+    const [activeSelectedStation, setActiveSelectedStation] = useState<UseMapDataResult['activeSelectedStation']>(null);
 
-    // === Управление попапом станции ===
-    const { activeSelectedStation, closeStationPopup, openForecastStationPopup } = useStationPopup({
-        selectedStationFromProps: selectedStation,
-        onDeselect: onStationDeselect,
-    });
+    const openForecastStationPopup = useCallback((station: { id: number; name: string; lat: number; lng: number }) => {
+        setActiveSelectedStation(station);
+    }, []);
+
+    const closeStationPopup = useCallback(() => {
+        setActiveSelectedStation(null);
+    }, []);
 
     // === Активные маршруты ===
     const activeRoutes = useMemo(() => {
+        if (!routes) return [];
         return getActiveRoutes(selectedRoutes, routes);
     }, [selectedRoutes, routes]);
 
-    // === Узлы маршрутов (для линий) ===
+    // === Узлы маршрутов ===
     const routeNodes = useRouteNodesBatch(selectedRoutes);
     const { routeNodesMap, isLoading: nodesLoading } = useMemo(() => {
         return buildRouteNodesMap(routeNodes, selectedRoutes);
     }, [routeNodes, selectedRoutes]);
 
-    // === GeoJSON маршрутов ===
+    // === GeoJSON активных маршрутов ===
     const geoJsonData = useMemo(() => {
         return buildRouteGeoJSON(activeRoutes, routeNodesMap);
     }, [activeRoutes, routeNodesMap]);
@@ -84,7 +81,7 @@ export const useMapData = ({
         return filterVehiclesBySelectedRoutes(vehiclePositions?.anims, selectedRoutes);
     }, [vehiclePositions, selectedRoutes]);
 
-    // === Узлы маршрута выбранного ТС (для его линии) ===
+    // === GeoJSON для выбранного ТС ===
     const { data: selectedVehicleRouteNodes } = useRouteNodes({
         routeId: selectedVehicle?.rid ?? null,
     });
@@ -121,10 +118,11 @@ export const useMapData = ({
         return processForecasts(forecasts);
     }, [forecasts]);
 
-    // === Сброс выбранного ТС при смене маршрутов ===
     useEffect(() => {
-        setSelectedVehicle(null);
-    }, [selectedRoutes]);
+        if (selectedStation) {
+            setActiveSelectedStation(selectedStation);
+        }
+    }, [selectedStation]);
 
     return {
         // Геометрия
@@ -132,12 +130,9 @@ export const useMapData = ({
         selectedVehicleGeoJson,
         // Транспорт
         vehicles,
-        selectedVehicle,
-        setSelectedVehicle,
         // Прогнозы
         sortedForecasts,
-        formatArrivalMinutes,
-        // Станция
+        // Попап остановки
         activeSelectedStation,
         closeStationPopup,
         openForecastStationPopup,
