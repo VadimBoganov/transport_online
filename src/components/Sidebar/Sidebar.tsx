@@ -82,9 +82,11 @@ export default function Sidebar({ routes, loading, error, onRoutesChange, onStat
                         </Tab>
 
                         <Tab eventKey="stops" title="Остановки">
-                            <div className="tab-content-area">
-                                <Stations onStationSelect={onStationSelect} />
-                            </div>
+                            {activeTab === 'stops' && (
+                                <div className="tab-content-area">
+                                    <Stations onStationSelect={onStationSelect} />
+                                </div>
+                            )}
                         </Tab>
                     </Tabs>
                 )}

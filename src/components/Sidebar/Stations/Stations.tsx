@@ -1,6 +1,6 @@
 import { useStations } from '@/hooks/useStations';
 import './Stations.css';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { Station } from '@/types/transport';
 
 interface StationsProps {
@@ -23,9 +23,13 @@ export default function Stations({ onStationSelect }: StationsProps) {
         onStationSelect?.(station.lat, station.lng, station.id, station.name);
     };
 
-    const filteredStations = stations?.filter(station =>
-        station.name.toLowerCase().includes(searchTerm.toLowerCase())
-    ) || [];
+    const filteredStations = useMemo(() => {
+        if (!stations) return [];
+        const term = searchTerm.toLowerCase();
+        return stations.filter(station =>
+            station.name.toLowerCase().includes(term)
+        );
+    }, [stations, searchTerm]);
 
     return (
         <div className="stations-list">
