@@ -1,15 +1,17 @@
 import type { Forecast } from '@/types/transport';
 import { useQuery } from '@tanstack/react-query';
 
-
-
 interface UseStationForecastProps {
-    stationId: number | null; 
+    stationId: number | null;
 }
 
+// Экспортируем queryKey для ручного управления
+export const stationForecastQueryKey = (stationId: number | null) => ['station-forecast', stationId];
+
 export default function useStationForecast({ stationId }: UseStationForecastProps) {
-     return useQuery<Forecast[], Error>({
-        queryKey: ['station-forecast', stationId],
+
+    return useQuery<Forecast[], Error>({
+        queryKey: stationForecastQueryKey(stationId),
         queryFn: async () => {
             if (!stationId) throw new Error('No station ID');
 
@@ -28,10 +30,11 @@ export default function useStationForecast({ stationId }: UseStationForecastProp
             return Array.isArray(data) ? data : [];
         },
         enabled: !!stationId,
-        staleTime: 30 * 1000,           
-        refetchInterval: 30 * 1000,     
+        staleTime: 1000 * 30,           
+        gcTime: 1000 * 1,             
+        refetchInterval: 1000 * 30,     
         retry: 1,
-        placeholderData: [] as Forecast[],
-        refetchOnWindowFocus: false,    
+        placeholderData: undefined,    
+        refetchOnWindowFocus: false,
     });
 }

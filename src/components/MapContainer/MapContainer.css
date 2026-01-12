@@ -87,3 +87,14 @@
     border: 5px solid transparent;
     border-top-color: rgba(0, 0, 0, 0.85);
 }
+
+.popup-skeleton,
+.station-popup p,
+.station-popup table {
+    animation: fade-in 0.2s ease;
+}
+
+@keyframes fade-in {
+    from { opacity: 0.6; }
+    to { opacity: 1; }
+}

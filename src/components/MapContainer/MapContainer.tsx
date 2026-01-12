@@ -1,9 +1,9 @@
 import { GeoJson, Map as PigeonMap, Overlay } from "pigeon-maps";
 import config from "@config";
-import { useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import "./MapContainer.css";
 import type { Route, SelectedRoute, SelectedStation, SelectedVehicle, TransportType } from "@/types/transport"; // ✅ Обновлено
-import { StationPopup } from "@components/MapContainer/StationPopup";
+import { MemoizedStationPopup } from "@components/MapContainer/StationPopup";
 import { formatArrivalMinutes } from "@/services/forecastService";
 import { useMapData } from "@/hooks/useMapData";
 import { VehicleMarker } from "./VehicleMarker";
@@ -169,11 +169,13 @@ export function MapContainer({
                         anchor={[activeSelectedStation.lat / 1e6, activeSelectedStation.lng / 1e6]}
                     >
                         <div className="wrapper">
-                            <StationPopup
-                                stationId={activeSelectedStation.id}
-                                stationName={activeSelectedStation.name}
-                                onDeselect={closeStationPopup}
-                            />
+                            <Suspense fallback={<div className="popup-skeleton">Загрузка...</div>}>
+                                <MemoizedStationPopup
+                                    stationId={activeSelectedStation.id}
+                                    stationName={activeSelectedStation.name}
+                                    onDeselect={closeStationPopup}
+                                />
+                            </Suspense>
                         </div>
                     </Overlay>
                 )}

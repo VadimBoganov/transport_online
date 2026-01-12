@@ -2,21 +2,9 @@ import useStationForecast from "@/hooks/useStationForecast";
 import "./StationPopup.css";
 import { useRef, useEffect, useMemo } from "react";
 import type { Forecast } from "@/types/transport";
+import React from "react";
 
-interface StationPopupProps {
-    stationId: number;
-    stationName: string;
-    onDeselect: () => void;
-}
-
-export function StationPopup({
-    stationId,
-    stationName,
-    onDeselect
-}: StationPopupProps) {
-    const { data: forecasts, isLoading: forecastsLoading } = useStationForecast({ stationId });
-
-    const popupRef = useRef<HTMLDivElement>(null);
+function StationPopupContent({ forecasts }: { forecasts: Forecast[] | null }) {
     const tbodyRef = useRef<HTMLDivElement>(null);
 
     const routeSummaries = useMemo(() => {
@@ -34,11 +22,11 @@ export function StationPopup({
                 const sorted = group.sort((a, b) => a.arrt - b.arrt);
                 return { current: sorted[0] || null, next: sorted[1] || null };
             })
-            .filter(item => item.current); // убираем пустые
+            .filter(item => item.current);
     }, [forecasts]);
 
     useEffect(() => {
-        const container = popupRef.current;
+        const container = tbodyRef.current;
         if (!container) return;
 
         const handleWheel = (e: WheelEvent) => {
@@ -48,74 +36,84 @@ export function StationPopup({
             if (!isInsideScrollContainer) return;
 
             e.preventDefault();
-
             const { deltaY } = e;
-            const scrollContainer = tbodyRef.current;
-            if (!scrollContainer) return;
-
-            const maxScroll = scrollContainer.scrollHeight - scrollContainer.clientHeight;
-            const newScrollTop = scrollContainer.scrollTop + deltaY;
-            scrollContainer.scrollTop = Math.max(0, Math.min(newScrollTop, maxScroll));
-
+            const maxScroll = container.scrollHeight - container.clientHeight;
+            const newScrollTop = container.scrollTop + deltaY;
+            container.scrollTop = Math.max(0, Math.min(newScrollTop, maxScroll));
             e.stopPropagation();
         };
 
         container.addEventListener("wheel", handleWheel, { capture: true, passive: false });
-
-        return () => {
-            container.removeEventListener("wheel", handleWheel, { capture: true });
-        };
+        return () => container.removeEventListener("wheel", handleWheel, { capture: true });
     }, []);
 
+    if (!forecasts || forecasts.length === 0) {
+        return <p>Нет данных о прибытии</p>;
+    }
+
     return (
-        <div ref={popupRef} className="station-popup">
+        <div className="forecast-container">
+            <table className="forecast-table">
+                <thead>
+                    <tr>
+                        <th>Маршрут</th>
+                        <th>Куда</th>
+                        <th>Прибытие</th>
+                    </tr>
+                </thead>
+            </table>
+
+            <div ref={tbodyRef} className="tbody-container">
+                <table className="forecast-table">
+                    <tbody>
+                        {routeSummaries.map((route, i) => {
+                            const { current, next } = route;
+                            if (!current) return null;
+
+                            return (
+                                <tr key={i}>
+                                    <td>
+                                        <strong>{current.rtype}-{current.rnum}</strong>
+                                    </td>
+                                    <td>{current.where || '—'}</td>
+                                    <td>
+                                        {Math.round(current.arrt / 60)} мин
+                                        {next ? (
+                                            <><br /><small>→ {Math.round(next.arrt / 60)} мин</small></>
+                                        ) : <><br /><small>→ отсутствует</small></>}
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+}
+
+interface StationPopupProps {
+    stationId: number;
+    stationName: string;
+    onDeselect: () => void;
+}
+
+export function StationPopup({ stationId, stationName, onDeselect }: StationPopupProps) {
+    const { data: forecasts, isLoading } = useStationForecast({ stationId });
+
+    return (
+        <div className="station-popup">
             <h4>{stationName}</h4>
 
-            {forecastsLoading ? (
+            {isLoading ? (
                 <p>Загрузка прогнозов...</p>
-            ) : routeSummaries.length === 0 ? (
-                <p>Нет данных о прибытии</p>
             ) : (
-                <div className="forecast-container">
-                    <table className="forecast-table">
-                        <thead>
-                            <tr>
-                                <th>Маршрут</th>
-                                <th>Куда</th>
-                                <th>Прибытие</th>
-                            </tr>
-                        </thead>
-                    </table>
-
-                    <div ref={tbodyRef} className="tbody-container">
-                        <table className="forecast-table">
-                            <tbody>
-                                {routeSummaries.map((route, i) => {
-                                    const { current, next } = route;
-                                    if (!current) return null;
-
-                                    return (
-                                        <tr key={i}>
-                                            <td>
-                                                <strong>{current.rtype}-{current.rnum}</strong>
-                                            </td>
-                                            <td>{current.where || '—'}</td>
-                                            <td>
-                                                {Math.round(current.arrt / 60)} мин
-                                                {next ? (
-                                                    <><br /><small>→ {Math.round(next.arrt / 60)} мин</small></>
-                                                ) : <><br /><small>→ отсутствует</small></>}
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                <StationPopupContent forecasts={forecasts || null} />
             )}
 
             <button onClick={onDeselect} className="close-button">Закрыть</button>
         </div>
     );
 }
+
+export const MemoizedStationPopup = React.memo(StationPopup);

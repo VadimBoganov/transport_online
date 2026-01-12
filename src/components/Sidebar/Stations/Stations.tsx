@@ -71,7 +71,10 @@ export default function Stations({ stations, onStationSelect }: StationsProps) {
                                         transform: `translateY(${virtualRow.start}px)`,
                                     }}
                                 >
-                                    <StationItem station={station} onClick={() => handleStationClick(station)} />
+                                    <StationItem
+                                        station={station}
+                                        onClick={() => handleStationClick(station)}
+                                    />
                                 </div>
                             );
                         })}
