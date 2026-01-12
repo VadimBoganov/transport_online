@@ -3,7 +3,7 @@ import type { StationForecast } from "@/types/transport";
 export const sortForecastsByArrivalTime = (forecasts: StationForecast[] | undefined): StationForecast[] => {
     if (!forecasts) return [];
 
-    return forecasts.filter(isForecastValid).sort((a, b) => a.arrt - b.arrt);
+    return forecasts.sort((a, b) => a.arrt - b.arrt);
 };
 
 export const formatArrivalMinutes = (arrt: number): number => {
