@@ -8,17 +8,26 @@
     color: #333;
 }
 
+.station-item {
+    padding: 8px 12px;
+    border-bottom: 1px solid #eee;
+    min-height: 56px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
 .stations-grid {
     list-style: none;
     padding: 0;
     margin: 0;
-    max-height: calc(100vh - 200px);
+    height: 680px; 
     overflow-y: auto;
+    position: relative;
 }
 
 .stations-grid .station-item {
     padding: 10px;
-    border-bottom: 1px solid #eee;
     line-height: 1.5;
 }
 
@@ -38,21 +47,54 @@
     margin-top: 4px;
 }
 
-.error {
-    color: #d9534f;
-    padding: 10px;
+.virtual-items-container {
+    position: relative;
+    width: 100%;
 }
 
-.text-muted {
-    color: #999;
-    font-style: italic;
+.virtual-station-item {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 56px; /* Соответствует rowHeight */
+    transform: translateY(0);
+    will-change: transform; 
+
 }
 
 .search-input {
     width: 100%;
-    padding: 8px 12px;
+    padding: 10px 0px 10px 10px; /* Отступ слева под иконку */
     margin-bottom: 12px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
     font-size: 14px;
+    color: #333;
+    background-color: #fff;
+    outline: none;
+    transition: all 0.2s ease;
+    position: relative;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.search-input::placeholder {
+    color: #aaa;
+    font-style: italic;
+}
+
+.search-input:focus {
+    box-shadow: 0 1px 6px rgba(0, 102, 204, 0.25);
+    transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+    .search-input {
+        padding: 10px 12px 10px 32px;
+        font-size: 15px;
+    }
+    .search-input-icon {
+        left: 10px;
+        font-size: 18px;
+    }
 }
