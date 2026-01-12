@@ -5,17 +5,18 @@ import type { TransportType } from '@config';
 import Routes from './Routes/Routes';
 import { Tab, Tabs } from 'react-bootstrap';
 import Stations from './Stations/Stations';
-import type { Route } from '@/types/transport';
+import type { Route, Station } from '@/types/transport';
 
 interface SidebarProps {
     routes: Route[];
+    stations: Station[] | undefined;
     loading: boolean;
     error: Error | null;
     onRoutesChange: (routes: Array<{ id: number; type: TransportType }>) => void;
     onStationSelect?: (lat: number, lng: number, id: number, name: string) => void;
 }
 
-export default function Sidebar({ routes, loading, error, onRoutesChange, onStationSelect }: SidebarProps) {
+export default function Sidebar({ routes, stations, loading, error, onRoutesChange, onStationSelect }: SidebarProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedRoutes, setSelectedRoutes] = useState<Array<{ id: number; type: TransportType }>>([]);
     const [activeTab, setActiveTab] = useState('routes');
@@ -84,7 +85,7 @@ export default function Sidebar({ routes, loading, error, onRoutesChange, onStat
                         <Tab eventKey="stops" title="Остановки">
                             {activeTab === 'stops' && (
                                 <div className="tab-content-area">
-                                    <Stations onStationSelect={onStationSelect} />
+                                    <Stations stations={stations} onStationSelect={onStationSelect} />
                                 </div>
                             )}
                         </Tab>

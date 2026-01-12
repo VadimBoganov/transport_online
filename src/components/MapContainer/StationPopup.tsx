@@ -1,7 +1,7 @@
 import useStationForecast from "@/hooks/useStationForecast";
-import type { Forecast } from "@/hooks/useStationForecast";
 import "./StationPopup.css";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useMemo } from "react";
+import type { Forecast } from "@/types/transport";
 
 interface StationPopupProps {
     stationId: number;
@@ -19,19 +19,23 @@ export function StationPopup({
     const popupRef = useRef<HTMLDivElement>(null);
     const tbodyRef = useRef<HTMLDivElement>(null);
 
-    const groupedForecasts = forecasts?.reduce((acc, forecast) => {
-        const key = `${forecast.rnum}-${forecast.rtype}`;
-        if (!acc[key]) acc[key] = [];
-        acc[key].push(forecast);
-        return acc;
-    }, {} as Record<string, Forecast[]>);
+    const routeSummaries = useMemo(() => {
+        if (!forecasts || forecasts.length === 0) return [];
 
-    const routeSummaries = groupedForecasts
-        ? Object.values(groupedForecasts).map((group) => {
-            const sorted = group.sort((a, b) => a.arrt - b.arrt);
-            return { current: sorted[0] || null, next: sorted[1] || null };
-        })
-        : [];
+        const grouped = forecasts.reduce((acc, forecast) => {
+            const key = `${forecast.rnum}-${forecast.rtype}`;
+            if (!acc[key]) acc[key] = [];
+            acc[key].push(forecast);
+            return acc;
+        }, {} as Record<string, Forecast[]>);
+
+        return Object.values(grouped)
+            .map((group) => {
+                const sorted = group.sort((a, b) => a.arrt - b.arrt);
+                return { current: sorted[0] || null, next: sorted[1] || null };
+            })
+            .filter(item => item.current); // убираем пустые
+    }, [forecasts]);
 
     useEffect(() => {
         const container = popupRef.current;

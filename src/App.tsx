@@ -4,6 +4,7 @@ import { useRoutes } from "./hooks/useRoutes";
 import config from "@config";
 import { useMapControls } from "./hooks/useMapControls";
 import { useMapData } from "./hooks/useMapData";
+import { useStations } from "./hooks/useStations";
 
 function App() {
   const {
@@ -16,6 +17,7 @@ function App() {
   } = useMapControls();
 
   const { data: routes, isLoading, error } = useRoutes();
+  const { data: stations } = useStations();
 
   const { openForecastStationPopup } = useMapData({
     selectedRoutes,
@@ -41,6 +43,7 @@ function App() {
         error={error}
         onRoutesChange={setSelectedRoutes}
         onStationSelect={handleStationSelect}
+        stations={stations}
       />
       <MapContainer
         selectedRoutes={selectedRoutes}

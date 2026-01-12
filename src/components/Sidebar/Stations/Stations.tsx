@@ -1,23 +1,14 @@
-import { useStations } from '@/hooks/useStations';
 import './Stations.css';
 import { useMemo, useState } from 'react';
 import type { Station } from '@/types/transport';
 
 interface StationsProps {
+    stations: Station[] | undefined;
     onStationSelect?: (lat: number, lng: number, id: number, name: string) => void;
 }
 
-export default function Stations({ onStationSelect }: StationsProps) {
-    const { data: stations, isLoading, error } = useStations();
+export default function Stations({stations, onStationSelect }: StationsProps) {
     const [searchTerm, setSearchTerm] = useState('');
-
-    if (isLoading) {
-        return <p>Загрузка остановок...</p>;
-    }
-
-    if (error) {
-        return <p className="error">Ошибка: {error.message}</p>;
-    }
 
     const handleStationClick = (station: Station) => {
         onStationSelect?.(station.lat, station.lng, station.id, station.name);
