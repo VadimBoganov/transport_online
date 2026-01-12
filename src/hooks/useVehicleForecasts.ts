@@ -1,4 +1,4 @@
-import type { VehicleForecast } from '@/types/transport';
+import type { StationForecast } from '@/types/transport';
 import { useQuery } from '@tanstack/react-query';
 
 
@@ -8,7 +8,7 @@ interface UseVehicleForecastsProps {
 }
 
 export default function useVehicleForecasts({ vid }: UseVehicleForecastsProps) {
-    return useQuery<VehicleForecast[], Error>({
+    return useQuery<StationForecast[], Error>({
         queryKey: ['vehicle-forecasts', vid],
         queryFn: async () => {
             if (!vid) throw new Error('No vehicle ID');
@@ -31,7 +31,7 @@ export default function useVehicleForecasts({ vid }: UseVehicleForecastsProps) {
         retry: 1,
         staleTime: 30 * 1000,
         refetchInterval: 30 * 1000,
-        placeholderData: [] as VehicleForecast[],
+        placeholderData: [] as StationForecast[],
         refetchOnWindowFocus: false,
     });
 }

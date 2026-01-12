@@ -1,4 +1,4 @@
-import type { Forecast } from '@/types/transport';
+import type { VehicleForecast } from '@/types/transport';
 import { useQuery } from '@tanstack/react-query';
 
 interface UseStationForecastProps {
@@ -10,7 +10,7 @@ export const stationForecastQueryKey = (stationId: number | null) => ['station-f
 
 export default function useStationForecast({ stationId }: UseStationForecastProps) {
 
-    return useQuery<Forecast[], Error>({
+    return useQuery<VehicleForecast[], Error>({
         queryKey: stationForecastQueryKey(stationId),
         queryFn: async () => {
             if (!stationId) throw new Error('No station ID');

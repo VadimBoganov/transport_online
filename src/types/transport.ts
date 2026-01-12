@@ -60,7 +60,7 @@ export interface Animation {
     low_floor: boolean;
 }
 
-export interface Forecast {
+export interface VehicleForecast {
     arrt: number;          
     where: string;         
     vehid: string;         
@@ -70,7 +70,7 @@ export interface Forecast {
     lastst: string;        
 }
 
-export interface VehicleForecast {
+export interface StationForecast {
     arrt: number;
     stid: number;
     stname: string;

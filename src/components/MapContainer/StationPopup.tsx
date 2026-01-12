@@ -1,10 +1,10 @@
 import useStationForecast from "@/hooks/useStationForecast";
 import "./StationPopup.css";
 import { useRef, useEffect, useMemo, startTransition } from "react";
-import type { Forecast } from "@/types/transport";
+import type { VehicleForecast } from "@/types/transport";
 import React from "react";
 
-function StationPopupContent({ forecasts }: { forecasts: Forecast[] | null }) {
+function StationPopupContent({ forecasts }: { forecasts: VehicleForecast[] | null }) {
     const tbodyRef = useRef<HTMLDivElement>(null);
 
     const routeSummaries = useMemo(() => {
@@ -15,7 +15,7 @@ function StationPopupContent({ forecasts }: { forecasts: Forecast[] | null }) {
             if (!acc[key]) acc[key] = [];
             acc[key].push(forecast);
             return acc;
-        }, {} as Record<string, Forecast[]>);
+        }, {} as Record<string, VehicleForecast[]>);
 
         return Object.values(grouped)
             .map((group) => {

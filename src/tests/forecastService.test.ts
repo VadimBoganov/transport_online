@@ -1,11 +1,11 @@
 import { sortForecastsByArrivalTime, formatArrivalMinutes, processForecasts } from "@/services/forecastService";
-import type { VehicleForecast } from "@/types/transport";
+import type { StationForecast } from "@/types/transport";
 
 const mockForecasts = [
     { arrt: 1800, stid: 1, stname: "A" },
     { arrt: 900, stid: 2, stname: "B" },
     { arrt: 2700, stid: 3, stname: "C" },
-] as VehicleForecast[];
+] as StationForecast[];
 
 test("sorts forecasts by arrival time", () => {
     const result = sortForecastsByArrivalTime(mockForecasts);
