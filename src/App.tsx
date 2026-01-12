@@ -26,10 +26,6 @@ function App() {
     selectedVehicle,
   });
 
-  const handleCenterChange = () => {
-    // Состояние центра теперь управляется внутри Map, но нам не нужно его сохранять отдельно
-  };
-
   return (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
       <Sidebar
@@ -54,7 +50,6 @@ function App() {
         zoom={
           selectedStation ? (config.map.stationSelectZoom ?? 17) : config.map.zoom
         }
-        onCenterChange={handleCenterChange}
         selectedStation={selectedStation}
         selectedVehicle={selectedVehicle}
         onStationDeselect={() => setSelectedStation(null)}
