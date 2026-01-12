@@ -49,6 +49,16 @@ export function MapContainer({
         selectedVehicle,
     });
 
+    const handleVehicleClick = useCallback((rid: number, id: string, rtype: string) => (e: React.MouseEvent) => {
+        e.stopPropagation();
+        closeStationPopup();
+        if (selectedVehicle?.rid === rid) {
+            setSelectedVehicle(null);
+        } else {
+            setSelectedVehicle({ id, rid, rtype: rtype as TransportType });
+        }
+    }, [selectedVehicle, setSelectedVehicle, closeStationPopup]);
+
     useEffect(() => {
         if (typeof window !== 'undefined') {
             const handleResize = () => setMapWidth(window.innerWidth);
@@ -109,19 +119,7 @@ export function MapContainer({
                             dir={anim.dir}
                             rtype={anim.rtype}
                             color={config.routes.find((r) => r.type === anim.rtype)?.color || 'gray'}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                closeStationPopup();
-                                if (selectedVehicle?.rid === anim.rid) {
-                                    setSelectedVehicle(null);
-                                } else {
-                                    setSelectedVehicle({
-                                        id: anim.id,
-                                        rid: anim.rid,
-                                        rtype: anim.rtype as TransportType,
-                                    });
-                                }
-                            }}
+                            onClick={handleVehicleClick(anim.rid, anim.id, anim.rtype)}
                             isSelected={selectedVehicle?.rid === anim.rid}
                         />
                     </Overlay>

@@ -10,7 +10,14 @@ interface VehicleMarkerProps {
     isSelected: boolean;
 }
 
-export const VehicleMarker: React.FC<VehicleMarkerProps> = ({
+const getTransformStyle = (dir: number) => {
+    const radians = (dir * Math.PI) / 180;
+    const x = Math.cos(radians) * 14;
+    const y = Math.sin(radians) * 14;
+    return `translate(-50%, -50%) translate(${x}px, ${y}px) rotate(${dir}deg)`;
+};
+
+export const VehicleMarker: React.FC<VehicleMarkerProps> = React.memo(({
     rnum,
     dir,
     onClick,
@@ -24,13 +31,8 @@ export const VehicleMarker: React.FC<VehicleMarkerProps> = ({
             {rnum}
             <div
                 className="vehicle-marker-arrow"
-                style={{
-                    transform: `translate(-50%, -50%) 
-                        translate(${Math.cos((dir * Math.PI) / 180) * 14}px, 
-                                  ${Math.sin((dir * Math.PI) / 180) * 14}px)
-                        rotate(${dir}deg)`,
-                }}
+                style={{ transform: getTransformStyle(dir) }}
             />
         </div>
     );
-};
+});
