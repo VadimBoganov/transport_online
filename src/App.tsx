@@ -33,6 +33,12 @@ function App() {
     setSelectedStation(null);
   }, []);
 
+  const mapView = {
+    center,
+    zoom,
+    onCenterChange: setCenter,
+  } as const;
+
   return (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
       <Sidebar
@@ -47,9 +53,7 @@ function App() {
       <MapContainer
         selectedRoutes={selectedRoutes}
         routes={routes || []}
-        center={center}
-        zoom={zoom}
-        onCenterChange={setCenter}
+        mapView={mapView}
         selectedStation={selectedStation}
         selectedVehicle={selectedVehicle}
         onStationDeselect={handleStationDeselect}

@@ -1,19 +1,9 @@
 import type { UseQueryResult } from "@tanstack/react-query";
 import config from "@config";
 import type { Route, RouteNode, SelectedRoute } from "@/types/transport";
-import { buildLineStringGeoJSON } from "@/utils/geoJson";
+import { buildLineStringGeoJSON, type LineStringFeatureCollection } from "@/utils/geoJson";
 
-export interface RouteGeoJSON {
-    type: "FeatureCollection";
-    features: Array<{
-        type: "Feature";
-        geometry: {
-            type: "LineString";
-            coordinates: [number, number][];
-        };
-        properties: { stroke: string };
-    }>;
-}
+export type RouteGeoJSON = LineStringFeatureCollection;
 
 export interface RouteNodesMapResult {
     routeNodesMap: Map<number, RouteNode[]>;

@@ -4,8 +4,8 @@ import { useVehiclePositions } from "@/hooks/useVehiclePositions";
 import { useRouteNodes } from "@/hooks/useRouteNodes";
 import useVehicleForecasts from "@/hooks/useVehicleForecasts";
 
-import { buildRouteNodesMap, buildRouteGeoJSON, getActiveRoutes, makeRouteIdsString } from "@/services/routeService";
-import { buildSelectedVehicleGeoJSON, filterVehiclesBySelectedRoutes } from "@/services/vehicleService";
+import { buildRouteNodesMap, buildRouteGeoJSON, getActiveRoutes, makeRouteIdsString, type RouteGeoJSON } from "@/services/routeService";
+import { buildSelectedVehicleGeoJSON, filterVehiclesBySelectedRoutes, type SelectedVehicleGeoJSON } from "@/services/vehicleService";
 import { processForecasts } from "@/services/forecastService";
 import { shouldOpenStationPopup } from "@/services/stationService";
 
@@ -19,8 +19,8 @@ interface UseMapDataProps {
 }
 
 export interface UseMapDataResult {
-    geoJsonData: any | null;
-    selectedVehicleGeoJson: any | null;
+    geoJsonData: RouteGeoJSON | null;
+    selectedVehicleGeoJson: SelectedVehicleGeoJSON | null;
     vehicles: Animation[];
     sortedForecasts: ReturnType<typeof processForecasts> | null;
     activeSelectedStation: SelectedStation | null;

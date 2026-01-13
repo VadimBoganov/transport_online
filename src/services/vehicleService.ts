@@ -1,18 +1,8 @@
 import type { Animation, RouteNode, SelectedRoute } from "@/types/transport";
 import config from "@config";
-import { buildLineStringGeoJSON } from "@/utils/geoJson";
+import { buildLineStringGeoJSON, type LineStringFeatureCollection } from "@/utils/geoJson";
 
-export interface SelectedVehicleGeoJSON {
-    type: "FeatureCollection";
-    features: Array<{
-        type: "Feature";
-        geometry: {
-            type: "LineString";
-            coordinates: [number, number][];
-        };
-        properties: { stroke: string };
-    }>;
-}
+export type SelectedVehicleGeoJSON = LineStringFeatureCollection;
 
 export const buildSelectedVehicleGeoJSON = (
     selectedVehicle: { rid: number; rtype: string } | null,

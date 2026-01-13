@@ -10,6 +10,11 @@ export interface LineStringFeature {
     properties: { stroke: string };
 }
 
+export interface LineStringFeatureCollection {
+    type: "FeatureCollection";
+    features: LineStringFeature[];
+}
+
 /**
  * Создает GeoJSON Feature с LineString геометрией из массива узлов маршрута
  * @param nodes - массив узлов маршрута

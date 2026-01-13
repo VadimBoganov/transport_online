@@ -2,7 +2,7 @@ import { GeoJson, Map as PigeonMap, Overlay } from "pigeon-maps";
 import config from "@config";
 import { Suspense } from "react";
 import "./MapContainer.css";
-import type { Route, SelectedRoute, SelectedStation, SelectedVehicle, TransportType } from "@/types/transport"; // ✅ Обновлено
+import type { Route, SelectedRoute, SelectedStation, SelectedVehicle, TransportType } from "@/types/transport";
 import { MemoizedStationPopup } from "@components/MapContainer/StationPopup";
 import { formatArrivalMinutes } from "@/services/forecastService";
 import { useMapData } from "@/hooks/useMapData";
@@ -11,12 +11,16 @@ import { useVehicleSelection } from "@/hooks/useVehicleSelection";
 import { useMapControls } from "@/hooks/useMapControls";
 import { normalizeCoordinate } from "@/utils/coordinates";
 
-interface MapContainerProps {
-    selectedRoutes: SelectedRoute[];
-    routes: Route[];
+interface MapViewProps {
     center: [number, number];
     zoom: number;
     onCenterChange?: (center: [number, number], zoom: number) => void;
+}
+
+interface MapContainerProps {
+    selectedRoutes: SelectedRoute[];
+    routes: Route[];
+    mapView: MapViewProps;
     selectedStation: SelectedStation | null;
     selectedVehicle: SelectedVehicle | null;
     onStationDeselect: () => void;
@@ -26,14 +30,13 @@ interface MapContainerProps {
 export function MapContainer({
     selectedRoutes,
     routes,
-    center,
-    zoom,
-    onCenterChange,
+    mapView,
     selectedStation,
     selectedVehicle,
     onStationDeselect,
     setSelectedVehicle
 }: MapContainerProps) {
+    const { center, zoom, onCenterChange } = mapView;
     const { mapWidth, debouncedOnBoundsChanged } = useMapControls(onCenterChange);
 
     const {
