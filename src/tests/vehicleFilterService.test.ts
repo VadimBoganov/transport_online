@@ -1,4 +1,4 @@
-import { filterVehiclesBySelectedRoutes } from "@/services/vehicleFilterService";
+import { filterVehiclesBySelectedRoutes } from "@/services/vehicleService";
 import type { Animation, SelectedRoute } from "@/types/transport";
 
 const vehicles = [

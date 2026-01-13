@@ -1,12 +1,6 @@
 import type { UseQueryResult } from "@tanstack/react-query";
 import config from "@config";
-import type { Route, SelectedRoute } from "@/types/transport";
-
-
-export interface RouteNode {
-    lat: number;
-    lng: number;
-}
+import type { Route, RouteNode, SelectedRoute } from "@/types/transport";
 
 export interface RouteGeoJSON {
     type: "FeatureCollection";

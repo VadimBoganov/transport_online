@@ -5,7 +5,7 @@ import { useRouteNodes } from "@/hooks/useRouteNodes";
 import useVehicleForecasts from "@/hooks/useVehicleForecasts";
 
 import { buildRouteNodesMap, buildRouteGeoJSON, getActiveRoutes } from "@/services/routeService";
-import { filterVehiclesBySelectedRoutes } from "@/services/vehicleFilterService";
+import { filterVehiclesBySelectedRoutes } from "@/services/vehicleService";
 import { processForecasts } from "@/services/forecastService";
 
 import type { Animation, Route, SelectedRoute, SelectedStation, SelectedVehicle } from "@/types/transport";
