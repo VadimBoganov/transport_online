@@ -1,6 +1,6 @@
 import { GeoJson, Map as PigeonMap, Overlay } from "pigeon-maps";
 import config from "@config";
-import { Suspense } from "react";
+import { Suspense, useMemo, memo } from "react";
 import "./MapContainer.css";
 import type { Route, SelectedRoute, SelectedStation, SelectedVehicle, TransportType } from "@/types/transport";
 import { MemoizedStationPopup } from "@components/MapContainer/StationPopup";
@@ -27,7 +27,7 @@ interface MapContainerProps {
     setSelectedVehicle: (vehicle: SelectedVehicle | null) => void;
 }
 
-export function MapContainer({
+function MapContainerComponent({
     selectedRoutes,
     routes,
     mapView,
@@ -61,6 +61,27 @@ export function MapContainer({
         onStationDeselect,
     });
 
+    const routeColorsMap = useMemo(() => {
+        const map = new Map<string, string>();
+        config.routes.forEach(rt => {
+            map.set(rt.type, rt.color);
+        });
+        return map;
+    }, []);
+
+    const routeGeoJsonStyleCallback = useMemo(() => (feature: { properties?: { stroke?: string } }) => ({
+        stroke: feature.properties?.stroke,
+        strokeWidth: 4,
+        fill: "none",
+    }), []);
+
+    const selectedVehicleGeoJsonStyleCallback = useMemo(() => (feature: { properties?: { stroke?: string } }) => ({
+        stroke: feature.properties?.stroke,
+        strokeWidth: 5,
+        strokeOpacity: 0.8,
+        fill: "none",
+    }), []);
+
     return (
         <div className="map-container">
             <PigeonMap
@@ -72,23 +93,14 @@ export function MapContainer({
                 {geoJsonData && (
                     <GeoJson
                         data={geoJsonData}
-                        styleCallback={(feature: { properties?: { stroke?: string } }) => ({
-                            stroke: feature.properties?.stroke,
-                            strokeWidth: 4,
-                            fill: "none",
-                        })}
+                        styleCallback={routeGeoJsonStyleCallback}
                     />
                 )}
 
                 {selectedVehicleGeoJson && (
                     <GeoJson
                         data={selectedVehicleGeoJson}
-                        styleCallback={(feature: { properties?: { stroke?: string } }) => ({
-                            stroke: feature.properties?.stroke,
-                            strokeWidth: 5,
-                            strokeOpacity: 0.8,
-                            fill: "none",
-                        })}
+                        styleCallback={selectedVehicleGeoJsonStyleCallback}
                     />
                 )}
 
@@ -101,7 +113,7 @@ export function MapContainer({
                             rnum={anim.rnum}
                             dir={anim.dir}
                             rtype={anim.rtype}
-                            color={config.routes.find((r) => r.type === anim.rtype)?.color || 'gray'}
+                            color={routeColorsMap.get(anim.rtype) || 'gray'}
                             onClick={handleVehicleClick(anim.rid, anim.id, anim.rtype as TransportType)}
                             isSelected={selectedVehicle?.id === anim.id}
                         />
@@ -173,3 +185,5 @@ export function MapContainer({
         </div>
     );
 }
+
+export const MapContainer = memo(MapContainerComponent);

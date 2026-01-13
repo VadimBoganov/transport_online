@@ -1,5 +1,5 @@
 import './Stations.css';
-import { useMemo, useState, useCallback, useRef } from 'react';
+import { useMemo, useState, useCallback, useRef, memo } from 'react';
 import type { Station } from '@/types/transport';
 import { useVirtualizer } from '@tanstack/react-virtual';
 
@@ -8,7 +8,7 @@ interface StationsProps {
     onStationSelect?: (lat: number, lng: number, id: number, name: string) => void;
 }
 
-const StationItem = ({ station, onClick }: { station: Station; onClick: () => void }) => (
+const StationItem = memo(({ station, onClick }: { station: Station; onClick: () => void }) => (
     <li className="station-item" onClick={onClick} style={{ cursor: 'pointer' }}>
         <div className="station-name-container">
             <strong>{station.name}</strong>
@@ -16,7 +16,7 @@ const StationItem = ({ station, onClick }: { station: Station; onClick: () => vo
         </div>
         <small>{station.type === 0 ? 'Автобусная' : 'Трамвайная'}</small>
     </li>
-);
+));
 
 export default function Stations({ stations, onStationSelect }: StationsProps) {
     const [searchTerm, setSearchTerm] = useState('');

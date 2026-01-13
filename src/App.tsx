@@ -27,11 +27,11 @@ function App() {
     setSelectedStation({ lat, lng, id, name });
     setCenter([normalizeCoordinate(lat), normalizeCoordinate(lng)]);
     setZoom(config.map.stationSelectZoom ?? 17);
-  }, []);
+  }, [setSelectedStation]);
 
   const handleStationDeselect = useCallback(() => {
     setSelectedStation(null);
-  }, []);
+  }, [setSelectedStation]);
 
   const mapView = {
     center,

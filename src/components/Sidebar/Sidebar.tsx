@@ -1,4 +1,4 @@
-import { startTransition, useState } from 'react';
+import { startTransition, useState, memo } from 'react';
 import { IoMenu, IoClose } from 'react-icons/io5';
 import './Sidebar.css';
 import Routes from './Routes/Routes';
@@ -17,7 +17,7 @@ interface SidebarProps {
     onStationSelect: (lat: number, lng: number, id: number, name: string) => void;
 }
 
-export default function Sidebar({ routes, stations, loading, error, selectedRoutes, onRoutesChange, onStationSelect }: SidebarProps) {
+function Sidebar({ routes, stations, loading, error, selectedRoutes, onRoutesChange, onStationSelect }: SidebarProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [activeTransportType, setActiveTransportType] = useState<TransportType | null>(null);
     const [activeTab, setActiveTab] = useState('routes');
@@ -122,3 +122,5 @@ export default function Sidebar({ routes, stations, loading, error, selectedRout
         </>
     );
 }
+
+export default memo(Sidebar);
