@@ -1,19 +1,21 @@
-import { Accordion } from 'react-bootstrap';
+import { Accordion, Form } from 'react-bootstrap';
 import config, { type TransportType } from '@config';
 import './Routes.css';
 
 import * as IOIcons from "react-icons/io5";
 import * as BIIcons from "react-icons/bi";
 import * as MDIcons from "react-icons/ri";
-import RouteItem from '../RouteItem/RouteItem';
 import type { Route } from '@/types/transport';
 import { useMemo } from 'react';
 import React from 'react';
+import RouteItem from '../RouteItem/RouteItem';
 
 interface RoutesListProps {
     routes: Route[];
     selectedRoutes: Array<{ id: number; type: TransportType }>;
     onRouteToggle: (type: TransportType, num: string) => void;
+    onSelectAllOfType: (type: TransportType) => void;
+    activeTransportType: TransportType | null;
 }
 
 const RouteIcons: Record<TransportType, React.ReactNode> = {
@@ -22,7 +24,7 @@ const RouteIcons: Record<TransportType, React.ReactNode> = {
     "М": <MDIcons.RiBusFill size={config.routeIconSize} />
 };
 
-function Routes({ routes, selectedRoutes, onRouteToggle }: RoutesListProps) {
+function Routes({ routes, selectedRoutes, onRouteToggle, activeTransportType, onSelectAllOfType }: RoutesListProps) {
     const groupedRoutes = useMemo(() => {
         const map = new Map<string, Route[]>();
 
@@ -40,12 +42,23 @@ function Routes({ routes, selectedRoutes, onRouteToggle }: RoutesListProps) {
     }, [routes]);
 
     return (
-        <Accordion>
-            {groupedRoutes.map((group, index) => (
+         <Accordion>
+        {groupedRoutes.map((group, index) => {
+            const isTypeActive = activeTransportType === group.type;
+
+            return (
                 <Accordion.Item key={group.type} eventKey={index.toString()}>
                     <Accordion.Header>
                         <div className="accordion-header__icon">{RouteIcons[group.type]}</div>
+                        <Form.Check
+                            type="checkbox"
+                            checked={isTypeActive}
+                            onChange={() => onSelectAllOfType(group.type)}
+                            onClick={(e) => e.stopPropagation()}
+                            className="me-3"
+                        />
                         {group.title}
+                        
                     </Accordion.Header>
                     <Accordion.Body>
                         {group.routes.length === 0 ? (
@@ -64,8 +77,9 @@ function Routes({ routes, selectedRoutes, onRouteToggle }: RoutesListProps) {
                         )}
                     </Accordion.Body>
                 </Accordion.Item>
-            ))}
-        </Accordion>
+            );
+        })}
+    </Accordion>
     );
 }
 

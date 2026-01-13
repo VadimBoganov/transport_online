@@ -19,6 +19,7 @@ interface SidebarProps {
 export default function Sidebar({ routes, stations, loading, error, onRoutesChange, onStationSelect }: SidebarProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedRoutes, setSelectedRoutes] = useState<Array<{ id: number; type: TransportType }>>([]);
+    const [activeTransportType, setActiveTransportType] = useState<TransportType | null>(null);
     const [activeTab, setActiveTab] = useState('routes');
 
     const handleRouteToggle = (type: TransportType, num: string) => {
@@ -43,6 +44,27 @@ export default function Sidebar({ routes, stations, loading, error, onRoutesChan
 
         setSelectedRoutes(updated);
         onRoutesChange(updated);
+
+        if (activeTransportType) {
+            setActiveTransportType(null);
+        }
+    };
+
+    const handleSelectAllOfType = (type: TransportType) => {
+        if (activeTransportType === type) {
+            const remainingRoutes = selectedRoutes.filter(sr => sr.type !== type);
+            setSelectedRoutes(remainingRoutes);
+            onRoutesChange(remainingRoutes);
+            setActiveTransportType(null);
+            return;
+        }
+
+        const typeRoutes = routes.filter(r => r.type === type);
+        const newSelected = typeRoutes.map(r => ({ id: r.id, type: r.type as TransportType }));
+
+        setSelectedRoutes(newSelected);
+        onRoutesChange(newSelected);
+        setActiveTransportType(type);
     };
 
     const handleStationSelect = (lat: number, lng: number, id: number, name: string) => {
@@ -83,6 +105,8 @@ export default function Sidebar({ routes, stations, loading, error, onRoutesChan
                                         routes={routes}
                                         selectedRoutes={selectedRoutes}
                                         onRouteToggle={handleRouteToggle}
+                                        onSelectAllOfType={handleSelectAllOfType}
+                                        activeTransportType={activeTransportType}
                                     />
                                 )}
                             </div>
