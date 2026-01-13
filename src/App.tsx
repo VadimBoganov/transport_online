@@ -2,7 +2,7 @@ import Sidebar from "@/components/Sidebar/Sidebar";
 import { MapContainer } from "@/components/MapContainer/MapContainer";
 import { useRoutes } from "./hooks/useRoutes";
 import config from "@config";
-import { useMapControls } from "./hooks/useMapControls";
+import { useMapState } from "./hooks/useMapState";
 import { useMapData } from "./hooks/useMapData";
 import { useStations } from "./hooks/useStations";
 
@@ -14,7 +14,7 @@ function App() {
     setSelectedStation,
     setSelectedRoutes,
     setSelectedVehicle,
-  } = useMapControls();
+  } = useMapState();
 
   const { data: routes, isLoading, error } = useRoutes();
   const { data: stations } = useStations();

@@ -1,56 +1,32 @@
-import { useState, useCallback } from "react";
-import type { SelectedRoute, SelectedStation, SelectedVehicle } from "@/types/transport";
+import { useState, useEffect, useCallback } from "react";
 
-export interface MapSelection {
-    selectedStation: SelectedStation | null;
-    selectedVehicle: SelectedVehicle | null;
-    selectedRoutes: SelectedRoute[];
-}
+export const useMapControls = (
+    onCenterChange?: (center: [number, number], zoom: number) => void,
+    debounceDelay: number = 100
+) => {
+    const [mapWidth, setMapWidth] = useState<number>(1024);
 
-export function useMapControls() {
-    const [selection, setSelection] = useState<MapSelection>({
-        selectedStation: null,
-        selectedVehicle: null,
-        selectedRoutes: [],
-    });
-
-    const setSelectedStation = useCallback((station: SelectedStation | null) => {
-        setSelection(prev => ({
-            ...prev,
-            selectedStation: station,
-            selectedVehicle: station ? null : prev.selectedVehicle,
-        }));
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const handleResize = () => setMapWidth(window.innerWidth);
+            handleResize();
+            window.addEventListener('resize', handleResize);
+            return () => window.removeEventListener('resize', handleResize);
+        }
     }, []);
 
-    const setSelectedVehicle = useCallback((vehicle: SelectedVehicle | null) => {
-        setSelection(prev => ({
-            ...prev,
-            selectedVehicle: vehicle,
-        }));
-    }, []);
-
-    const setSelectedRoutes = useCallback((routes: SelectedRoute[]) => {
-        setSelection(prev => ({
-            ...prev,
-            selectedRoutes: routes,
-            selectedStation: null,
-            selectedVehicle: null,
-        }));
-    }, []);
-
-    const resetAll = useCallback(() => {
-        setSelection({
-            selectedStation: null,
-            selectedVehicle: null,
-            selectedRoutes: [],
-        });
-    }, []);
+    const debouncedOnBoundsChanged = useCallback(() => {
+        let timeoutId: ReturnType<typeof setTimeout>;
+        return ({ center, zoom }: { center: [number, number]; zoom: number }) => {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => {
+                onCenterChange?.(center, zoom);
+            }, debounceDelay);
+        };
+    }, [onCenterChange, debounceDelay]);
 
     return {
-        ...selection,
-        setSelectedStation,
-        setSelectedVehicle,
-        setSelectedRoutes,
-        resetAll,
+        mapWidth,
+        debouncedOnBoundsChanged,
     };
-}
+};

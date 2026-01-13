@@ -1,12 +1,14 @@
 import { GeoJson, Map as PigeonMap, Overlay } from "pigeon-maps";
 import config from "@config";
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense } from "react";
 import "./MapContainer.css";
 import type { Route, SelectedRoute, SelectedStation, SelectedVehicle, TransportType } from "@/types/transport"; // ✅ Обновлено
 import { MemoizedStationPopup } from "@components/MapContainer/StationPopup";
 import { formatArrivalMinutes } from "@/services/forecastService";
 import { useMapData } from "@/hooks/useMapData";
 import { VehicleMarker } from "./VehicleMarker";
+import { useVehicleSelection } from "@/hooks/useVehicleSelection";
+import { useMapControls } from "@/hooks/useMapControls";
 
 interface MapContainerProps {
     selectedRoutes: SelectedRoute[];
@@ -31,7 +33,7 @@ export function MapContainer({
     onStationDeselect,
     setSelectedVehicle
 }: MapContainerProps) {
-    const [mapWidth, setMapWidth] = useState<number>(1024);
+     const { mapWidth, debouncedOnBoundsChanged } = useMapControls(onCenterChange);
 
     const {
         geoJsonData,
@@ -49,34 +51,11 @@ export function MapContainer({
         selectedVehicle,
     });
 
-    const handleVehicleClick = useCallback((rid: number, id: string, rtype: string) => (e: React.MouseEvent) => {
-        e.stopPropagation();
-        closeStationPopup();
-        if (selectedVehicle?.rid === rid) {
-            setSelectedVehicle(null);
-        } else {
-            setSelectedVehicle({ id, rid, rtype: rtype as TransportType });
-        }
-    }, [selectedVehicle, setSelectedVehicle, closeStationPopup]);
-
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const handleResize = () => setMapWidth(window.innerWidth);
-            handleResize();
-            window.addEventListener('resize', handleResize);
-            return () => window.removeEventListener('resize', handleResize);
-        }
-    }, []);
-
-    const debouncedOnBoundsChanged = useCallback(() => {
-        let timeoutId: ReturnType<typeof setTimeout>;
-        return ({ center, zoom }: { center: [number, number]; zoom: number }) => {
-            clearTimeout(timeoutId);
-            timeoutId = setTimeout(() => {
-                onCenterChange?.(center, zoom);
-            }, 100);
-        };
-    }, [onCenterChange]);
+    const { handleVehicleClick } = useVehicleSelection({
+        selectedVehicle,
+        setSelectedVehicle,
+        onStationDeselect,
+    });
 
     return (
         <div className="map-container">
@@ -119,7 +98,7 @@ export function MapContainer({
                             dir={anim.dir}
                             rtype={anim.rtype}
                             color={config.routes.find((r) => r.type === anim.rtype)?.color || 'gray'}
-                            onClick={handleVehicleClick(anim.rid, anim.id, anim.rtype)}
+                            onClick={handleVehicleClick(anim.rid, anim.id, anim.rtype as TransportType)}
                             isSelected={selectedVehicle?.rid === anim.rid}
                         />
                     </Overlay>
