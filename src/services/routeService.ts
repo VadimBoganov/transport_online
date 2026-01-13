@@ -1,7 +1,7 @@
 import type { UseQueryResult } from "@tanstack/react-query";
 import config from "@config";
 import type { Route, RouteNode, SelectedRoute } from "@/types/transport";
-import { normalizeCoordinate } from "@/utils/coordinates";
+import { buildLineStringGeoJSON } from "@/utils/geoJson";
 
 export interface RouteGeoJSON {
     type: "FeatureCollection";
@@ -52,18 +52,10 @@ export const buildRouteGeoJSON = (
     const features = routes
         .map((route) => {
             const data = routeNodesMap.get(route.id);
-            if (!data || data.length < 2) return null;
+            if (!data) return null;
 
             const color = config.routes.find(rt => rt.type === route.type)?.color || '#000000';
-
-            return {
-                type: "Feature" as const,
-                geometry: {
-                    type: "LineString" as const,
-                    coordinates: data.map(node => [normalizeCoordinate(node.lng), normalizeCoordinate(node.lat)]) as [number, number][],
-                },
-                properties: { stroke: color },
-            };
+            return buildLineStringGeoJSON(data, color);
         })
         .filter((feature): feature is NonNullable<typeof feature> => feature !== null);
 

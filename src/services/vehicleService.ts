@@ -1,6 +1,6 @@
 import type { Animation, RouteNode, SelectedRoute } from "@/types/transport";
 import config from "@config";
-import { normalizeCoordinate } from "@/utils/coordinates";
+import { buildLineStringGeoJSON } from "@/utils/geoJson";
 
 export interface SelectedVehicleGeoJSON {
     type: "FeatureCollection";
@@ -18,24 +18,20 @@ export const buildSelectedVehicleGeoJSON = (
     selectedVehicle: { rid: number; rtype: string } | null,
     routeNodes: RouteNode[] | undefined
 ): SelectedVehicleGeoJSON | null => {
-    if (!selectedVehicle || !routeNodes || routeNodes.length <= 1) {
+    if (!selectedVehicle || !routeNodes) {
         return null;
     }
 
     const color = config.routes.find(rt => rt.type === selectedVehicle.rtype)?.color || 'gray';
+    const feature = buildLineStringGeoJSON(routeNodes, color);
+
+    if (!feature) {
+        return null;
+    }
 
     return {
         type: "FeatureCollection",
-        features: [
-            {
-                type: "Feature",
-                geometry: {
-                    type: "LineString",
-                    coordinates: routeNodes.map(node => [normalizeCoordinate(node.lng), normalizeCoordinate(node.lat)]) as [number, number][],
-                },
-                properties: { stroke: color },
-            },
-        ],
+        features: [feature],
     };
 };
 
