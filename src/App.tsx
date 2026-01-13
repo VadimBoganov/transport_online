@@ -3,8 +3,8 @@ import { MapContainer } from "@/components/MapContainer/MapContainer";
 import { useRoutes } from "./hooks/useRoutes";
 import config from "@config";
 import { useMapState } from "./hooks/useMapState";
-import { useMapData } from "./hooks/useMapData";
 import { useStations } from "./hooks/useStations";
+import { useCallback, useState } from "react";
 
 function App() {
   const {
@@ -19,12 +19,18 @@ function App() {
   const { data: routes, isLoading, error } = useRoutes();
   const { data: stations } = useStations();
 
-  const { openForecastStationPopup } = useMapData({
-    selectedRoutes,
-    routes,
-    selectedStation,
-    selectedVehicle,
-  });
+  const [center, setCenter] = useState<[number, number]>([config.map.lat, config.map.lng]);
+  const [zoom, setZoom] = useState<number>(config.map.zoom);
+
+  const handleStationSelect = useCallback((lat: number, lng: number, id: number, name: string) => {
+    setSelectedStation({ lat, lng, id, name });
+    setCenter([lat / 1e6, lng / 1e6]);
+    setZoom(config.map.stationSelectZoom ?? 17);
+  }, []);
+
+  const handleStationDeselect = useCallback(() => {
+    setSelectedStation(null);
+  }, []);
 
   return (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
@@ -33,26 +39,18 @@ function App() {
         loading={isLoading}
         error={error}
         onRoutesChange={setSelectedRoutes}
-        onStationSelect={(lat, lng, id, name) => {
-          setSelectedStation({ lat, lng, id, name });
-          openForecastStationPopup({ id, name, lat, lng });
-        }}
+        onStationSelect={handleStationSelect}
         stations={stations}
       />
       <MapContainer
         selectedRoutes={selectedRoutes}
         routes={routes || []}
-        center={
-          selectedStation
-            ? [selectedStation.lat / 1e6, selectedStation.lng / 1e6]
-            : [config.map.lat, config.map.lng]
-        }
-        zoom={
-          selectedStation ? (config.map.stationSelectZoom ?? 17) : config.map.zoom
-        }
+        center={center}
+        zoom={zoom}
+        onCenterChange={setCenter}
         selectedStation={selectedStation}
         selectedVehicle={selectedVehicle}
-        onStationDeselect={() => setSelectedStation(null)}
+        onStationDeselect={handleStationDeselect}
         setSelectedVehicle={setSelectedVehicle}
       />
     </div>

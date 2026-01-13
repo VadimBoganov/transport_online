@@ -33,7 +33,7 @@ export function MapContainer({
     onStationDeselect,
     setSelectedVehicle
 }: MapContainerProps) {
-     const { mapWidth, debouncedOnBoundsChanged } = useMapControls(onCenterChange);
+    const { mapWidth, debouncedOnBoundsChanged } = useMapControls(onCenterChange);
 
     const {
         geoJsonData,
@@ -150,7 +150,10 @@ export function MapContainer({
                                 <MemoizedStationPopup
                                     stationId={activeSelectedStation.id}
                                     stationName={activeSelectedStation.name}
-                                    onDeselect={closeStationPopup}
+                                    onDeselect={() => {
+                                        closeStationPopup();
+                                        onStationDeselect();
+                                    }}
                                 />
                             </Suspense>
                         </div>
