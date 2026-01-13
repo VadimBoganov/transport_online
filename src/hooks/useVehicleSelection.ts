@@ -1,22 +1,31 @@
-import type { SelectedVehicle, TransportType } from "@/types/transport";
 import { useCallback } from "react";
+import type { SelectedVehicle, TransportType } from "@/types/transport";
 
-interface UseVehicleSelectionParams {
+interface UseVehicleSelectionProps {
     selectedVehicle: SelectedVehicle | null;
-    setSelectedVehicle: (v: SelectedVehicle | null) => void;
+    setSelectedVehicle: (vehicle: SelectedVehicle | null) => void;
     onStationDeselect: () => void;
 }
 
 export const useVehicleSelection = ({
     selectedVehicle,
     setSelectedVehicle,
-    onStationDeselect: onDeselectStation,
-}: UseVehicleSelectionParams) => {
-    const handleVehicleClick = useCallback((rid: number, id: string, rtype: TransportType) => (e: React.MouseEvent) => {
-        e.stopPropagation();
-        onDeselectStation?.();
-        setSelectedVehicle(selectedVehicle?.rid === rid ? null : { rid, id, rtype });
-    }, [onDeselectStation, setSelectedVehicle]);
+    onStationDeselect,
+}: UseVehicleSelectionProps) => {
+    const handleVehicleClick = useCallback(
+        (rid: number, id: string, rtype: TransportType) =>
+            (e: React.MouseEvent) => {
+                e.stopPropagation();
+
+                if (selectedVehicle?.id === id) {
+                    setSelectedVehicle(null);
+                    onStationDeselect();
+                } else {
+                    setSelectedVehicle({ id, rid, rtype  });
+                }
+            },
+        [selectedVehicle, setSelectedVehicle, onStationDeselect]
+    );
 
     return { handleVehicleClick };
 };
