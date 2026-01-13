@@ -4,20 +4,20 @@ import './Sidebar.css';
 import Routes from './Routes/Routes';
 import { Tab, Tabs } from 'react-bootstrap';
 import Stations from './Stations/Stations';
-import type { Route, Station, TransportType } from '@/types/transport';
+import type { Route, Station, TransportType, SelectedRoute } from '@/types/transport';
 
 interface SidebarProps {
     routes: Route[];
     stations: Station[] | undefined;
     loading: boolean;
     error: Error | null;
+    selectedRoutes: SelectedRoute[];
     onRoutesChange: (routes: Array<{ id: number; type: TransportType }>) => void;
     onStationSelect: (lat: number, lng: number, id: number, name: string) => void;
 }
 
-export default function Sidebar({ routes, stations, loading, error, onRoutesChange, onStationSelect }: SidebarProps) {
+export default function Sidebar({ routes, stations, loading, error, selectedRoutes, onRoutesChange, onStationSelect }: SidebarProps) {
     const [isOpen, setIsOpen] = useState(false);
-    const [selectedRoutes, setSelectedRoutes] = useState<Array<{ id: number; type: TransportType }>>([]);
     const [activeTransportType, setActiveTransportType] = useState<TransportType | null>(null);
     const [activeTab, setActiveTab] = useState('routes');
 
@@ -41,7 +41,6 @@ export default function Sidebar({ routes, stations, loading, error, onRoutesChan
             ];
         }
 
-        setSelectedRoutes(updated);
         onRoutesChange(updated);
 
         if (activeTransportType) {
@@ -52,7 +51,6 @@ export default function Sidebar({ routes, stations, loading, error, onRoutesChan
     const handleSelectAllOfType = (type: TransportType) => {
         if (activeTransportType === type) {
             const remainingRoutes = selectedRoutes.filter(sr => sr.type !== type);
-            setSelectedRoutes(remainingRoutes);
             onRoutesChange(remainingRoutes);
             setActiveTransportType(null);
             return;
@@ -61,7 +59,6 @@ export default function Sidebar({ routes, stations, loading, error, onRoutesChan
         const typeRoutes = routes.filter(r => r.type === type);
         const newSelected = typeRoutes.map(r => ({ id: r.id, type: r.type as TransportType }));
 
-        setSelectedRoutes(newSelected);
         onRoutesChange(newSelected);
         setActiveTransportType(type);
     };

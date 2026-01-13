@@ -39,6 +39,7 @@ function App() {
         routes={routes || []}
         loading={isLoading}
         error={error}
+        selectedRoutes={selectedRoutes}
         onRoutesChange={setSelectedRoutes}
         onStationSelect={handleStationSelect}
         stations={stations}
