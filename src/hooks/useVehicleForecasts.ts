@@ -1,7 +1,6 @@
 import type { StationForecast } from '@/types/transport';
 import { useQuery } from '@tanstack/react-query';
-
-
+import { api } from '@/api/client';
 
 interface UseVehicleForecastsProps {
     vid: string | null;
@@ -13,18 +12,7 @@ export default function useVehicleForecasts({ vid }: UseVehicleForecastsProps) {
         queryFn: async () => {
             if (!vid) throw new Error('No vehicle ID');
 
-            const res = await fetch(`http://localhost:8000/api/forecasts/vehicle/${vid}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            if (!res.ok) {
-                throw new Error(`Ошибка загрузки прогнозов: ${res.status}`);
-            }
-
-            const data = await res.json();
+            const data = await api.forecasts.getByVehicleId(vid);
             return Array.isArray(data) ? data : [];
         },
         enabled: !!vid,

@@ -1,15 +1,14 @@
 import type { RouteNode } from "@/types/transport";
 import { useQuery } from "@tanstack/react-query";
-
-
+import { api } from "@/api/client";
 
 export function useRouteNodes({ routeId }: { routeId: number | null }) {
     return useQuery<RouteNode[], Error>({
         queryKey: ['routeNodes', routeId],
         queryFn: async () => {
-            const res = await fetch(`http://localhost:8000/api/routenodes/${routeId}`);
-            if (!res.ok) throw new Error('Не удалось загрузить узлы маршрута');
-            return res.json();
+            if (!routeId) throw new Error('Route ID is required');
+            const data = await api.routeNodes.getByRouteId(routeId);
+            return data as RouteNode[];
         },
         enabled: !!routeId,
         staleTime: 1000 * 60 * 5,

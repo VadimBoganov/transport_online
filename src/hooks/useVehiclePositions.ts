@@ -1,5 +1,6 @@
 import type { VehiclePosition } from '@/types/transport';
 import { useQuery } from '@tanstack/react-query';
+import { api } from '@/api/client';
 
 export function useVehiclePositions(rids: string | null) {
     return useQuery<VehiclePosition, Error>({
@@ -9,24 +10,8 @@ export function useVehiclePositions(rids: string | null) {
                 throw new Error('No route IDs provided');
             }
 
-            const baseUrl = 'http://localhost:8000/api/vehicles/';
-            const encodedRids = encodeURIComponent(rids);
-            const url = baseUrl + encodedRids;
-
-            const res = await fetch(url, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            if (!res.ok) {
-                const errorText = await res.text();
-                throw new Error(`HTTP error! status: ${res.status}, message: ${errorText}`);
-            }
-
-            const data = await res.json();
-            return data;
+            const data = await api.vehicles.getByRouteIds(rids);
+            return data as VehiclePosition;
         },
         enabled: !!rids,
         refetchInterval: 10000,
