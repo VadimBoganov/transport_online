@@ -1,4 +1,4 @@
-import type { StationForecast } from "@/types/transport";
+import type { StationForecast, VehicleForecast } from "@/types/transport";
 
 export const sortForecastsByArrivalTime = (forecasts: StationForecast[] | undefined): StationForecast[] => {
     if (!forecasts) return [];
@@ -18,3 +18,24 @@ export const isForecastValid = (forecast: StationForecast): boolean => {
 export const processForecasts = (forecasts: StationForecast[] | undefined): StationForecast[] => {
     return sortForecastsByArrivalTime(forecasts);
 };
+
+export const makeVehicleForecasts = (forecasts: VehicleForecast[]): {
+    current: VehicleForecast;
+    next: VehicleForecast;
+}[] => {
+    if (!forecasts || forecasts.length === 0) return [];
+
+    const grouped = forecasts.reduce((acc, forecast) => {
+        const key = `${forecast.rnum}-${forecast.rtype}`;
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(forecast);
+        return acc;
+    }, {} as Record<string, VehicleForecast[]>);
+
+    return Object.values(grouped)
+        .map((group) => {
+            const sorted = group.sort((a, b) => a.arrt - b.arrt);
+            return { current: sorted[0] || null, next: sorted[1] || null };
+        })
+        .filter(item => item.current);
+}

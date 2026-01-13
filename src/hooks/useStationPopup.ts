@@ -1,40 +1,44 @@
-import type { Station } from "@/types/transport";
-import { useEffect, useMemo, useState } from "react";
+import { makeVehicleForecasts } from "@/services/forecastService";
+import type { VehicleForecast } from "@/types/transport";
+import { useEffect, useMemo, useRef } from "react";
 
 interface UseStationPopupProps {
-    selectedStationFromProps: Station | null;
-    onDeselect: () => void;
+    forecasts: VehicleForecast[] | null;
 }
 
 export const useStationPopup = ({
-    selectedStationFromProps,
-    onDeselect,
+    forecasts
 }: UseStationPopupProps) => {
-    const [forecastSelectedStation, setForecastSelectedStation] = useState<Station | null>(null);
+    const tbodyRef = useRef<HTMLDivElement>(null);
 
-    const activeSelectedStation = useMemo(() => {
-        if (selectedStationFromProps) return selectedStationFromProps;
-        return forecastSelectedStation;
-    }, [selectedStationFromProps, forecastSelectedStation]);
-
-    const closeStationPopup = () => {
-        setForecastSelectedStation(null);
-        onDeselect();
-    };
-
-    const openForecastStationPopup = (station: Station) => {
-        setForecastSelectedStation(station);
-    };
+    const routeSummaries = useMemo(() => {
+        return makeVehicleForecasts(forecasts || [])
+    }, [forecasts]);
 
     useEffect(() => {
-        if (selectedStationFromProps) {
-            setForecastSelectedStation(null);
-        }
-    }, [selectedStationFromProps]);
+        const container = tbodyRef.current;
+        if (!container) return;
+
+        const handleWheel = (e: WheelEvent) => {
+            const target = e.target as HTMLElement;
+            const isInsideScrollContainer = tbodyRef.current?.contains(target);
+
+            if (!isInsideScrollContainer) return;
+
+            e.preventDefault();
+            const { deltaY } = e;
+            const maxScroll = container.scrollHeight - container.clientHeight;
+            const newScrollTop = container.scrollTop + deltaY;
+            container.scrollTop = Math.max(0, Math.min(newScrollTop, maxScroll));
+            e.stopPropagation();
+        };
+
+        container.addEventListener("wheel", handleWheel, { capture: true, passive: false });
+        return () => container.removeEventListener("wheel", handleWheel, { capture: true });
+    }, []);
 
     return {
-        activeSelectedStation,
-        closeStationPopup,
-        openForecastStationPopup,
+        routeSummaries,
+        tbodyRef
     };
 };

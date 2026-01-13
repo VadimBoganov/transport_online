@@ -1,55 +1,16 @@
 import useStationForecast from "@/hooks/useStationForecast";
 import "./StationPopup.css";
-import { useRef, useEffect, useMemo, startTransition } from "react";
+import { startTransition } from "react";
 import type { VehicleForecast } from "@/types/transport";
 import React from "react";
+import { useStationPopup } from "@/hooks/useStationPopup";
 
 function StationPopupContent({ forecasts }: { forecasts: VehicleForecast[] | null }) {
-    const tbodyRef = useRef<HTMLDivElement>(null);
-
-    const routeSummaries = useMemo(() => {
-        if (!forecasts || forecasts.length === 0) return [];
-
-        const grouped = forecasts.reduce((acc, forecast) => {
-            const key = `${forecast.rnum}-${forecast.rtype}`;
-            if (!acc[key]) acc[key] = [];
-            acc[key].push(forecast);
-            return acc;
-        }, {} as Record<string, VehicleForecast[]>);
-
-        return Object.values(grouped)
-            .map((group) => {
-                const sorted = group.sort((a, b) => a.arrt - b.arrt);
-                return { current: sorted[0] || null, next: sorted[1] || null };
-            })
-            .filter(item => item.current);
-    }, [forecasts]);
-
-    useEffect(() => {
-        const container = tbodyRef.current;
-        if (!container) return;
-
-        const handleWheel = (e: WheelEvent) => {
-            const target = e.target as HTMLElement;
-            const isInsideScrollContainer = tbodyRef.current?.contains(target);
-
-            if (!isInsideScrollContainer) return;
-
-            e.preventDefault();
-            const { deltaY } = e;
-            const maxScroll = container.scrollHeight - container.clientHeight;
-            const newScrollTop = container.scrollTop + deltaY;
-            container.scrollTop = Math.max(0, Math.min(newScrollTop, maxScroll));
-            e.stopPropagation();
-        };
-
-        container.addEventListener("wheel", handleWheel, { capture: true, passive: false });
-        return () => container.removeEventListener("wheel", handleWheel, { capture: true });
-    }, []);
-
     if (!forecasts || forecasts.length === 0) {
         return <p>Нет данных о прибытии</p>;
     }
+
+    const {routeSummaries, tbodyRef} = useStationPopup({forecasts});
 
     return (
         <div className="forecast-container">
