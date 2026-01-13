@@ -1,11 +1,11 @@
 import { Accordion, Form } from 'react-bootstrap';
-import config, { type TransportType } from '@config';
+import config from '@config';
 import './Routes.css';
 
 import * as IOIcons from "react-icons/io5";
 import * as BIIcons from "react-icons/bi";
 import * as MDIcons from "react-icons/ri";
-import type { Route } from '@/types/transport';
+import type { Route, TransportType } from '@/types/transport';
 import { useMemo } from 'react';
 import React from 'react';
 import RouteItem from '../RouteItem/RouteItem';

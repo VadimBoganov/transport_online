@@ -1,4 +1,4 @@
-export type TransportType = 'А' | 'Т' | 'М';
+import type { TransportType } from '@/types/transport';
 
 export interface RouteConfig {
   title: string;

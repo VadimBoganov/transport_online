@@ -65,7 +65,7 @@ export interface VehicleForecast {
     where: string;         
     vehid: string;         
     rid: number;           
-    rtype: 'А' | 'Т' | 'М'; 
+    rtype: TransportType; 
     rnum: string;          
     lastst: string;        
 }
