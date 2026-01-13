@@ -1,6 +1,7 @@
 import type { UseQueryResult } from "@tanstack/react-query";
 import config from "@config";
 import type { Route, RouteNode, SelectedRoute } from "@/types/transport";
+import { normalizeCoordinate } from "@/utils/coordinates";
 
 export interface RouteGeoJSON {
     type: "FeatureCollection";
@@ -59,7 +60,7 @@ export const buildRouteGeoJSON = (
                 type: "Feature" as const,
                 geometry: {
                     type: "LineString" as const,
-                    coordinates: data.map(node => [node.lng / 1e6, node.lat / 1e6]) as [number, number][],
+                    coordinates: data.map(node => [normalizeCoordinate(node.lng), normalizeCoordinate(node.lat)]) as [number, number][],
                 },
                 properties: { stroke: color },
             };

@@ -1,5 +1,6 @@
 import type { Animation, RouteNode, SelectedRoute } from "@/types/transport";
 import config from "@config";
+import { normalizeCoordinate } from "@/utils/coordinates";
 
 export interface SelectedVehicleGeoJSON {
     type: "FeatureCollection";
@@ -30,7 +31,7 @@ export const buildSelectedVehicleGeoJSON = (
                 type: "Feature",
                 geometry: {
                     type: "LineString",
-                    coordinates: routeNodes.map(node => [node.lng / 1e6, node.lat / 1e6]) as [number, number][],
+                    coordinates: routeNodes.map(node => [normalizeCoordinate(node.lng), normalizeCoordinate(node.lat)]) as [number, number][],
                 },
                 properties: { stroke: color },
             },

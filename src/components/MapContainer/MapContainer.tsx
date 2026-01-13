@@ -9,6 +9,7 @@ import { useMapData } from "@/hooks/useMapData";
 import { VehicleMarker } from "./VehicleMarker";
 import { useVehicleSelection } from "@/hooks/useVehicleSelection";
 import { useMapControls } from "@/hooks/useMapControls";
+import { normalizeCoordinate } from "@/utils/coordinates";
 
 interface MapContainerProps {
     selectedRoutes: SelectedRoute[];
@@ -91,7 +92,7 @@ export function MapContainer({
                 {vehicles.map((anim) => (
                     <Overlay
                         key={`${anim.id}-${anim.rtype}`}
-                        anchor={[anim.lat / 1e6, anim.lon / 1e6]}
+                        anchor={[normalizeCoordinate(anim.lat), normalizeCoordinate(anim.lon)]}
                     >
                         <VehicleMarker
                             rnum={anim.rnum}
@@ -108,14 +109,14 @@ export function MapContainer({
                     sortedForecasts.map((forecast, index) => (
                         <Overlay
                             key={`forecast-${selectedVehicle?.id}-${forecast.stid}-${index}`}
-                            anchor={[forecast.lat0 / 1e6, forecast.lng0 / 1e6]}
+                            anchor={[normalizeCoordinate(forecast.lat0), normalizeCoordinate(forecast.lng0)]}
                         >
                             <div
                                 className="forecast-popup-station"
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     onStationDeselect();
-                                    onCenterChange?.([forecast.lat0 / 1e6, forecast.lng0 / 1e6], zoom);
+                                    onCenterChange?.([normalizeCoordinate(forecast.lat0), normalizeCoordinate(forecast.lng0)], zoom);
                                     openForecastStationPopup({
                                         id: forecast.stid,
                                         name: forecast.stname,
@@ -134,7 +135,7 @@ export function MapContainer({
                 {activeSelectedStation && (
                     <Overlay
                         key="station-marker"
-                        anchor={[activeSelectedStation.lat / 1e6, activeSelectedStation.lng / 1e6]}
+                        anchor={[normalizeCoordinate(activeSelectedStation.lat), normalizeCoordinate(activeSelectedStation.lng)]}
                     >
                         <div className="station-marker" />
                     </Overlay>
@@ -143,7 +144,7 @@ export function MapContainer({
                 {activeSelectedStation && (
                     <Overlay
                         key="station-popup"
-                        anchor={[activeSelectedStation.lat / 1e6, activeSelectedStation.lng / 1e6]}
+                        anchor={[normalizeCoordinate(activeSelectedStation.lat), normalizeCoordinate(activeSelectedStation.lng)]}
                     >
                         <div className="wrapper">
                             <Suspense fallback={<div className="popup-skeleton">Загрузка...</div>}>

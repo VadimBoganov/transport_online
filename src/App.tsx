@@ -5,6 +5,7 @@ import config from "@config";
 import { useMapState } from "./hooks/useMapState";
 import { useStations } from "./hooks/useStations";
 import { useCallback, useState } from "react";
+import { normalizeCoordinate } from "@/utils/coordinates";
 
 function App() {
   const {
@@ -24,7 +25,7 @@ function App() {
 
   const handleStationSelect = useCallback((lat: number, lng: number, id: number, name: string) => {
     setSelectedStation({ lat, lng, id, name });
-    setCenter([lat / 1e6, lng / 1e6]);
+    setCenter([normalizeCoordinate(lat), normalizeCoordinate(lng)]);
     setZoom(config.map.stationSelectZoom ?? 17);
   }, []);
 
