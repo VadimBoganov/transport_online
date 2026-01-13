@@ -99,7 +99,7 @@ export function MapContainer({
                             rtype={anim.rtype}
                             color={config.routes.find((r) => r.type === anim.rtype)?.color || 'gray'}
                             onClick={handleVehicleClick(anim.rid, anim.id, anim.rtype as TransportType)}
-                            isSelected={selectedVehicle?.rid === anim.rid}
+                            isSelected={selectedVehicle?.id === anim.id}
                         />
                     </Overlay>
                 ))}

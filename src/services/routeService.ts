@@ -77,3 +77,7 @@ export const getActiveRoutes = (
 ): SelectedRoute[] => {
     return selectedRoutes.length > 0 ? selectedRoutes : allRoutes as SelectedRoute[];
 };
+
+export const makeRouteIdsString = (routes: SelectedRoute[]): string | null => {
+    return routes.length > 0 ? routes.map(r => `${r.id}-0`).join(',') : null;
+}

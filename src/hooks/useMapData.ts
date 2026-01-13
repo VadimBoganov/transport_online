@@ -4,12 +4,12 @@ import { useVehiclePositions } from "@/hooks/useVehiclePositions";
 import { useRouteNodes } from "@/hooks/useRouteNodes";
 import useVehicleForecasts from "@/hooks/useVehicleForecasts";
 
-import { buildRouteNodesMap, buildRouteGeoJSON, getActiveRoutes } from "@/services/routeService";
-import { filterVehiclesBySelectedRoutes } from "@/services/vehicleService";
+import { buildRouteNodesMap, buildRouteGeoJSON, getActiveRoutes, makeRouteIdsString } from "@/services/routeService";
+import { buildSelectedVehicleGeoJSON, filterVehiclesBySelectedRoutes } from "@/services/vehicleService";
 import { processForecasts } from "@/services/forecastService";
+import { shouldOpenStationPopup } from "@/services/stationService";
 
 import type { Animation, Route, SelectedRoute, SelectedStation, SelectedVehicle } from "@/types/transport";
-import config from "@config";
 
 interface UseMapDataProps {
     selectedRoutes: SelectedRoute[];
@@ -41,22 +41,26 @@ export const useMapData = ({
 }: UseMapDataProps): UseMapDataResult => {
     const [activeSelectedStation, setActiveSelectedStation] = useState<SelectedStation | null>(null);
 
+    const routeNodes = useRouteNodesBatch(selectedRoutes);
+    const { data: selectedVehicleRouteNodes } = useRouteNodes({ routeId: selectedVehicle?.rid ?? null });
+
     const openForecastStationPopup = useCallback((station: SelectedStation) => {
         setActiveSelectedStation(station);
     }, []);
 
-    function closeStationPopup() {
+    const closeStationPopup = useCallback(() => {
         startTransition(() => {
             setActiveSelectedStation(null);
         });
-    }
+    }, []);
 
     const activeRoutes = useMemo(() => {
         if (!routes) return [];
         return getActiveRoutes(selectedRoutes, routes);
     }, [selectedRoutes, routes]);
 
-    const routeNodes = useRouteNodesBatch(selectedRoutes);
+    const { data: vehiclePositions, isLoading: vehiclesLoading } = useVehiclePositions(makeRouteIdsString(activeRoutes));
+
     const { routeNodesMap, isLoading: nodesLoading } = useMemo(() => {
         return buildRouteNodesMap(routeNodes, selectedRoutes);
     }, [routeNodes, selectedRoutes]);
@@ -65,38 +69,12 @@ export const useMapData = ({
         return buildRouteGeoJSON(activeRoutes, routeNodesMap);
     }, [activeRoutes, routeNodesMap]);
 
-    const rids = activeRoutes.length > 0 ? activeRoutes.map(r => `${r.id}-0`).join(',') : null;
-    const { data: vehiclePositions, isLoading: vehiclesLoading } = useVehiclePositions(rids);
-
     const vehicles = useMemo(() => {
         return filterVehiclesBySelectedRoutes(vehiclePositions?.anims, selectedRoutes);
     }, [vehiclePositions, selectedRoutes]);
 
-    const { data: selectedVehicleRouteNodes } = useRouteNodes({
-        routeId: selectedVehicle?.rid ?? null,
-    });
-
     const selectedVehicleGeoJson = useMemo(() => {
-        if (!selectedVehicle || !selectedVehicleRouteNodes || selectedVehicleRouteNodes.length <= 1) {
-            return null;
-        }
-        const color = config.routes.find(rt => rt.type === selectedVehicle.rtype)?.color || 'gray';
-        return {
-            type: "FeatureCollection" as const,
-            features: [
-                {
-                    type: "Feature" as const,
-                    geometry: {
-                        type: "LineString" as const,
-                        coordinates: selectedVehicleRouteNodes.map(node => [
-                            node.lng / 1e6,
-                            node.lat / 1e6,
-                        ]) as [number, number][],
-                    },
-                    properties: { stroke: color },
-                },
-            ],
-        };
+        return buildSelectedVehicleGeoJSON(selectedVehicle, selectedVehicleRouteNodes);
     }, [selectedVehicle, selectedVehicleRouteNodes]);
 
     const { data: forecasts, isLoading: forecastsLoading } = useVehicleForecasts({
@@ -108,10 +86,10 @@ export const useMapData = ({
     }, [forecasts]);
 
     useEffect(() => {
-        if (selectedStation) {
+        if (selectedStation && shouldOpenStationPopup(selectedStation, activeSelectedStation)) {
             setActiveSelectedStation(selectedStation);
         }
-    }, [selectedStation]);
+    }, [selectedStation, activeSelectedStation]);
 
     return {
         geoJsonData,
