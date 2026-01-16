@@ -10,6 +10,7 @@ import { VehicleMarker } from "./VehicleMarker";
 import { useVehicleSelection } from "@/hooks/useVehicleSelection";
 import { useMapControls } from "@/hooks/useMapControls";
 import { normalizeCoordinate } from "@/utils/coordinates";
+import { filterVisibleVehicles } from "@/utils/viewport";
 
 interface MapViewProps {
     center: [number, number];
@@ -37,7 +38,7 @@ function MapContainerComponent({
     setSelectedVehicle
 }: MapContainerProps) {
     const { center, zoom, onCenterChange } = mapView;
-    const { mapWidth, debouncedOnBoundsChanged } = useMapControls(onCenterChange);
+    const { mapWidth, debouncedOnBoundsChanged, viewportBounds } = useMapControls(onCenterChange, center, zoom);
 
     const {
         geoJsonData,
@@ -82,6 +83,45 @@ function MapContainerComponent({
         fill: "none",
     }), []);
 
+    // Фильтруем транспортные средства по видимой области
+    const visibleVehicles = useMemo(() => {
+        if (!viewportBounds) {
+            // Если границы еще не вычислены, показываем все транспортные средства
+            return vehicles;
+        }
+        
+        // Отладка: выводим границы и количество транспортных средств
+        if (typeof window !== 'undefined' && vehicles.length > 0) {
+            console.log('Viewport bounds:', viewportBounds);
+            console.log('Total vehicles:', vehicles.length);
+            const filtered = filterVisibleVehicles(
+                vehicles,
+                viewportBounds,
+                selectedVehicle?.id,
+                500
+            );
+            console.log('Visible vehicles:', filtered.length);
+            if (vehicles.length > 0) {
+                const first = vehicles[0];
+                const lat = normalizeCoordinate(first.lat);
+                const lng = normalizeCoordinate(first.lon);
+                console.log('First vehicle coords:', { lat, lng });
+                console.log('In bounds?', 
+                    lat >= viewportBounds.south && lat <= viewportBounds.north &&
+                    lng >= viewportBounds.west && lng <= viewportBounds.east
+                );
+            }
+            return filtered;
+        }
+        
+        return filterVisibleVehicles(
+            vehicles,
+            viewportBounds,
+            selectedVehicle?.id,
+            500 // Максимум 500 видимых маркеров одновременно
+        );
+    }, [vehicles, viewportBounds, selectedVehicle?.id]);
+
     return (
         <div className="map-container">
             <PigeonMap
@@ -104,7 +144,7 @@ function MapContainerComponent({
                     />
                 )}
 
-                {vehicles.map((anim) => (
+                {visibleVehicles.map((anim) => (
                     <Overlay
                         key={`${anim.id}-${anim.rtype}`}
                         anchor={[normalizeCoordinate(anim.lat), normalizeCoordinate(anim.lon)]}
