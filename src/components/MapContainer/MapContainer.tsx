@@ -1,6 +1,6 @@
 import { GeoJson, Map as PigeonMap, Overlay } from "pigeon-maps";
 import config from "@config";
-import { Suspense, useMemo, memo } from "react";
+import { Suspense, useMemo, memo, useState, useEffect } from "react";
 import "./MapContainer.css";
 import type { Route, SelectedRoute, SelectedStation, SelectedVehicle, TransportType } from "@/types/transport";
 import { MemoizedStationPopup } from "@components/MapContainer/StationPopup";
@@ -10,7 +10,7 @@ import { VehicleMarker } from "./VehicleMarker";
 import { useVehicleSelection } from "@/hooks/useVehicleSelection";
 import { useMapControls } from "@/hooks/useMapControls";
 import { normalizeCoordinate } from "@/utils/coordinates";
-import { filterVisibleVehicles } from "@/utils/viewport";
+import { calculateViewportBounds, isPointInViewport } from "@/utils/viewport";
 
 interface MapViewProps {
     center: [number, number];
@@ -37,9 +37,12 @@ function MapContainerComponent({
     onStationDeselect,
     setSelectedVehicle
 }: MapContainerProps) {
-    const { center, zoom, onCenterChange } = mapView;
-    const { mapWidth, debouncedOnBoundsChanged, viewportBounds } = useMapControls(onCenterChange, center, zoom);
-
+    const { center: initialCenter, zoom: initialZoom, onCenterChange } = mapView;
+    const { mapWidth, mapBounds, debouncedOnBoundsChanged } = useMapControls(onCenterChange);
+    const [mapHeight, setMapHeight] = useState(600);
+    const [currentCenter, setCurrentCenter] = useState<[number, number]>(initialCenter);
+    const [currentZoom, setCurrentZoom] = useState<number>(initialZoom);
+    
     const {
         geoJsonData,
         vehicles,
@@ -55,6 +58,19 @@ function MapContainerComponent({
         selectedStation,
         selectedVehicle,
     });
+    
+    useEffect(() => {
+        setCurrentCenter(initialCenter);
+        setCurrentZoom(initialZoom);
+    }, [initialCenter, initialZoom]);
+    
+    const handleBoundsChanged = useMemo(() => {
+        return ({ center, zoom }: { center: [number, number]; zoom: number }) => {
+            setCurrentCenter(center);
+            setCurrentZoom(zoom);
+            debouncedOnBoundsChanged({ center, zoom });
+        };
+    }, [debouncedOnBoundsChanged]);
 
     const { handleVehicleClick } = useVehicleSelection({
         selectedVehicle,
@@ -83,51 +99,43 @@ function MapContainerComponent({
         fill: "none",
     }), []);
 
-    // Фильтруем транспортные средства по видимой области
+    const viewportBounds = useMemo(() => {
+        return calculateViewportBounds(currentCenter, currentZoom, mapWidth, mapHeight);
+    }, [currentCenter, currentZoom, mapWidth, mapHeight]);
+
     const visibleVehicles = useMemo(() => {
-        if (!viewportBounds) {
-            // Если границы еще не вычислены, показываем все транспортные средства
-            return vehicles;
-        }
+        if (vehicles.length === 0) return vehicles;
         
-        // Отладка: выводим границы и количество транспортных средств
-        if (typeof window !== 'undefined' && vehicles.length > 0) {
-            console.log('Viewport bounds:', viewportBounds);
-            console.log('Total vehicles:', vehicles.length);
-            const filtered = filterVisibleVehicles(
-                vehicles,
-                viewportBounds,
-                selectedVehicle?.id,
-                500
-            );
-            console.log('Visible vehicles:', filtered.length);
-            if (vehicles.length > 0) {
-                const first = vehicles[0];
-                const lat = normalizeCoordinate(first.lat);
-                const lng = normalizeCoordinate(first.lon);
-                console.log('First vehicle coords:', { lat, lng });
-                console.log('In bounds?', 
-                    lat >= viewportBounds.south && lat <= viewportBounds.north &&
-                    lng >= viewportBounds.west && lng <= viewportBounds.east
-                );
-            }
-            return filtered;
+        return vehicles.filter((anim) => {
+            if (selectedVehicle?.id === anim.id) return true;
+            
+            return isPointInViewport(anim.lat, anim.lon, viewportBounds);
+        });
+    }, [vehicles, viewportBounds, selectedVehicle]);
+
+    const renderedVehicles = useMemo(() => {
+        if (currentZoom < 12) {
+            return visibleVehicles.slice(0, 150);
         }
-        
-        return filterVisibleVehicles(
-            vehicles,
-            viewportBounds,
-            selectedVehicle?.id,
-            500 // Максимум 500 видимых маркеров одновременно
-        );
-    }, [vehicles, viewportBounds, selectedVehicle?.id]);
+        if (currentZoom < 14) {
+            return visibleVehicles.slice(0, 300);
+        }
+        return visibleVehicles.slice(0, 500);
+    }, [visibleVehicles, currentZoom]);
 
     return (
-        <div className="map-container">
+        <div className="map-container" ref={(el) => {
+            if (el) {
+                const height = el.clientHeight || 600;
+                if (height !== mapHeight) {
+                    setMapHeight(height);
+                }
+            }
+        }}>
             <PigeonMap
-                center={center}
-                zoom={zoom}
-                onBoundsChanged={debouncedOnBoundsChanged}
+                center={initialCenter}
+                zoom={initialZoom}
+                onBoundsChanged={handleBoundsChanged}
                 defaultWidth={mapWidth}
             >
                 {geoJsonData && (
@@ -144,7 +152,7 @@ function MapContainerComponent({
                     />
                 )}
 
-                {visibleVehicles.map((anim) => (
+                {renderedVehicles.map((anim) => (
                     <Overlay
                         key={`${anim.id}-${anim.rtype}`}
                         anchor={[normalizeCoordinate(anim.lat), normalizeCoordinate(anim.lon)]}
@@ -171,7 +179,7 @@ function MapContainerComponent({
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     onStationDeselect();
-                                    onCenterChange?.([normalizeCoordinate(forecast.lat0), normalizeCoordinate(forecast.lng0)], zoom);
+                                    onCenterChange?.([normalizeCoordinate(forecast.lat0), normalizeCoordinate(forecast.lng0)], currentZoom);
                                     openForecastStationPopup({
                                         id: forecast.stid,
                                         name: forecast.stname,
