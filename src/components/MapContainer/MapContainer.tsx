@@ -10,7 +10,7 @@ import { VehicleMarker } from "./VehicleMarker";
 import { useVehicleSelection } from "@/hooks/useVehicleSelection";
 import { useMapControls } from "@/hooks/useMapControls";
 import { normalizeCoordinate } from "@/utils/coordinates";
-import { calculateViewportBounds, isPointInViewport } from "@/utils/viewport";
+import { calculateViewportBounds, isPointInViewport } from "@/services/viewport";
 
 interface MapViewProps {
     center: [number, number];
@@ -38,7 +38,7 @@ function MapContainerComponent({
     setSelectedVehicle
 }: MapContainerProps) {
     const { center: initialCenter, zoom: initialZoom, onCenterChange } = mapView;
-    const { mapWidth, mapBounds, debouncedOnBoundsChanged } = useMapControls(onCenterChange);
+    const { mapWidth, debouncedOnBoundsChanged } = useMapControls(onCenterChange);
     const [mapHeight, setMapHeight] = useState(600);
     const [currentCenter, setCurrentCenter] = useState<[number, number]>(initialCenter);
     const [currentZoom, setCurrentZoom] = useState<number>(initialZoom);
@@ -87,6 +87,7 @@ function MapContainerComponent({
         selectedVehicle,
         setSelectedVehicle,
         onStationDeselect,
+        closeStationPopup,
     });
 
     const routeColorsMap = useMemo(() => {
