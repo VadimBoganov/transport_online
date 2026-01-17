@@ -1,6 +1,6 @@
 import { GeoJson, Map as PigeonMap, Overlay } from "pigeon-maps";
 import config from "@config";
-import { Suspense, useMemo, memo, useState, useEffect } from "react";
+import { Suspense, useMemo, memo, useState, useEffect, useCallback } from "react";
 import "./MapContainer.css";
 import type { Route, SelectedRoute, SelectedStation, SelectedVehicle, TransportType } from "@/types/transport";
 import { MemoizedStationPopup } from "@components/MapContainer/StationPopup";
@@ -64,13 +64,24 @@ function MapContainerComponent({
         setCurrentZoom(initialZoom);
     }, [initialCenter, initialZoom]);
     
-    const handleBoundsChanged = useMemo(() => {
-        return ({ center, zoom }: { center: [number, number]; zoom: number }) => {
-            setCurrentCenter(center);
-            setCurrentZoom(zoom);
-            debouncedOnBoundsChanged({ center, zoom });
-        };
-    }, [debouncedOnBoundsChanged]);
+    const [viewportBounds, setViewportBounds] = useState(() => 
+        calculateViewportBounds(initialCenter, initialZoom, mapWidth, 600)
+    );
+    
+    const handleBoundsChanged = useCallback(({ center, zoom }: { center: [number, number]; zoom: number }) => {
+        setCurrentCenter(center);
+        setCurrentZoom(zoom);
+        const currentHeight = Math.max(mapHeight, 600);
+        const bounds = calculateViewportBounds(center, zoom, mapWidth, currentHeight);
+        setViewportBounds(bounds);
+        debouncedOnBoundsChanged({ center, zoom });
+    }, [debouncedOnBoundsChanged, mapWidth, mapHeight]);
+    
+    useEffect(() => {
+        const currentHeight = Math.max(mapHeight, 600);
+        const bounds = calculateViewportBounds(currentCenter, currentZoom, mapWidth, currentHeight);
+        setViewportBounds(bounds);
+    }, [currentCenter, currentZoom, mapWidth, mapHeight]);
 
     const { handleVehicleClick } = useVehicleSelection({
         selectedVehicle,
@@ -99,10 +110,6 @@ function MapContainerComponent({
         fill: "none",
     }), []);
 
-    const viewportBounds = useMemo(() => {
-        return calculateViewportBounds(currentCenter, currentZoom, mapWidth, mapHeight);
-    }, [currentCenter, currentZoom, mapWidth, mapHeight]);
-
     const visibleVehicles = useMemo(() => {
         if (vehicles.length === 0) return vehicles;
         
@@ -126,7 +133,7 @@ function MapContainerComponent({
     return (
         <div className="map-container" ref={(el) => {
             if (el) {
-                const height = el.clientHeight || 600;
+                const height = Math.max(el.clientHeight || 600, 600);
                 if (height !== mapHeight) {
                     setMapHeight(height);
                 }
