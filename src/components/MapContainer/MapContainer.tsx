@@ -1,12 +1,12 @@
 import { GeoJson, Map as PigeonMap, Overlay } from "pigeon-maps";
 import config from "@config";
-import { Suspense, useMemo, memo, useState, useEffect, useCallback } from "react";
+import { Suspense, useMemo, memo, useState, useEffect, useCallback, useRef } from "react";
 import "./MapContainer.css";
 import type { Route, SelectedRoute, SelectedStation, SelectedVehicle } from "@/types/transport";
 import { MemoizedStationPopup } from "@components/MapContainer/StationPopup";
-import { formatArrivalMinutes } from "@/services/forecastService";
 import { useMapData } from "@/hooks/useMapData";
 import { VehicleMarker } from "./VehicleMarker";
+import { ForecastPopupStation } from "./ForecastPopupStation";
 import { useVehicleSelection } from "@/hooks/useVehicleSelection";
 import { useMapControls } from "@/hooks/useMapControls";
 import { normalizeCoordinate } from "@/utils/coordinates";
@@ -68,14 +68,37 @@ function MapContainerComponent({
         calculateViewportBounds(initialCenter, initialZoom, mapWidth, 600)
     );
     
+    // Используем useRef для throttle viewport updates
+    const boundsUpdateTimeoutRef = useRef<number | null>(null);
+    
     const handleBoundsChanged = useCallback(({ center, zoom }: { center: [number, number]; zoom: number }) => {
+        // Немедленно обновляем центр и зум для плавности карты
         setCurrentCenter(center);
         setCurrentZoom(zoom);
-        const currentHeight = Math.max(mapHeight, 600);
-        const bounds = calculateViewportBounds(center, zoom, mapWidth, currentHeight);
-        setViewportBounds(bounds);
+        
+        // Throttle обновления viewport bounds через requestAnimationFrame
+        if (boundsUpdateTimeoutRef.current !== null) {
+            cancelAnimationFrame(boundsUpdateTimeoutRef.current);
+        }
+        
+        boundsUpdateTimeoutRef.current = requestAnimationFrame(() => {
+            const currentHeight = Math.max(mapHeight, 600);
+            const bounds = calculateViewportBounds(center, zoom, mapWidth, currentHeight);
+            setViewportBounds(bounds);
+            boundsUpdateTimeoutRef.current = null;
+        });
+        
         debouncedOnBoundsChanged({ center, zoom });
     }, [debouncedOnBoundsChanged, mapWidth, mapHeight]);
+    
+    // Cleanup throttle на размонтирование
+    useEffect(() => {
+        return () => {
+            if (boundsUpdateTimeoutRef.current !== null) {
+                cancelAnimationFrame(boundsUpdateTimeoutRef.current);
+            }
+        };
+    }, []);
     
     useEffect(() => {
         const currentHeight = Math.max(mapHeight, 600);
@@ -89,6 +112,26 @@ function MapContainerComponent({
         onStationDeselect,
         closeStationPopup,
     });
+
+    // Обработчик клика по forecast popup с event delegation
+    const handleForecastClick = useCallback((e: React.MouseEvent<HTMLElement>) => {
+        e.stopPropagation();
+        
+        const target = e.currentTarget;
+        const stid = Number(target.dataset.stid);
+        const stname = target.dataset.stname!;
+        const lat0 = Number(target.dataset.lat0);
+        const lng0 = Number(target.dataset.lng0);
+
+        onStationDeselect();
+        onCenterChange?.([normalizeCoordinate(lat0), normalizeCoordinate(lng0)], currentZoom);
+        openForecastStationPopup({
+            id: stid,
+            name: stname,
+            lat: lat0,
+            lng: lng0,
+        });
+    }, [onStationDeselect, onCenterChange, currentZoom, openForecastStationPopup]);
 
     const routeColorsMap = useMemo(() => {
         const map = new Map<string, string>();
@@ -185,24 +228,14 @@ function MapContainerComponent({
                             key={`forecast-${selectedVehicle?.id}-${forecast.stid}-${index}`}
                             anchor={[normalizeCoordinate(forecast.lat0), normalizeCoordinate(forecast.lng0)]}
                         >
-                            <div
-                                className="forecast-popup-station"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    onStationDeselect();
-                                    onCenterChange?.([normalizeCoordinate(forecast.lat0), normalizeCoordinate(forecast.lng0)], currentZoom);
-                                    openForecastStationPopup({
-                                        id: forecast.stid,
-                                        name: forecast.stname,
-                                        lat: forecast.lat0,
-                                        lng: forecast.lng0,
-                                    });
-                                }}
-                            >
-                                <div className="forecast-time">
-                                    <strong>{formatArrivalMinutes(forecast.arrt)} мин</strong>
-                                </div>
-                            </div>
+                            <ForecastPopupStation
+                                arrt={forecast.arrt}
+                                stid={forecast.stid}
+                                stname={forecast.stname}
+                                lat0={forecast.lat0}
+                                lng0={forecast.lng0}
+                                onForecastClick={handleForecastClick}
+                            />
                         </Overlay>
                     ))}
 
