@@ -18,10 +18,8 @@ export default function useVehicleForecasts({ vid }: UseVehicleForecastsProps) {
         enabled: !!vid,
         retry: 1,
         staleTime: 30 * 1000,
-        gcTime: 1000 * 1,
-        refetchInterval: (query) => {
-            return query.state.data ? 30 * 1000 : false;
-        },
+        gcTime: 0, // Немедленная очистка при снятии выбора
+        refetchInterval: !!vid ? 30 * 1000 : false, // Останавливаем интервал когда vid === null
         refetchOnWindowFocus: false,
     });
 }

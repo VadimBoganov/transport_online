@@ -12,6 +12,6 @@ export function useRouteNodes({ routeId }: { routeId: number | null }) {
         },
         enabled: !!routeId,
         staleTime: 1000 * 60 * 5,
-        gcTime: 1000 * 1,
+        gcTime: 0, // Немедленная очистка при снятии выбора ТС
     });
 }
