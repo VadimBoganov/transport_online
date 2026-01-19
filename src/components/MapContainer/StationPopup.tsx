@@ -81,4 +81,6 @@ export function StationPopup({ stationId, stationName, onDeselect }: StationPopu
     );
 }
 
-export const MemoizedStationPopup = React.memo(StationPopup);
+export const MemoizedStationPopup = React.memo(StationPopup, (prev, next) => {
+    return prev.stationId === next.stationId && prev.stationName === next.stationName;
+});

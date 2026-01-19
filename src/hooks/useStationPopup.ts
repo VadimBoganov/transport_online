@@ -34,7 +34,9 @@ export const useStationPopup = ({
         };
 
         container.addEventListener("wheel", handleWheel, { capture: true, passive: false });
-        return () => container.removeEventListener("wheel", handleWheel, { capture: true });
+        return () => {
+            container.removeEventListener("wheel", handleWheel, { capture: true });
+        };
     }, []);
 
     return {

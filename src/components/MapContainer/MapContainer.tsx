@@ -176,7 +176,7 @@ function MapContainerComponent({
                     </Overlay>
                 ))}
 
-                {sortedForecasts && !activeSelectedStation &&
+                {sortedForecasts && sortedForecasts.length > 0 && !activeSelectedStation &&
                     sortedForecasts.map((forecast, index) => (
                         <Overlay
                             key={`forecast-${selectedVehicle?.id}-${forecast.stid}-${index}`}

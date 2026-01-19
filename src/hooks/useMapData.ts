@@ -49,9 +49,7 @@ export const useMapData = ({
     }, []);
 
     const closeStationPopup = useCallback(() => {
-        startTransition(() => {
-            setActiveSelectedStation(null);
-        });
+        setActiveSelectedStation(null);
     }, []);
 
     const activeRoutes = useMemo(() => {
@@ -82,8 +80,11 @@ export const useMapData = ({
     });
 
     const sortedForecasts = useMemo(() => {
+        if (!selectedVehicle || !forecasts || forecasts.length === 0) {
+            return null;
+        }
         return processForecasts(forecasts);
-    }, [forecasts]);
+    }, [forecasts, selectedVehicle]);
 
     useEffect(() => {
         if (selectedStation && shouldOpenStationPopup(selectedStation, activeSelectedStation)) {

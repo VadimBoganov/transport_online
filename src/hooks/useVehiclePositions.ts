@@ -16,6 +16,7 @@ export function useVehiclePositions(rids: string | null) {
         enabled: !!rids,
         refetchInterval: 10000,
         staleTime: 10 * 1000,
+        gcTime: 1000 * 1,
         retry: 1,
         placeholderData: {
             maxk: 0,

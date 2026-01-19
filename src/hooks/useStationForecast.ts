@@ -21,7 +21,9 @@ export default function useStationForecast({ stationId }: UseStationForecastProp
         enabled: !!stationId,
         staleTime: 1000 * 30,           
         gcTime: 1000 * 1,             
-        refetchInterval: 1000 * 30,     
+        refetchInterval: (query) => {
+            return query.state.data ? 1000 * 30 : false;
+        },     
         retry: 1,
         placeholderData: undefined,    
         refetchOnWindowFocus: false,

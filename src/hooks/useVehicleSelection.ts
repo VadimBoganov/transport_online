@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, startTransition } from "react";
 import type { SelectedVehicle, TransportType } from "@/types/transport";
 
 interface UseVehicleSelectionProps {
