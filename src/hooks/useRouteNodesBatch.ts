@@ -12,8 +12,7 @@ export function useRouteNodesBatch(routes: SelectedRoute[]) {
       },
       enabled: !!id,
       staleTime: 1000 * 60 * 5,
-      gcTime: 1000 * 1,
-      placeholderData: [],
+      gcTime: 0, // Немедленная очистка при размонтировании
     })),
   });
 }

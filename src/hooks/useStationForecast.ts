@@ -20,12 +20,9 @@ export default function useStationForecast({ stationId }: UseStationForecastProp
         },
         enabled: !!stationId,
         staleTime: 1000 * 30,           
-        gcTime: 1000 * 1,             
-        refetchInterval: (query) => {
-            return query.state.data ? 1000 * 30 : false;
-        },     
+        gcTime: 0, // Немедленная очистка при закрытии popup
+        refetchInterval: !!stationId ? 1000 * 30 : false, // Останавливаем интервал когда stationId === null   
         retry: 1,
-        placeholderData: undefined,    
         refetchOnWindowFocus: false,
     });
 }

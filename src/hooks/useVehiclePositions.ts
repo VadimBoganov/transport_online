@@ -14,11 +14,9 @@ export function useVehiclePositions(rids: string | null) {
             return data as VehiclePosition;
         },
         enabled: !!rids,
-        refetchInterval: (query) => {
-            return query.state.data && rids ? 10000 : false;
-        },
+        refetchInterval: !!rids ? 10000 : false, // Останавливаем интервал когда rids === null
         staleTime: 10 * 1000,
-        gcTime: 1000 * 1,
+        gcTime: 0, // Немедленная очистка при размонтировании
         retry: 1,
         refetchOnWindowFocus: false, 
     });

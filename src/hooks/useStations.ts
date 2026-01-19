@@ -10,8 +10,7 @@ export function useStations() {
             return Array.isArray(data) ? data : (data as { stations: Station[] }).stations;
         },
         staleTime: 1000 * 60 * 5,
-        gcTime: 1000 * 60 * 15,
-        placeholderData: [] as Station[],
+        gcTime: 1000 * 60 * 15, // Можно оставить долго - данные статические
         refetchOnWindowFocus: false,
         retry: 1,
     });

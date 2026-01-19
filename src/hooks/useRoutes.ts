@@ -10,8 +10,7 @@ export function useRoutes() {
             return Array.isArray(data) ? data : (data as { routes: Route[] }).routes;
         },
         staleTime: 1000 * 60 * 5,
-        gcTime: 1000 * 60 * 15,
-        placeholderData: [] as Route[],
+        gcTime: 1000 * 60 * 15, // Можно оставить долго - данные статические
         refetchOnWindowFocus: false,
         retry: 1,
     });
