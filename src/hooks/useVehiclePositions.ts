@@ -14,14 +14,12 @@ export function useVehiclePositions(rids: string | null) {
             return data as VehiclePosition;
         },
         enabled: !!rids,
-        refetchInterval: 10000,
+        refetchInterval: (query) => {
+            return query.state.data && rids ? 10000 : false;
+        },
         staleTime: 10 * 1000,
         gcTime: 1000 * 1,
         retry: 1,
-        placeholderData: {
-            maxk: 0,
-            anims: [],
-        } as VehiclePosition,
         refetchOnWindowFocus: false, 
     });
 }

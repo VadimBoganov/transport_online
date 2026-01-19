@@ -1,4 +1,4 @@
-import { useCallback, startTransition } from "react";
+import { useCallback } from "react";
 import type { SelectedVehicle, TransportType } from "@/types/transport";
 
 interface UseVehicleSelectionProps {
@@ -15,19 +15,24 @@ export const useVehicleSelection = ({
     closeStationPopup,
 }: UseVehicleSelectionProps) => {
     const handleVehicleClick = useCallback(
-        (rid: number, id: string, rtype: TransportType) =>
-            (e: React.MouseEvent) => {
-                e.stopPropagation();
+        (e: React.MouseEvent<HTMLElement>) => {
+            e.stopPropagation();
+            
+            // Получаем данные из data-атрибутов элемента
+            const target = e.currentTarget;
+            const rid = Number(target.dataset.rid);
+            const id = target.dataset.id!;
+            const rtype = target.dataset.rtype as TransportType;
 
-                closeStationPopup();
-                onStationDeselect();
+            closeStationPopup();
+            onStationDeselect();
 
-                if (selectedVehicle?.id === id) {
-                    setSelectedVehicle(null);
-                } else {
-                    setSelectedVehicle({ id, rid, rtype  });
-                }
-            },
+            if (selectedVehicle?.id === id) {
+                setSelectedVehicle(null);
+            } else {
+                setSelectedVehicle({ id, rid, rtype });
+            }
+        },
         [selectedVehicle, setSelectedVehicle, onStationDeselect, closeStationPopup]
     );
 

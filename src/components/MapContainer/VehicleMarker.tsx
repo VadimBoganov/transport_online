@@ -5,9 +5,12 @@ interface VehicleMarkerProps {
     rnum: string;
     rtype: string;
     dir: number;
-    onClick: (e: React.MouseEvent) => void;
+    onClick: (e: React.MouseEvent<HTMLElement>) => void;
     color: string;
     isSelected: boolean;
+    'data-rid': number;
+    'data-id': string;
+    'data-rtype': string;
 }
 
 const getTransformStyle = (dir: number) => {
@@ -22,17 +25,37 @@ export const VehicleMarker: React.FC<VehicleMarkerProps> = React.memo(({
     dir,
     onClick,
     color,
-    isSelected
+    isSelected,
+    'data-rid': dataRid,
+    'data-id': dataId,
+    'data-rtype': dataRtype,
 }) => {
     return (
-        <div className={`vehicle-marker ${isSelected ? 'selected' : ''}`}
+        <div 
+            className={`vehicle-marker ${isSelected ? 'selected' : ''}`}
             style={{ backgroundColor: color }}
-            onClick={onClick}>
+            onClick={onClick}
+            data-rid={dataRid}
+            data-id={dataId}
+            data-rtype={dataRtype}
+        >
             {rnum}
             <div
                 className="vehicle-marker-arrow"
                 style={{ transform: getTransformStyle(dir) }}
             />
         </div>
+    );
+}, (prev, next) => {
+    // Custom compare: игнорируем onClick (он всегда один и тот же),
+    // сравниваем только данные маркера
+    return (
+        prev.rnum === next.rnum &&
+        prev.dir === next.dir &&
+        prev.color === next.color &&
+        prev.isSelected === next.isSelected &&
+        prev['data-rid'] === next['data-rid'] &&
+        prev['data-id'] === next['data-id'] &&
+        prev['data-rtype'] === next['data-rtype']
     );
 });

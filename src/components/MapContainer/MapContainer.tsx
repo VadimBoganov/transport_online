@@ -2,7 +2,7 @@ import { GeoJson, Map as PigeonMap, Overlay } from "pigeon-maps";
 import config from "@config";
 import { Suspense, useMemo, memo, useState, useEffect, useCallback } from "react";
 import "./MapContainer.css";
-import type { Route, SelectedRoute, SelectedStation, SelectedVehicle, TransportType } from "@/types/transport";
+import type { Route, SelectedRoute, SelectedStation, SelectedVehicle } from "@/types/transport";
 import { MemoizedStationPopup } from "@components/MapContainer/StationPopup";
 import { formatArrivalMinutes } from "@/services/forecastService";
 import { useMapData } from "@/hooks/useMapData";
@@ -170,8 +170,11 @@ function MapContainerComponent({
                             dir={anim.dir}
                             rtype={anim.rtype}
                             color={routeColorsMap.get(anim.rtype) || 'gray'}
-                            onClick={handleVehicleClick(anim.rid, anim.id, anim.rtype as TransportType)}
+                            onClick={handleVehicleClick}
                             isSelected={selectedVehicle?.id === anim.id}
+                            data-rid={anim.rid}
+                            data-id={anim.id}
+                            data-rtype={anim.rtype}
                         />
                     </Overlay>
                 ))}
