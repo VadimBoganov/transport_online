@@ -166,8 +166,7 @@ export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
         ctx.clearRect(0, 0, width, height);
 
         // Draw all vehicles
-        let drawnCount = 0;
-        vehicles.forEach((vehicle, idx) => {
+        vehicles.forEach((vehicle) => {
             const key = `${vehicle.id}-${vehicle.rtype}`;
             const animState = animationStates.current.get(key);
             
@@ -193,7 +192,6 @@ export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
                 return;
             }
 
-            drawnCount++;
             const isSelected = vehicle.id === selectedVehicleId;
             drawMarker(ctx, vehicle, x, y, isSelected);
         });
@@ -224,121 +222,46 @@ export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
         };
     }, [render, hasActiveAnimations]);
 
-    // Handle canvas click - hit detection
-    const handleCanvasClick = useCallback(
-        (e: React.MouseEvent<HTMLCanvasElement>) => {
-            const canvas = canvasRef.current;
-            if (!canvas) return;
+    // Calculate marker positions for interactive overlays
+    const markerPositions = vehicles.map((vehicle) => {
+        const key = `${vehicle.id}-${vehicle.rtype}`;
+        const animState = animationStates.current.get(key);
+        
+        let lat = animState ? animState.current.lat : vehicle.lat;
+        let lon = animState ? animState.current.lon : vehicle.lon;
 
-            const rect = canvas.getBoundingClientRect();
-            const clickX = e.clientX - rect.left;
-            const clickY = e.clientY - rect.top;
+        // Normalize coordinates (convert from microdegrees to degrees)
+        lat = lat / 1000000;
+        lon = lon / 1000000;
 
-            const { width, height } = dimensions;
+        const { width, height } = dimensions;
+        const [x, y] = latLonToCanvasPixel(
+            lat,
+            lon,
+            mapZoom,
+            width,
+            height,
+            mapCenter
+        );
 
-            // Check each vehicle for hit
-            for (const vehicle of vehicles) {
-                const key = `${vehicle.id}-${vehicle.rtype}`;
-                const animState = animationStates.current.get(key);
-                
-                let lat = animState ? animState.current.lat : vehicle.lat;
-                let lon = animState ? animState.current.lon : vehicle.lon;
+        const isSelected = vehicle.id === selectedVehicleId;
+        const radius = MARKER_RADIUS * (isSelected ? SELECTED_MARKER_SCALE : 1) + 4; // +4 for easier clicking
 
-                // Normalize coordinates (convert from microdegrees to degrees)
-                lat = lat / 1000000;
-                lon = lon / 1000000;
-
-                const [x, y] = latLonToCanvasPixel(
-                    lat,
-                    lon,
-                    mapZoom,
-                    width,
-                    height,
-                    mapCenter
-                );
-
-                // Calculate distance from click to marker center
-                const distance = Math.sqrt(
-                    Math.pow(clickX - x, 2) + Math.pow(clickY - y, 2)
-                );
-
-                const isSelected = vehicle.id === selectedVehicleId;
-                const hitRadius = MARKER_RADIUS * (isSelected ? SELECTED_MARKER_SCALE : 1);
-
-                if (distance <= hitRadius) {
-                    onVehicleClick(vehicle);
-                    return;
-                }
-            }
-        },
-        [vehicles, animationStates, mapZoom, mapCenter, dimensions, selectedVehicleId, onVehicleClick]
-    );
-
-    // Handle container click to detect marker hits and enable pointer events
-    const handleContainerClick = useCallback(
-        (e: React.MouseEvent<HTMLDivElement>) => {
-            const canvas = canvasRef.current;
-            if (!canvas) return;
-
-            const rect = canvas.getBoundingClientRect();
-            const clickX = e.clientX - rect.left;
-            const clickY = e.clientY - rect.top;
-
-            const { width, height } = dimensions;
-
-            // Check if clicking on a marker
-            for (const vehicle of vehicles) {
-                const key = `${vehicle.id}-${vehicle.rtype}`;
-                const animState = animationStates.current.get(key);
-                
-                let lat = animState ? animState.current.lat : vehicle.lat;
-                let lon = animState ? animState.current.lon : vehicle.lon;
-
-                lat = lat / 1000000;
-                lon = lon / 1000000;
-
-                const [x, y] = latLonToCanvasPixel(
-                    lat,
-                    lon,
-                    mapZoom,
-                    width,
-                    height,
-                    mapCenter
-                );
-
-                const distance = Math.sqrt(
-                    Math.pow(clickX - x, 2) + Math.pow(clickY - y, 2)
-                );
-
-                const isSelected = vehicle.id === selectedVehicleId;
-                const hitRadius = MARKER_RADIUS * (isSelected ? SELECTED_MARKER_SCALE : 1);
-
-                if (distance <= hitRadius) {
-                    e.stopPropagation();
-                    onVehicleClick(vehicle);
-                    return;
-                }
-            }
-        },
-        [vehicles, animationStates, mapZoom, mapCenter, dimensions, selectedVehicleId, onVehicleClick]
-    );
+        return {
+            vehicle,
+            x,
+            y,
+            radius,
+            // Only show if in viewport
+            visible: x >= -50 && x <= width + 50 && y >= -50 && y <= height + 50
+        };
+    }).filter(pos => pos.visible);
 
     return (
-        <div
-            ref={containerRef}
-            onClick={handleContainerClick}
-            style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: "100%",
-                height: "100%",
-                pointerEvents: vehicles.length > 0 ? "auto" : "none",
-                zIndex: 10,
-            }}
-        >
-            <canvas
-                ref={canvasRef}
+        <>
+            {/* Canvas layer for rendering - non-interactive */}
+            <div
+                ref={containerRef}
                 style={{
                     position: "absolute",
                     top: 0,
@@ -346,9 +269,43 @@ export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
                     width: "100%",
                     height: "100%",
                     pointerEvents: "none",
-                    cursor: "default",
+                    zIndex: 10,
                 }}
-            />
-        </div>
+            >
+                <canvas
+                    ref={canvasRef}
+                    style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                    }}
+                />
+            </div>
+            {/* Interactive zones for each marker */}
+            {markerPositions.map((pos, idx) => (
+                <div
+                    key={`${pos.vehicle.id}-${pos.vehicle.rtype}-${idx}`}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onVehicleClick(pos.vehicle);
+                    }}
+                    style={{
+                        position: "absolute",
+                        left: pos.x - pos.radius,
+                        top: pos.y - pos.radius,
+                        width: pos.radius * 2,
+                        height: pos.radius * 2,
+                        borderRadius: "50%",
+                        pointerEvents: "auto",
+                        cursor: "pointer",
+                        zIndex: 11,
+                        // For debugging: uncomment to see interactive zones
+                        // background: "rgba(255, 0, 0, 0.2)",
+                    }}
+                />
+            ))}
+        </>
     );
 };
