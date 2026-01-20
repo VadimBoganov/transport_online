@@ -37,11 +37,13 @@ function MapContainerComponent({
     setSelectedVehicle
 }: MapContainerProps) {
     const { center: initialCenter, zoom: initialZoom, onCenterChange } = mapView;
-    const { mapWidth, debouncedOnBoundsChanged } = useMapControls(onCenterChange);
-    const [mapHeight, setMapHeight] = useState(600);
+    const { debouncedOnBoundsChanged } = useMapControls(onCenterChange);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [mapWidth, setMapWidth] = useState(window.innerWidth);
+    const [mapHeight, setMapHeight] = useState(window.innerHeight);
     const [currentCenter, setCurrentCenter] = useState<[number, number]>(initialCenter);
     const [currentZoom, setCurrentZoom] = useState<number>(initialZoom);
-    
+
     const {
         geoJsonData,
         vehicles,
@@ -57,39 +59,38 @@ function MapContainerComponent({
         selectedStation,
         selectedVehicle,
     });
-    
+
     useEffect(() => {
         setCurrentCenter(initialCenter);
         setCurrentZoom(initialZoom);
     }, [initialCenter, initialZoom]);
-    
-    const [viewportBounds, setViewportBounds] = useState(() => 
-        calculateViewportBounds(initialCenter, initialZoom, mapWidth, 600)
+
+    const [viewportBounds, setViewportBounds] = useState(() =>
+        calculateViewportBounds(initialCenter, initialZoom, window.innerWidth, window.innerHeight)
     );
-    
+
     // Используем useRef для throttle viewport updates
     const boundsUpdateTimeoutRef = useRef<number | null>(null);
-    
+
     const handleBoundsChanged = useCallback(({ center, zoom }: { center: [number, number]; zoom: number }) => {
         // Немедленно обновляем центр и зум для плавности карты
         setCurrentCenter(center);
         setCurrentZoom(zoom);
-        
+
         // Throttle обновления viewport bounds через requestAnimationFrame
         if (boundsUpdateTimeoutRef.current !== null) {
             cancelAnimationFrame(boundsUpdateTimeoutRef.current);
         }
-        
+
         boundsUpdateTimeoutRef.current = requestAnimationFrame(() => {
-            const currentHeight = Math.max(mapHeight, 600);
-            const bounds = calculateViewportBounds(center, zoom, mapWidth, currentHeight);
+            const bounds = calculateViewportBounds(center, zoom, mapWidth, mapHeight);
             setViewportBounds(bounds);
             boundsUpdateTimeoutRef.current = null;
         });
-        
+
         debouncedOnBoundsChanged({ center, zoom });
     }, [debouncedOnBoundsChanged, mapWidth, mapHeight]);
-    
+
     // Cleanup throttle на размонтирование
     useEffect(() => {
         return () => {
@@ -98,10 +99,24 @@ function MapContainerComponent({
             }
         };
     }, []);
-    
+
+    // Update dimensions based on container
     useEffect(() => {
-        const currentHeight = Math.max(mapHeight, 600);
-        const bounds = calculateViewportBounds(currentCenter, currentZoom, mapWidth, currentHeight);
+        const updateDimensions = () => {
+            if (containerRef.current) {
+                const rect = containerRef.current.getBoundingClientRect();
+                setMapWidth(rect.width);
+                setMapHeight(rect.height);
+            }
+        };
+
+        updateDimensions();
+        window.addEventListener('resize', updateDimensions);
+        return () => window.removeEventListener('resize', updateDimensions);
+    }, []);
+
+    useEffect(() => {
+        const bounds = calculateViewportBounds(currentCenter, currentZoom, mapWidth, mapHeight);
         setViewportBounds(bounds);
     }, [currentCenter, currentZoom, mapWidth, mapHeight]);
 
@@ -124,7 +139,7 @@ function MapContainerComponent({
     // Обработчик клика по forecast popup с event delegation
     const handleForecastClick = useCallback((e: React.MouseEvent<HTMLElement>) => {
         e.stopPropagation();
-        
+
         const target = e.currentTarget;
         const stid = Number(target.dataset.stid);
         const stname = target.dataset.stname!;
@@ -164,10 +179,10 @@ function MapContainerComponent({
 
     const visibleVehicles = useMemo(() => {
         if (vehicles.length === 0) return vehicles;
-        
+
         return vehicles.filter((anim) => {
             if (selectedVehicle?.id === anim.id) return true;
-            
+
             return isPointInViewport(anim.lat, anim.lon, viewportBounds);
         });
     }, [vehicles, viewportBounds, selectedVehicle]);
@@ -183,19 +198,13 @@ function MapContainerComponent({
     }, [visibleVehicles, currentZoom]);
 
     return (
-        <div className="map-container" ref={(el) => {
-            if (el) {
-                const height = Math.max(el.clientHeight || 600, 600);
-                if (height !== mapHeight) {
-                    setMapHeight(height);
-                }
-            }
-        }}>
+        <div className="map-container" ref={containerRef}>
             <PigeonMap
                 center={initialCenter}
                 zoom={initialZoom}
                 onBoundsChanged={handleBoundsChanged}
-                defaultWidth={mapWidth}
+                width={mapWidth}
+                height={mapHeight}
             >
                 {geoJsonData && (
                     <GeoJson
@@ -210,6 +219,15 @@ function MapContainerComponent({
                         styleCallback={selectedVehicleGeoJsonStyleCallback}
                     />
                 )}
+
+                <VehicleCanvasLayer
+                    vehicles={renderedVehicles}
+                    routeColorsMap={routeColorsMap}
+                    selectedVehicleId={selectedVehicle?.id ?? null}
+                    onVehicleClick={handleVehicleClick}
+                    mapZoom={currentZoom}
+                    mapCenter={currentCenter}
+                />
 
                 {sortedForecasts && sortedForecasts.length > 0 && !activeSelectedStation &&
                     sortedForecasts.map((forecast, index) => (
@@ -256,16 +274,10 @@ function MapContainerComponent({
                         </div>
                     </Overlay>
                 )}
-            </PigeonMap>
 
-            <VehicleCanvasLayer
-                vehicles={renderedVehicles}
-                routeColorsMap={routeColorsMap}
-                selectedVehicleId={selectedVehicle?.id ?? null}
-                onVehicleClick={handleVehicleClick}
-                mapZoom={currentZoom}
-                mapCenter={currentCenter}
-            />
+
+
+            </PigeonMap>
 
             <div style={{ position: 'absolute', top: 10, left: 10, zIndex: 1000 }}>
                 {isLoading.routes && <p>Загрузка маршрутов...</p>}

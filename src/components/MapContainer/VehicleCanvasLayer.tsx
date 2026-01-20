@@ -30,7 +30,10 @@ export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
 }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
-    const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
+    const [dimensions, setDimensions] = useState(() => ({
+        width: window.innerWidth,
+        height: window.innerHeight
+    }));
     const redrawRequestedRef = useRef(false);
 
     // Request redraw when animation frame occurs
