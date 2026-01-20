@@ -2,12 +2,11 @@ import { GeoJson, Map as PigeonMap, Overlay } from "pigeon-maps";
 import config from "@config";
 import { Suspense, useMemo, memo, useState, useEffect, useCallback, useRef } from "react";
 import "./MapContainer.css";
-import type { Route, SelectedRoute, SelectedStation, SelectedVehicle } from "@/types/transport";
+import type { Route, SelectedRoute, SelectedStation, SelectedVehicle, TransportType } from "@/types/transport";
 import { MemoizedStationPopup } from "@components/MapContainer/StationPopup";
 import { useMapData } from "@/hooks/useMapData";
-import { VehicleMarker } from "./VehicleMarker";
+import { VehicleCanvasLayer } from "./VehicleCanvasLayer";
 import { ForecastPopupStation } from "./ForecastPopupStation";
-import { useVehicleSelection } from "@/hooks/useVehicleSelection";
 import { useMapControls } from "@/hooks/useMapControls";
 import { normalizeCoordinate } from "@/utils/coordinates";
 import { calculateViewportBounds, isPointInViewport } from "@/services/viewport";
@@ -106,12 +105,21 @@ function MapContainerComponent({
         setViewportBounds(bounds);
     }, [currentCenter, currentZoom, mapWidth, mapHeight]);
 
-    const { handleVehicleClick } = useVehicleSelection({
-        selectedVehicle,
-        setSelectedVehicle,
-        onStationDeselect,
-        closeStationPopup,
-    });
+    // Handle vehicle click inline
+    const handleVehicleClick = useCallback((vehicle: { id: string; rid: number; rtype: string }) => {
+        closeStationPopup();
+        onStationDeselect();
+
+        if (selectedVehicle?.id === vehicle.id) {
+            setSelectedVehicle(null);
+        } else {
+            setSelectedVehicle({
+                id: vehicle.id,
+                rid: vehicle.rid,
+                rtype: vehicle.rtype as TransportType,
+            });
+        }
+    }, [selectedVehicle, setSelectedVehicle, onStationDeselect, closeStationPopup]);
 
     // Обработчик клика по forecast popup с event delegation
     const handleForecastClick = useCallback((e: React.MouseEvent<HTMLElement>) => {
@@ -203,25 +211,6 @@ function MapContainerComponent({
                     />
                 )}
 
-                {renderedVehicles.map((anim) => (
-                    <Overlay
-                        key={`${anim.id}-${anim.rtype}`}
-                        anchor={[normalizeCoordinate(anim.lat), normalizeCoordinate(anim.lon)]}
-                    >
-                        <VehicleMarker
-                            rnum={anim.rnum}
-                            dir={anim.dir}
-                            rtype={anim.rtype}
-                            color={routeColorsMap.get(anim.rtype) || 'gray'}
-                            onClick={handleVehicleClick}
-                            isSelected={selectedVehicle?.id === anim.id}
-                            data-rid={anim.rid}
-                            data-id={anim.id}
-                            data-rtype={anim.rtype}
-                        />
-                    </Overlay>
-                ))}
-
                 {sortedForecasts && sortedForecasts.length > 0 && !activeSelectedStation &&
                     sortedForecasts.map((forecast, index) => (
                         <Overlay
@@ -268,6 +257,15 @@ function MapContainerComponent({
                     </Overlay>
                 )}
             </PigeonMap>
+
+            <VehicleCanvasLayer
+                vehicles={renderedVehicles}
+                routeColorsMap={routeColorsMap}
+                selectedVehicleId={selectedVehicle?.id ?? null}
+                onVehicleClick={handleVehicleClick}
+                mapZoom={currentZoom}
+                mapCenter={currentCenter}
+            />
 
             <div style={{ position: 'absolute', top: 10, left: 10, zIndex: 1000 }}>
                 {isLoading.routes && <p>Загрузка маршрутов...</p>}
