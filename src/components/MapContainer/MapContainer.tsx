@@ -10,6 +10,7 @@ import { ForecastPopupStation } from "./ForecastPopupStation";
 import { useMapControls } from "@/hooks/useMapControls";
 import { normalizeCoordinate } from "@/utils/coordinates";
 import { calculateViewportBounds, isPointInViewport } from "@/services/viewport";
+import { Spinner } from "@/components/Spinner";
 
 interface MapViewProps {
     center: [number, number];
@@ -45,7 +46,6 @@ function MapContainerComponent({
     const [currentZoom, setCurrentZoom] = useState<number>(initialZoom);
 
     const {
-        geoJsonData,
         vehicles,
         selectedVehicleGeoJson,
         sortedForecasts,
@@ -69,15 +69,12 @@ function MapContainerComponent({
         calculateViewportBounds(initialCenter, initialZoom, window.innerWidth, window.innerHeight)
     );
 
-    // Используем useRef для throttle viewport updates
     const boundsUpdateTimeoutRef = useRef<number | null>(null);
 
     const handleBoundsChanged = useCallback(({ center, zoom }: { center: [number, number]; zoom: number }) => {
-        // Немедленно обновляем центр и зум для плавности карты
         setCurrentCenter(center);
         setCurrentZoom(zoom);
 
-        // Throttle обновления viewport bounds через requestAnimationFrame
         if (boundsUpdateTimeoutRef.current !== null) {
             cancelAnimationFrame(boundsUpdateTimeoutRef.current);
         }
@@ -91,7 +88,6 @@ function MapContainerComponent({
         debouncedOnBoundsChanged({ center, zoom });
     }, [debouncedOnBoundsChanged, mapWidth, mapHeight]);
 
-    // Cleanup throttle на размонтирование
     useEffect(() => {
         return () => {
             if (boundsUpdateTimeoutRef.current !== null) {
@@ -100,7 +96,6 @@ function MapContainerComponent({
         };
     }, []);
 
-    // Update dimensions based on container
     useEffect(() => {
         const updateDimensions = () => {
             if (containerRef.current) {
@@ -120,7 +115,6 @@ function MapContainerComponent({
         setViewportBounds(bounds);
     }, [currentCenter, currentZoom, mapWidth, mapHeight]);
 
-    // Handle vehicle click inline
     const handleVehicleClick = useCallback((vehicle: { id: string; rid: number; rtype: string }) => {
         closeStationPopup();
         onStationDeselect();
@@ -136,7 +130,6 @@ function MapContainerComponent({
         }
     }, [selectedVehicle, setSelectedVehicle, onStationDeselect, closeStationPopup]);
 
-    // Обработчик клика по forecast popup с event delegation
     const handleForecastClick = useCallback((e: React.MouseEvent<HTMLElement>) => {
         e.stopPropagation();
 
@@ -163,12 +156,6 @@ function MapContainerComponent({
         });
         return map;
     }, []);
-
-    const routeGeoJsonStyleCallback = useMemo(() => (feature: { properties?: { stroke?: string } }) => ({
-        stroke: feature.properties?.stroke,
-        strokeWidth: 4,
-        fill: "none",
-    }), []);
 
     const selectedVehicleGeoJsonStyleCallback = useMemo(() => (feature: { properties?: { stroke?: string } }) => ({
         stroke: feature.properties?.stroke,
@@ -207,14 +194,6 @@ function MapContainerComponent({
                 height={mapHeight}
                 key={`${initialCenter[0]}-${initialCenter[1]}-${initialZoom}`}
             >
-                {/* Отключено отображение линий маршрутов */}
-                {/* {geoJsonData && (
-                    <GeoJson
-                        data={geoJsonData}
-                        styleCallback={routeGeoJsonStyleCallback}
-                    />
-                )} */}
-
                 {selectedVehicleGeoJson && (
                     <GeoJson
                         data={selectedVehicleGeoJson}
@@ -261,7 +240,7 @@ function MapContainerComponent({
                         anchor={[normalizeCoordinate(activeSelectedStation.lat), normalizeCoordinate(activeSelectedStation.lng)]}
                     >
                         <div className="wrapper">
-                            <Suspense fallback={<div className="popup-skeleton">Загрузка...</div>}>
+                            <Suspense fallback={<Spinner size="sm" text="Загрузка..." />}>
                                 <MemoizedStationPopup
                                     stationId={activeSelectedStation.id}
                                     stationName={activeSelectedStation.name}
@@ -279,10 +258,10 @@ function MapContainerComponent({
 
             </PigeonMap>
 
-            <div style={{ position: 'absolute', top: 10, left: 10, zIndex: 1000 }}>
-                {isLoading.routes && <p>Загрузка маршрутов...</p>}
-                {isLoading.vehicles && <p>Загрузка ТС...</p>}
-                {isLoading.forecasts && selectedVehicle && <div className="forecast-popup">Загрузка прогнозов...</div>}
+            <div style={{ position: 'absolute', top: 10, left: 10, zIndex: 1000, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {isLoading.routes && <Spinner size="sm" text="Загрузка маршрутов..." inline variant="light" />}
+                {isLoading.vehicles && <Spinner size="sm" text="Загрузка ТС..." inline variant="light" />}
+                {isLoading.forecasts && selectedVehicle && <Spinner size="sm" text="Загрузка прогнозов..." inline variant="light" />}
             </div>
         </div>
     );

@@ -6,6 +6,7 @@ import { Tab, Tabs } from 'react-bootstrap';
 import Stations from './Stations/Stations';
 import type { Route, Station, TransportType, SelectedRoute } from '@/types/transport';
 import { getErrorMessage } from '@/utils/errors';
+import { Spinner } from '@/components/Spinner';
 
 interface SidebarProps {
     routes: Route[];
@@ -82,7 +83,7 @@ function Sidebar({ routes, stations, loading, error, selectedRoutes, onRoutesCha
             </button>
 
             <div className={`sidebar ${isOpen ? 'open' : ''}`}>
-                {loading && <p>Загрузка маршрутов...</p>}
+                {loading && <Spinner size="md" text="Загрузка маршрутов..." />}
                 {error && <p className="error">Ошибка: {getErrorMessage(error)}</p>}
                 {routes.length === 0 && !loading && <p>Маршруты не найдены</p>}
 

@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useCallback, useState } from "react";
+import React, { useRef, useEffect, useCallback } from "react";
 import type { Animation } from "@/types/transport";
 import { useCanvasVehicleAnimations } from "@/hooks/useCanvasVehicleAnimations";
 
@@ -7,7 +7,6 @@ interface VehicleCanvasLayerProps {
     routeColorsMap: Map<string, string>;
     selectedVehicleId: string | null;
     onVehicleClick: (vehicle: Animation) => void;
-    // These props are automatically provided by pigeon-maps to children
     mapState?: {
         center: [number, number];
         zoom: number;
@@ -18,7 +17,6 @@ interface VehicleCanvasLayerProps {
     latLngToPixel?: (latLng: [number, number]) => [number, number];
 }
 
-// Marker constants matching the original CSS
 const MARKER_RADIUS = 16;
 const MARKER_BORDER_WIDTH = 2;
 const SELECTED_MARKER_BORDER_WIDTH = 3;
@@ -38,24 +36,20 @@ export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
     const containerRef = useRef<HTMLDivElement>(null);
     const redrawRequestedRef = useRef(false);
     
-    // Use dimensions from mapState if available, otherwise use window dimensions
     const dimensions = mapState 
         ? { width: mapState.width, height: mapState.height }
         : { width: window.innerWidth, height: window.innerHeight };
 
-    // Request redraw when animation frame occurs
     const handleAnimationFrame = useCallback(() => {
         redrawRequestedRef.current = true;
     }, []);
 
-    // Use animation hook
     const { animationStates, hasActiveAnimations } = useCanvasVehicleAnimations(
         vehicles,
         2000,
         handleAnimationFrame
     );
 
-    // Draw a single vehicle marker
     const drawMarker = useCallback(
         (
             ctx: CanvasRenderingContext2D,
@@ -71,7 +65,6 @@ export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
 
             ctx.save();
 
-            // Draw glow effect for selected marker
             if (isSelected) {
                 ctx.shadowColor = "rgba(0, 123, 255, 0.8)";
                 ctx.shadowBlur = 14;
@@ -80,28 +73,23 @@ export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
                 ctx.fillStyle = "white";
                 ctx.fill();
                 
-                // Reset shadow for main marker
                 ctx.shadowBlur = 0;
             }
 
-            // Draw main circle
             ctx.beginPath();
             ctx.arc(x, y, radius, 0, Math.PI * 2);
             ctx.fillStyle = color;
             ctx.fill();
 
-            // Draw white border
             ctx.strokeStyle = "white";
             ctx.lineWidth = borderWidth;
             ctx.stroke();
 
-            // Draw route number text
             ctx.fillStyle = "white";
             ctx.font = "bold 12px sans-serif";
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             
-            // Text shadow for readability
             ctx.shadowColor = "rgba(0, 0, 0, 0.6)";
             ctx.shadowBlur = 1;
             ctx.shadowOffsetX = 1;
@@ -109,12 +97,10 @@ export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
             
             ctx.fillText(vehicle.rnum, x, y);
 
-            // Reset shadow
             ctx.shadowBlur = 0;
             ctx.shadowOffsetX = 0;
             ctx.shadowOffsetY = 0;
 
-            // Draw direction arrow
             const dirRadians = (vehicle.dir * Math.PI) / 180;
             const arrowX = x + Math.cos(dirRadians) * ARROW_OFFSET * scale;
             const arrowY = y + Math.sin(dirRadians) * ARROW_OFFSET * scale;
@@ -122,7 +108,6 @@ export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
             ctx.translate(arrowX, arrowY);
             ctx.rotate(dirRadians);
 
-            // Draw triangle arrow
             ctx.beginPath();
             ctx.moveTo(0, -ARROW_SIZE * scale);
             ctx.lineTo(-4 * scale, ARROW_SIZE / 2 * scale);
@@ -136,7 +121,6 @@ export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
         [routeColorsMap]
     );
 
-    // Main render loop
     const render = useCallback(() => {
         const canvas = canvasRef.current;
         if (!canvas || !latLngToPixel) return;
@@ -147,35 +131,27 @@ export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
         const dpr = window.devicePixelRatio || 1;
         const { width, height } = dimensions;
 
-        // Set canvas size accounting for device pixel ratio
         canvas.width = width * dpr;
         canvas.height = height * dpr;
         canvas.style.width = `${width}px`;
         canvas.style.height = `${height}px`;
 
-        // Scale context for retina displays
         ctx.scale(dpr, dpr);
 
-        // Clear canvas
         ctx.clearRect(0, 0, width, height);
 
-        // Draw all vehicles
         vehicles.forEach((vehicle) => {
             const key = `${vehicle.id}-${vehicle.rtype}`;
             const animState = animationStates.current.get(key);
             
-            // Use animated position if available, otherwise use current position
             let lat = animState ? animState.current.lat : vehicle.lat;
             let lon = animState ? animState.current.lon : vehicle.lon;
 
-            // Normalize coordinates (convert from microdegrees to degrees)
             lat = lat / 1000000;
             lon = lon / 1000000;
 
-            // Use pigeon-maps latLngToPixel for accurate positioning during drag
             const [x, y] = latLngToPixel([lat, lon]);
 
-            // Skip markers outside viewport with margin
             if (x < -50 || x > width + 50 || y < -50 || y > height + 50) {
                 return;
             }
@@ -187,12 +163,10 @@ export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
         redrawRequestedRef.current = false;
     }, [vehicles, animationStates, dimensions, selectedVehicleId, drawMarker, latLngToPixel]);
 
-    // Render on mount and when dependencies change
     useEffect(() => {
         render();
     }, [render]);
 
-    // Continuous render loop while animations are active
     useEffect(() => {
         let rafId: number;
 
@@ -210,7 +184,6 @@ export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
         };
     }, [render, hasActiveAnimations]);
 
-    // Calculate marker positions for interactive overlays
     const markerPositions = latLngToPixel ? vehicles.map((vehicle) => {
         const key = `${vehicle.id}-${vehicle.rtype}`;
         const animState = animationStates.current.get(key);
@@ -218,30 +191,26 @@ export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
         let lat = animState ? animState.current.lat : vehicle.lat;
         let lon = animState ? animState.current.lon : vehicle.lon;
 
-        // Normalize coordinates (convert from microdegrees to degrees)
         lat = lat / 1000000;
         lon = lon / 1000000;
 
         const { width, height } = dimensions;
-        // Use pigeon-maps latLngToPixel for accurate positioning during drag
         const [x, y] = latLngToPixel([lat, lon]);
 
         const isSelected = vehicle.id === selectedVehicleId;
-        const radius = MARKER_RADIUS * (isSelected ? SELECTED_MARKER_SCALE : 1) + 4; // +4 for easier clicking
+        const radius = MARKER_RADIUS * (isSelected ? SELECTED_MARKER_SCALE : 1) + 4;
 
         return {
             vehicle,
             x,
             y,
             radius,
-            // Only show if in viewport
             visible: x >= -50 && x <= width + 50 && y >= -50 && y <= height + 50
         };
     }).filter(pos => pos.visible) : [];
 
     return (
         <>
-            {/* Canvas layer for rendering - non-interactive */}
             <div
                 ref={containerRef}
                 style={{
@@ -265,7 +234,6 @@ export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
                     }}
                 />
             </div>
-            {/* Interactive zones for each marker */}
             {markerPositions.map((pos, idx) => (
                 <div
                     key={`${pos.vehicle.id}-${pos.vehicle.rtype}-${idx}`}
@@ -283,8 +251,6 @@ export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
                         pointerEvents: "auto",
                         cursor: "pointer",
                         zIndex: 1001,
-                        // For debugging: uncomment to see interactive zones
-                        // background: "rgba(255, 0, 0, 0.2)",
                     }}
                 />
             ))}

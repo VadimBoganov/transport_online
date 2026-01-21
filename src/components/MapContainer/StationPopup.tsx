@@ -4,6 +4,7 @@ import { startTransition } from "react";
 import type { VehicleForecast } from "@/types/transport";
 import React from "react";
 import { useStationPopup } from "@/hooks/useStationPopup";
+import { Spinner } from "@/components/Spinner";
 
 function StationPopupContent({ forecasts }: { forecasts: VehicleForecast[] | null }) {
     if (!forecasts || forecasts.length === 0) {
@@ -67,7 +68,7 @@ export function StationPopup({ stationId, stationName, onDeselect }: StationPopu
             <h4>{stationName}</h4>
 
             {isLoading ? (
-                <p>Загрузка прогнозов...</p>
+                <Spinner size="sm" text="Загрузка прогнозов..." />
             ) : (
                 <StationPopupContent forecasts={forecasts || null} />
             )}

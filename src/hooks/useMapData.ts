@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useRouteNodesBatch } from "@/hooks/useRouteNodesBatch";
 import { useVehiclePositions } from "@/hooks/useVehiclePositions";
 import { useRouteNodes } from "@/hooks/useRouteNodes";
 import useVehicleForecasts from "@/hooks/useVehicleForecasts";
 
-import { buildRouteNodesMap, buildRouteGeoJSON, getActiveRoutes, makeRouteIdsString, type RouteGeoJSON } from "@/services/routeService";
+import { getActiveRoutes, makeRouteIdsString, type RouteGeoJSON } from "@/services/routeService";
 import { buildSelectedVehicleGeoJSON, filterVehiclesBySelectedRoutes, type SelectedVehicleGeoJSON } from "@/services/vehicleService";
 import { processForecasts } from "@/services/forecastService";
 import { shouldOpenStationPopup } from "@/services/stationService";
@@ -41,8 +40,6 @@ export const useMapData = ({
 }: UseMapDataProps): UseMapDataResult => {
     const [activeSelectedStation, setActiveSelectedStation] = useState<SelectedStation | null>(null);
 
-    // Отключено получение routeNodes для маршрутов (не нужны, так как линии маршрутов не отображаются)
-    // const routeNodes = useRouteNodesBatch(selectedRoutes);
     const { data: selectedVehicleRouteNodes } = useRouteNodes({ routeId: selectedVehicle?.rid ?? null });
 
     const openForecastStationPopup = useCallback((station: SelectedStation) => {
@@ -59,15 +56,6 @@ export const useMapData = ({
     }, [selectedRoutes, routes]);
 
     const { data: vehiclePositions, isLoading: vehiclesLoading } = useVehiclePositions(makeRouteIdsString(activeRoutes));
-
-    // Отключено построение GeoJSON для маршрутов (линии не отображаются)
-    // const { routeNodesMap, isLoading: nodesLoading } = useMemo(() => {
-    //     return buildRouteNodesMap(routeNodes, selectedRoutes);
-    // }, [routeNodes, selectedRoutes]);
-
-    // const geoJsonData = useMemo(() => {
-    //     return buildRouteGeoJSON(activeRoutes, routeNodesMap);
-    // }, [activeRoutes, routeNodesMap]);
 
     const geoJsonData = null;
     const nodesLoading = false;
