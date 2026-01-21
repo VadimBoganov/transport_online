@@ -13,6 +13,8 @@
     gap: 8px;
     margin: 0;
     transform: none;
+    position: relative;
+    z-index: 2001;
 }
 
 .station-popup h4 {

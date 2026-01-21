@@ -251,7 +251,7 @@ export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
                     width: "100%",
                     height: "100%",
                     pointerEvents: "none",
-                    zIndex: 10,
+                    zIndex: 1000,
                 }}
             >
                 <canvas
@@ -282,7 +282,7 @@ export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
                         borderRadius: "50%",
                         pointerEvents: "auto",
                         cursor: "pointer",
-                        zIndex: 11,
+                        zIndex: 1001,
                         // For debugging: uncomment to see interactive zones
                         // background: "rgba(255, 0, 0, 0.2)",
                     }}
