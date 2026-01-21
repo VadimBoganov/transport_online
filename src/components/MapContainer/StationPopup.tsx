@@ -5,6 +5,7 @@ import type { VehicleForecast } from "@/types/transport";
 import React from "react";
 import { useStationPopup } from "@/hooks/useStationPopup";
 import { Spinner } from "@/components/Spinner";
+import { useDelayedLoading } from "@/hooks/useDelayedLoading";
 
 function StationPopupContent({ forecasts }: { forecasts: VehicleForecast[] | null }) {
     if (!forecasts || forecasts.length === 0) {
@@ -62,13 +63,16 @@ interface StationPopupProps {
 
 export function StationPopup({ stationId, stationName, onDeselect }: StationPopupProps) {
     const { data: forecasts, isLoading } = useStationForecast({ stationId });
+    const showLoading = useDelayedLoading(isLoading);
 
     return (
         <div className="station-popup">
             <h4>{stationName}</h4>
 
             {isLoading ? (
-                <Spinner size="sm" text="Загрузка прогнозов..." />
+                showLoading ? (
+                    <Spinner size="sm" text="Загрузка прогнозов..." />
+                ) : null
             ) : (
                 <StationPopupContent forecasts={forecasts || null} />
             )}

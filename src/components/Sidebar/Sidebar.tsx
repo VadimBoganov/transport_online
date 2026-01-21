@@ -7,6 +7,7 @@ import Stations from './Stations/Stations';
 import type { Route, Station, TransportType, SelectedRoute } from '@/types/transport';
 import { getErrorMessage } from '@/utils/errors';
 import { Spinner } from '@/components/Spinner';
+import { useDelayedLoading } from '@/hooks/useDelayedLoading';
 
 interface SidebarProps {
     routes: Route[];
@@ -22,6 +23,7 @@ function Sidebar({ routes, stations, loading, error, selectedRoutes, onRoutesCha
     const [isOpen, setIsOpen] = useState(false);
     const [activeTransportType, setActiveTransportType] = useState<TransportType | null>(null);
     const [activeTab, setActiveTab] = useState('routes');
+    const showLoading = useDelayedLoading(loading);
 
     const handleRouteToggle = (type: TransportType, num: string) => {
         const routesWithSameNum = routes.filter(r => r.num === num && r.type === type);
@@ -83,7 +85,7 @@ function Sidebar({ routes, stations, loading, error, selectedRoutes, onRoutesCha
             </button>
 
             <div className={`sidebar ${isOpen ? 'open' : ''}`}>
-                {loading && <Spinner size="md" text="Загрузка маршрутов..." />}
+                {showLoading && <Spinner size="md" text="Загрузка маршрутов..." />}
                 {error && <p className="error">Ошибка: {getErrorMessage(error)}</p>}
                 {routes.length === 0 && !loading && <p>Маршруты не найдены</p>}
 

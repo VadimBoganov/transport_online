@@ -11,6 +11,7 @@ import { useMapControls } from "@/hooks/useMapControls";
 import { normalizeCoordinate } from "@/utils/coordinates";
 import { calculateViewportBounds, isPointInViewport } from "@/services/viewport";
 import { Spinner } from "@/components/Spinner";
+import { useDelayedLoading } from "@/hooks/useDelayedLoading";
 
 interface MapViewProps {
     center: [number, number];
@@ -59,6 +60,10 @@ function MapContainerComponent({
         selectedStation,
         selectedVehicle,
     });
+
+    const showRoutesLoading = useDelayedLoading(isLoading.routes);
+    const showVehiclesLoading = useDelayedLoading(isLoading.vehicles);
+    const showForecastsLoading = useDelayedLoading(isLoading.forecasts);
 
     useEffect(() => {
         setCurrentCenter(initialCenter);
@@ -259,9 +264,9 @@ function MapContainerComponent({
             </PigeonMap>
 
             <div style={{ position: 'absolute', top: 10, left: 10, zIndex: 1000, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                {isLoading.routes && <Spinner size="sm" text="Загрузка маршрутов..." inline variant="light" />}
-                {isLoading.vehicles && <Spinner size="sm" text="Загрузка ТС..." inline variant="light" />}
-                {isLoading.forecasts && selectedVehicle && <Spinner size="sm" text="Загрузка прогнозов..." inline variant="light" />}
+                {showRoutesLoading && <Spinner size="sm" text="Загрузка маршрутов..." inline variant="light" />}
+                {showVehiclesLoading && <Spinner size="sm" text="Загрузка ТС..." inline variant="light" />}
+                {showForecastsLoading && selectedVehicle && <Spinner size="sm" text="Загрузка прогнозов..." inline variant="light" />}
             </div>
         </div>
     );
