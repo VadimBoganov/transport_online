@@ -225,6 +225,8 @@ export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
             >
                 <canvas
                     ref={canvasRef}
+                    className="vehicle-canvas"
+                    data-testid="vehicle-canvas"
                     style={{
                         position: "absolute",
                         top: 0,

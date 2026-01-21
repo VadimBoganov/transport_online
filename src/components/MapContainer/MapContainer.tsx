@@ -198,6 +198,7 @@ function MapContainerComponent({
                 width={mapWidth}
                 height={mapHeight}
                 key={`${initialCenter[0]}-${initialCenter[1]}-${initialZoom}`}
+                data-testid="pigeon-map"
             >
                 {selectedVehicleGeoJson && (
                     <GeoJson
