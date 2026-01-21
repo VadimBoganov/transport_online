@@ -1,6 +1,5 @@
 import React, { useRef, useEffect, useCallback, useState } from "react";
 import type { Animation } from "@/types/transport";
-import { latLonToCanvasPixel } from "@/utils/mapProjection";
 import { useCanvasVehicleAnimations } from "@/hooks/useCanvasVehicleAnimations";
 
 interface VehicleCanvasLayerProps {
@@ -8,8 +7,15 @@ interface VehicleCanvasLayerProps {
     routeColorsMap: Map<string, string>;
     selectedVehicleId: string | null;
     onVehicleClick: (vehicle: Animation) => void;
-    mapZoom: number;
-    mapCenter: [number, number];
+    // These props are automatically provided by pigeon-maps to children
+    mapState?: {
+        center: [number, number];
+        zoom: number;
+        bounds: { ne: [number, number]; sw: [number, number] };
+        width: number;
+        height: number;
+    };
+    latLngToPixel?: (latLng: [number, number]) => [number, number];
 }
 
 // Marker constants matching the original CSS
@@ -25,16 +31,17 @@ export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
     routeColorsMap,
     selectedVehicleId,
     onVehicleClick,
-    mapZoom,
-    mapCenter,
+    mapState,
+    latLngToPixel,
 }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
-    const [dimensions, setDimensions] = useState(() => ({
-        width: window.innerWidth,
-        height: window.innerHeight
-    }));
     const redrawRequestedRef = useRef(false);
+    
+    // Use dimensions from mapState if available, otherwise use window dimensions
+    const dimensions = mapState 
+        ? { width: mapState.width, height: mapState.height }
+        : { width: window.innerWidth, height: window.innerHeight };
 
     // Request redraw when animation frame occurs
     const handleAnimationFrame = useCallback(() => {
@@ -47,22 +54,6 @@ export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
         2000,
         handleAnimationFrame
     );
-
-    // Update canvas dimensions based on container
-    useEffect(() => {
-        const updateDimensions = () => {
-            if (containerRef.current) {
-                const rect = containerRef.current.getBoundingClientRect();
-                const width = rect.width || 800;
-                const height = rect.height || 600;
-                setDimensions({ width, height });
-            }
-        };
-
-        updateDimensions();
-        window.addEventListener("resize", updateDimensions);
-        return () => window.removeEventListener("resize", updateDimensions);
-    }, []);
 
     // Draw a single vehicle marker
     const drawMarker = useCallback(
@@ -148,7 +139,7 @@ export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
     // Main render loop
     const render = useCallback(() => {
         const canvas = canvasRef.current;
-        if (!canvas) return;
+        if (!canvas || !latLngToPixel) return;
 
         const ctx = canvas.getContext("2d");
         if (!ctx) return;
@@ -181,14 +172,8 @@ export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
             lat = lat / 1000000;
             lon = lon / 1000000;
 
-            const [x, y] = latLonToCanvasPixel(
-                lat,
-                lon,
-                mapZoom,
-                width,
-                height,
-                mapCenter
-            );
+            // Use pigeon-maps latLngToPixel for accurate positioning during drag
+            const [x, y] = latLngToPixel([lat, lon]);
 
             // Skip markers outside viewport with margin
             if (x < -50 || x > width + 50 || y < -50 || y > height + 50) {
@@ -200,7 +185,7 @@ export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
         });
 
         redrawRequestedRef.current = false;
-    }, [vehicles, animationStates, mapZoom, mapCenter, dimensions, selectedVehicleId, drawMarker]);
+    }, [vehicles, animationStates, dimensions, selectedVehicleId, drawMarker, latLngToPixel]);
 
     // Render on mount and when dependencies change
     useEffect(() => {
@@ -226,7 +211,7 @@ export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
     }, [render, hasActiveAnimations]);
 
     // Calculate marker positions for interactive overlays
-    const markerPositions = vehicles.map((vehicle) => {
+    const markerPositions = latLngToPixel ? vehicles.map((vehicle) => {
         const key = `${vehicle.id}-${vehicle.rtype}`;
         const animState = animationStates.current.get(key);
         
@@ -238,14 +223,8 @@ export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
         lon = lon / 1000000;
 
         const { width, height } = dimensions;
-        const [x, y] = latLonToCanvasPixel(
-            lat,
-            lon,
-            mapZoom,
-            width,
-            height,
-            mapCenter
-        );
+        // Use pigeon-maps latLngToPixel for accurate positioning during drag
+        const [x, y] = latLngToPixel([lat, lon]);
 
         const isSelected = vehicle.id === selectedVehicleId;
         const radius = MARKER_RADIUS * (isSelected ? SELECTED_MARKER_SCALE : 1) + 4; // +4 for easier clicking
@@ -258,7 +237,7 @@ export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
             // Only show if in viewport
             visible: x >= -50 && x <= width + 50 && y >= -50 && y <= height + 50
         };
-    }).filter(pos => pos.visible);
+    }).filter(pos => pos.visible) : [];
 
     return (
         <>

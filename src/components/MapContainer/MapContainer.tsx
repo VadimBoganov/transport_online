@@ -200,11 +200,12 @@ function MapContainerComponent({
     return (
         <div className="map-container" ref={containerRef}>
             <PigeonMap
-                center={initialCenter}
-                zoom={initialZoom}
+                defaultCenter={initialCenter}
+                defaultZoom={initialZoom}
                 onBoundsChanged={handleBoundsChanged}
                 width={mapWidth}
                 height={mapHeight}
+                key={`${initialCenter[0]}-${initialCenter[1]}-${initialZoom}`}
             >
                 {geoJsonData && (
                     <GeoJson
@@ -225,8 +226,6 @@ function MapContainerComponent({
                     routeColorsMap={routeColorsMap}
                     selectedVehicleId={selectedVehicle?.id ?? null}
                     onVehicleClick={handleVehicleClick}
-                    mapZoom={currentZoom}
-                    mapCenter={currentCenter}
                 />
 
                 {sortedForecasts && sortedForecasts.length > 0 && !activeSelectedStation &&
