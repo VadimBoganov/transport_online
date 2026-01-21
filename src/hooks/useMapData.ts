@@ -41,7 +41,8 @@ export const useMapData = ({
 }: UseMapDataProps): UseMapDataResult => {
     const [activeSelectedStation, setActiveSelectedStation] = useState<SelectedStation | null>(null);
 
-    const routeNodes = useRouteNodesBatch(selectedRoutes);
+    // Отключено получение routeNodes для маршрутов (не нужны, так как линии маршрутов не отображаются)
+    // const routeNodes = useRouteNodesBatch(selectedRoutes);
     const { data: selectedVehicleRouteNodes } = useRouteNodes({ routeId: selectedVehicle?.rid ?? null });
 
     const openForecastStationPopup = useCallback((station: SelectedStation) => {
@@ -59,13 +60,17 @@ export const useMapData = ({
 
     const { data: vehiclePositions, isLoading: vehiclesLoading } = useVehiclePositions(makeRouteIdsString(activeRoutes));
 
-    const { routeNodesMap, isLoading: nodesLoading } = useMemo(() => {
-        return buildRouteNodesMap(routeNodes, selectedRoutes);
-    }, [routeNodes, selectedRoutes]);
+    // Отключено построение GeoJSON для маршрутов (линии не отображаются)
+    // const { routeNodesMap, isLoading: nodesLoading } = useMemo(() => {
+    //     return buildRouteNodesMap(routeNodes, selectedRoutes);
+    // }, [routeNodes, selectedRoutes]);
 
-    const geoJsonData = useMemo(() => {
-        return buildRouteGeoJSON(activeRoutes, routeNodesMap);
-    }, [activeRoutes, routeNodesMap]);
+    // const geoJsonData = useMemo(() => {
+    //     return buildRouteGeoJSON(activeRoutes, routeNodesMap);
+    // }, [activeRoutes, routeNodesMap]);
+
+    const geoJsonData = null;
+    const nodesLoading = false;
 
     const vehicles = useMemo(() => {
         return filterVehiclesBySelectedRoutes(vehiclePositions?.anims, selectedRoutes);

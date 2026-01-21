@@ -207,12 +207,13 @@ function MapContainerComponent({
                 height={mapHeight}
                 key={`${initialCenter[0]}-${initialCenter[1]}-${initialZoom}`}
             >
-                {geoJsonData && (
+                {/* Отключено отображение линий маршрутов */}
+                {/* {geoJsonData && (
                     <GeoJson
                         data={geoJsonData}
                         styleCallback={routeGeoJsonStyleCallback}
                     />
-                )}
+                )} */}
 
                 {selectedVehicleGeoJson && (
                     <GeoJson
