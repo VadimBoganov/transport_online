@@ -32,54 +32,14 @@ export const useCanvasVehicleAnimations = (
     const animationStates = useRef<Map<string, CanvasAnimationState>>(new Map());
     const animationFrameRef = useRef<number | null>(null);
     const hasActiveAnimationsRef = useRef(false);
+    const onAnimationFrameRef = useRef(onAnimationFrame);
 
-    // Update animation states when vehicles change
+    // Update ref when callback changes
     useEffect(() => {
-        const newStates = new Map<string, CanvasAnimationState>();
-        const currentTime = performance.now();
+        onAnimationFrameRef.current = onAnimationFrame;
+    }, [onAnimationFrame]);
 
-        vehicles.forEach((vehicle) => {
-            const key = `${vehicle.id}-${vehicle.rtype}`;
-            const target = { lat: vehicle.lat, lon: vehicle.lon };
-            const existingState = animationStates.current.get(key);
-
-            if (!existingState) {
-                // New marker - set immediately without animation
-                newStates.set(key, {
-                    target,
-                    current: target,
-                    startTime: currentTime,
-                    startPosition: target,
-                });
-            } else {
-                // Check if coordinates changed
-                const targetChanged =
-                    Math.abs(target.lat - existingState.target.lat) > 0.0001 ||
-                    Math.abs(target.lon - existingState.target.lon) > 0.0001;
-
-                if (targetChanged) {
-                    // Start new animation from current position
-                    newStates.set(key, {
-                        target,
-                        current: existingState.current,
-                        startTime: currentTime,
-                        startPosition: existingState.current,
-                    });
-                } else {
-                    // Coordinates unchanged, continue existing animation
-                    newStates.set(key, existingState);
-                }
-            }
-        });
-
-        animationStates.current = newStates;
-
-        // Start animation loop if not already running
-        if (animationFrameRef.current === null) {
-            animationFrameRef.current = requestAnimationFrame(animate);
-        }
-    }, [vehicles, duration]);
-
+    // Define animate before using it in useEffect
     const animate = useCallback(() => {
         const now = performance.now();
         let hasActiveAnimations = false;
@@ -109,15 +69,75 @@ export const useCanvasVehicleAnimations = (
 
         hasActiveAnimationsRef.current = hasActiveAnimations;
 
-        // Notify parent that a frame needs to be rendered
-        onAnimationFrame?.();
+        // Notify parent that a frame needs to be rendered - use ref to get latest callback
+        onAnimationFrameRef.current?.();
 
         if (hasActiveAnimations) {
             animationFrameRef.current = requestAnimationFrame(animate);
         } else {
             animationFrameRef.current = null;
         }
-    }, [duration, onAnimationFrame]);
+    }, [duration]);
+
+    // Update animation states when vehicles change
+    useEffect(() => {
+        const newStates = new Map<string, CanvasAnimationState>();
+        const currentTime = performance.now();
+        let hasNewAnimations = false;
+
+        vehicles.forEach((vehicle) => {
+            const key = `${vehicle.id}-${vehicle.rtype}`;
+            const target = { lat: vehicle.lat, lon: vehicle.lon };
+            const existingState = animationStates.current.get(key);
+
+            if (!existingState) {
+                // New marker - set immediately without animation
+                newStates.set(key, {
+                    target,
+                    current: target,
+                    startTime: currentTime,
+                    startPosition: target,
+                });
+            } else {
+                // Check if coordinates changed
+                const targetChanged =
+                    Math.abs(target.lat - existingState.target.lat) > 0.0001 ||
+                    Math.abs(target.lon - existingState.target.lon) > 0.0001;
+
+                if (targetChanged) {
+                    // Start new animation from current position
+                    hasNewAnimations = true;
+                    newStates.set(key, {
+                        target,
+                        current: existingState.current,
+                        startTime: currentTime,
+                        startPosition: existingState.current,
+                    });
+                } else {
+                    // Coordinates unchanged, continue existing animation
+                    const elapsed = currentTime - existingState.startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    if (progress < 1) {
+                        hasNewAnimations = true;
+                    }
+                    newStates.set(key, existingState);
+                }
+            }
+        });
+
+        animationStates.current = newStates;
+        hasActiveAnimationsRef.current = hasNewAnimations;
+
+        // Always restart animation loop if there are active animations or new animations
+        if (hasNewAnimations || animationStates.current.size > 0) {
+            // Cancel existing frame if any
+            if (animationFrameRef.current !== null) {
+                cancelAnimationFrame(animationFrameRef.current);
+            }
+            // Start new animation loop
+            animationFrameRef.current = requestAnimationFrame(animate);
+        }
+    }, [vehicles, duration, animate]);
 
     // Cleanup on unmount
     useEffect(() => {
