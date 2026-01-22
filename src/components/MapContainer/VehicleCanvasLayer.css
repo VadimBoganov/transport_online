@@ -23,3 +23,43 @@
     cursor: pointer;
     z-index: 1001;
 }
+
+.vehicle-tooltip {
+    position: absolute;
+    transform: translate(-50%, -100%);
+    pointer-events: none;
+    z-index: 2000;
+    margin-bottom: 8px;
+}
+
+.vehicle-tooltip-content {
+    background-color: rgba(0, 0, 0, 0.85);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.vehicle-tooltip-gosnum {
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.vehicle-tooltip-time {
+    font-size: 11px;
+    opacity: 0.9;
+}
+
+.vehicle-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border: 5px solid transparent;
+    border-top-color: rgba(0, 0, 0, 0.85);
+}

@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useCallback } from "react";
+import React, { useRef, useEffect, useCallback, useState } from "react";
 import type { Animation } from "@/types/transport";
 import { useCanvasVehicleAnimations } from "@/hooks/useCanvasVehicleAnimations";
 import "./VehicleCanvasLayer.css";
@@ -25,6 +25,26 @@ const SELECTED_MARKER_SCALE = 1.15;
 const ARROW_SIZE = 12;
 const ARROW_OFFSET = 14;
 
+const getTimeSinceUpdate = (lasttime: string, currentTime: number = Date.now()): number => {
+    if (!lasttime) return 0;
+
+    const currentTimeSeconds = Math.floor(currentTime / 1000) - 10800;
+
+    const [datePart, timePart] = lasttime.split(' ');
+    const [day, month, year] = datePart.split('.').map(Number);
+    const [hours, minutes, seconds] = timePart.split(':').map(Number);
+
+    const date = new Date(year, month - 1, day, hours, minutes, seconds);
+
+    const lastTimeSeconds = Math.floor(date.getTime() / 1000);
+
+    if (isNaN(lastTimeSeconds)) {
+        return 0;
+    }
+
+    return Math.max(0, currentTimeSeconds - lastTimeSeconds);
+};
+
 export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
     vehicles,
     routeColorsMap,
@@ -36,8 +56,10 @@ export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const redrawRequestedRef = useRef(false);
-    
-    const dimensions = mapState 
+    const [hoveredVehicleId, setHoveredVehicleId] = useState<string | null>(null);
+    const [currentTime, setCurrentTime] = useState(Date.now());
+
+    const dimensions = mapState
         ? { width: mapState.width, height: mapState.height }
         : { width: window.innerWidth, height: window.innerHeight };
 
@@ -73,7 +95,7 @@ export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
                 ctx.arc(x, y, radius, 0, Math.PI * 2);
                 ctx.fillStyle = "white";
                 ctx.fill();
-                
+
                 ctx.shadowBlur = 0;
             }
 
@@ -90,12 +112,12 @@ export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
             ctx.font = "bold 12px sans-serif";
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
-            
+
             ctx.shadowColor = "rgba(0, 0, 0, 0.6)";
             ctx.shadowBlur = 1;
             ctx.shadowOffsetX = 1;
             ctx.shadowOffsetY = 1;
-            
+
             ctx.fillText(vehicle.rnum, x, y);
 
             ctx.shadowBlur = 0;
@@ -144,7 +166,7 @@ export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
         vehicles.forEach((vehicle) => {
             const key = `${vehicle.id}-${vehicle.rtype}`;
             const animState = animationStates.current.get(key);
-            
+
             let lat = animState ? animState.current.lat : vehicle.lat;
             let lon = animState ? animState.current.lon : vehicle.lon;
 
@@ -185,10 +207,20 @@ export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
         };
     }, [render, hasActiveAnimations]);
 
+    useEffect(() => {
+        if (!hoveredVehicleId) return;
+
+        const interval = setInterval(() => {
+            setCurrentTime(Date.now());
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [hoveredVehicleId]);
+
     const markerPositions = latLngToPixel ? vehicles.map((vehicle) => {
         const key = `${vehicle.id}-${vehicle.rtype}`;
         const animState = animationStates.current.get(key);
-        
+
         let lat = animState ? animState.current.lat : vehicle.lat;
         let lon = animState ? animState.current.lon : vehicle.lon;
 
@@ -210,6 +242,14 @@ export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
         };
     }).filter(pos => pos.visible) : [];
 
+    const hoveredVehicle = hoveredVehicleId
+        ? vehicles.find(v => v.id === hoveredVehicleId)
+        : null;
+
+    const hoveredPosition = hoveredVehicle
+        ? markerPositions.find(pos => pos.vehicle.id === hoveredVehicleId)
+        : null;
+
     return (
         <>
             <div
@@ -229,6 +269,8 @@ export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
                         e.stopPropagation();
                         onVehicleClick(pos.vehicle);
                     }}
+                    onMouseEnter={() => setHoveredVehicleId(pos.vehicle.id)}
+                    onMouseLeave={() => setHoveredVehicleId(null)}
                     className="vehicle-marker-clickable"
                     style={{
                         left: pos.x - pos.radius,
@@ -238,6 +280,22 @@ export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
                     }}
                 />
             ))}
+            {hoveredVehicle && hoveredPosition && (
+                <div
+                    className="vehicle-tooltip"
+                    style={{
+                        left: hoveredPosition.x,
+                        top: hoveredPosition.y - hoveredPosition.radius - 10,
+                    }}
+                >
+                    <div className="vehicle-tooltip-content">
+                        <div className="vehicle-tooltip-gosnum">{hoveredVehicle.gos_num}</div>
+                        <div className="vehicle-tooltip-time">
+                            {getTimeSinceUpdate(hoveredVehicle.lasttime, currentTime)} сек
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 };
