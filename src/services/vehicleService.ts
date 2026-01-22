@@ -1,6 +1,7 @@
-import type { Animation, RouteNode, SelectedRoute } from "@/types/transport";
+import type { Animation, RouteNode, SelectedRoute, SelectedVehicle } from "@/types/transport";
 import config from "@config";
 import { buildLineStringGeoJSON, type LineStringFeatureCollection } from "@/utils/geoJson";
+import { isPointInViewport, type ViewportBounds } from "./viewport";
 
 export type SelectedVehicleGeoJSON = LineStringFeatureCollection;
 
@@ -35,4 +36,30 @@ export const filterVehiclesBySelectedRoutes = (
 
     const selectedRouteIds = new Set(selectedRoutes.map(r => r.id));
     return vehicles.filter(anim => selectedRouteIds.has(anim.rid));
+};
+
+export const filterVisibleVehicles = (
+    vehicles: Animation[],
+    viewportBounds: ViewportBounds,
+    selectedVehicle: SelectedVehicle | null
+): Animation[] => {
+    if (vehicles.length === 0) return vehicles;
+
+    return vehicles.filter((anim) => {
+        if (selectedVehicle?.id === anim.id) return true;
+        return isPointInViewport(anim.lat, anim.lon, viewportBounds);
+    });
+};
+
+export const limitRenderedVehicles = (
+    vehicles: Animation[],
+    zoom: number
+): Animation[] => {
+    if (zoom < 12) {
+        return vehicles.slice(0, 150);
+    }
+    if (zoom < 14) {
+        return vehicles.slice(0, 300);
+    }
+    return vehicles.slice(0, 500);
 };

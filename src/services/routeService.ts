@@ -1,6 +1,6 @@
 import type { UseQueryResult } from "@tanstack/react-query";
 import config from "@config";
-import type { Route, RouteNode, SelectedRoute } from "@/types/transport";
+import type { Route, RouteNode, SelectedRoute, TransportType } from "@/types/transport";
 import { buildLineStringGeoJSON, type LineStringFeatureCollection } from "@/utils/geoJson";
 
 export type RouteGeoJSON = LineStringFeatureCollection;
@@ -64,3 +64,33 @@ export const getActiveRoutes = (
 export const makeRouteIdsString = (routes: SelectedRoute[]): string | null => {
     return routes.length > 0 ? routes.map(r => `${r.id}-0`).join(',') : null;
 }
+
+export const createRouteColorsMap = (): Map<string, string> => {
+    const map = new Map<string, string>();
+    config.routes.forEach(rt => {
+        map.set(rt.type, rt.color);
+    });
+    return map;
+};
+
+export interface GroupedRoute {
+    type: TransportType;
+    title: string;
+    routes: Route[][];
+}
+
+export const groupRoutesByType = (routes: Route[]): GroupedRoute[] => {
+    const map = new Map<string, Route[]>();
+
+    routes.forEach(route => {
+        const key = `${route.num}-${route.type}`;
+        if (!map.has(key)) map.set(key, []);
+        map.get(key)!.push(route);
+    });
+
+    return config.routes.map(rtConfig => ({
+        type: rtConfig.type,
+        title: rtConfig.title,
+        routes: Array.from(map.values()).filter(r => r[0].type === rtConfig.type)
+    }));
+};

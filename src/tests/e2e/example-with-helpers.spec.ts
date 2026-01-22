@@ -7,7 +7,6 @@ import {
   closePopup,
   clickOnCanvas,
   checkElementSize,
-  waitForLoadingToFinish,
   waitForVehicleCanvas,
 } from './helpers';
 

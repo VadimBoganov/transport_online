@@ -9,6 +9,7 @@ import type { Route, TransportType } from '@/types/transport';
 import { useMemo } from 'react';
 import React from 'react';
 import RouteItem from '../RouteItem/RouteItem';
+import { groupRoutesByType } from '@/services/routeService';
 
 interface RoutesListProps {
     routes: Route[];
@@ -25,21 +26,7 @@ const RouteIcons: Record<TransportType, React.ReactNode> = {
 };
 
 function Routes({ routes, selectedRoutes, onRouteToggle, activeTransportType, onSelectAllOfType }: RoutesListProps) {
-    const groupedRoutes = useMemo(() => {
-        const map = new Map<string, Route[]>();
-
-        routes.forEach(route => {
-            const key = `${route.num}-${route.type}`;
-            if (!map.has(key)) map.set(key, []);
-            map.get(key)!.push(route);
-        });
-
-        return config.routes.map(rtConfig => ({
-            type: rtConfig.type,
-            title: rtConfig.title,
-            routes: Array.from(map.values()).filter(r => r[0].type === rtConfig.type)
-        }));
-    }, [routes]);
+    const groupedRoutes = useMemo(() => groupRoutesByType(routes), [routes]);
 
     return (
          <Accordion>
@@ -49,11 +36,11 @@ function Routes({ routes, selectedRoutes, onRouteToggle, activeTransportType, on
             return (
                 <Accordion.Item key={group.type} eventKey={index.toString()}>
                     <Accordion.Header>
-                        <div className="accordion-header__icon">{RouteIcons[group.type]}</div>
+                        <div className="accordion-header__icon">{RouteIcons[group.type as TransportType]}</div>
                         <Form.Check
                             type="checkbox"
                             checked={isTypeActive}
-                            onChange={() => onSelectAllOfType(group.type)}
+                            onChange={() => onSelectAllOfType(group.type as TransportType)}
                             onClick={(e) => e.stopPropagation()}
                             className="me-3"
                         />

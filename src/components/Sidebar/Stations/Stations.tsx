@@ -2,6 +2,7 @@ import './Stations.css';
 import { useMemo, useState, useCallback, useRef, memo } from 'react';
 import type { Station } from '@/types/transport';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { filterStationsBySearch } from '@/services/stationService';
 
 interface StationsProps {
     stations: Station[] | undefined;
@@ -29,9 +30,7 @@ export default function Stations({ stations, onStationSelect }: StationsProps) {
     );
 
     const filteredStations = useMemo(() => {
-        if (!stations) return [];
-        const term = searchTerm.toLowerCase();
-        return stations.filter((station) => station.name.toLowerCase().includes(term));
+        return filterStationsBySearch(stations, searchTerm);
     }, [stations, searchTerm]);
 
     const parentRef = useRef<HTMLDivElement>(null);

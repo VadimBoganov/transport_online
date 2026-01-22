@@ -1,4 +1,4 @@
-import type { SelectedStation } from "@/types/transport";
+import type { SelectedStation, Station } from "@/types/transport";
 
 export interface StationPopupState {
     activeStation: SelectedStation | null;
@@ -13,4 +13,13 @@ export const shouldOpenStationPopup = (
     if (!newStation) return false;
     if (currentActive?.id === newStation.id) return false;
     return true;
+};
+
+export const filterStationsBySearch = (
+    stations: Station[] | undefined,
+    searchTerm: string
+): Station[] => {
+    if (!stations) return [];
+    const term = searchTerm.toLowerCase();
+    return stations.filter((station) => station.name.toLowerCase().includes(term));
 };

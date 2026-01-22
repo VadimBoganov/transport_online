@@ -8,6 +8,7 @@ import type { Route, Station, TransportType, SelectedRoute } from '@/types/trans
 import { getErrorMessage } from '@/utils/errors';
 import { Spinner } from '@/components/Spinner';
 import { useDelayedLoading } from '@/hooks/useDelayedLoading';
+import { useRouteSelection } from '@/hooks/useRouteSelection';
 
 interface SidebarProps {
     routes: Route[];
@@ -21,51 +22,18 @@ interface SidebarProps {
 
 function Sidebar({ routes, stations, loading, error, selectedRoutes, onRoutesChange, onStationSelect }: SidebarProps) {
     const [isOpen, setIsOpen] = useState(false);
-    const [activeTransportType, setActiveTransportType] = useState<TransportType | null>(null);
     const [activeTab, setActiveTab] = useState('routes');
     const showLoading = useDelayedLoading(loading);
 
-    const handleRouteToggle = (type: TransportType, num: string) => {
-        const routesWithSameNum = routes.filter(r => r.num === num && r.type === type);
-
-        const isAnySelected = selectedRoutes.some(sr =>
-            routesWithSameNum.some(r => r.id === sr.id)
-        );
-
-        let updated: Array<{ id: number; type: TransportType }>;
-
-        if (isAnySelected) {
-            updated = selectedRoutes.filter(sr =>
-                !routesWithSameNum.some(r => r.id === sr.id)
-            );
-        } else {
-            updated = [
-                ...selectedRoutes,
-                ...routesWithSameNum.map(r => ({ id: r.id, type: r.type as TransportType }))
-            ];
-        }
-
-        onRoutesChange(updated);
-
-        if (activeTransportType) {
-            setActiveTransportType(null);
-        }
-    };
-
-    const handleSelectAllOfType = (type: TransportType) => {
-        if (activeTransportType === type) {
-            const remainingRoutes = selectedRoutes.filter(sr => sr.type !== type);
-            onRoutesChange(remainingRoutes);
-            setActiveTransportType(null);
-            return;
-        }
-
-        const typeRoutes = routes.filter(r => r.type === type);
-        const newSelected = typeRoutes.map(r => ({ id: r.id, type: r.type as TransportType }));
-
-        onRoutesChange(newSelected);
-        setActiveTransportType(type);
-    };
+    const {
+        activeTransportType,
+        handleRouteToggle,
+        handleSelectAllOfType,
+    } = useRouteSelection({
+        routes,
+        selectedRoutes,
+        onRoutesChange,
+    });
 
     const handleStationSelect = (lat: number, lng: number, id: number, name: string) => {
         startTransition(() => {
