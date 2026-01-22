@@ -51,7 +51,6 @@
     cursor: pointer;
 }
 
-/* Target pigeon-maps wrapper that contains our popup elements */
 .pigeon-overlays > .pigeon-click-block:has(.wrapper),
 .pigeon-overlays > .pigeon-click-block:has(.station-marker),
 .pigeon-overlays > .pigeon-click-block:has(.forecast-popup-station) {

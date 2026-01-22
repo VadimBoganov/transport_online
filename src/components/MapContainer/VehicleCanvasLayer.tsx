@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useCallback } from "react";
 import type { Animation } from "@/types/transport";
 import { useCanvasVehicleAnimations } from "@/hooks/useCanvasVehicleAnimations";
+import "./VehicleCanvasLayer.css";
 
 interface VehicleCanvasLayerProps {
     vehicles: Animation[];
@@ -213,27 +214,12 @@ export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
         <>
             <div
                 ref={containerRef}
-                style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    width: "100%",
-                    height: "100%",
-                    pointerEvents: "none",
-                    zIndex: 1000,
-                }}
+                className="vehicle-canvas-container"
             >
                 <canvas
                     ref={canvasRef}
                     className="vehicle-canvas"
                     data-testid="vehicle-canvas"
-                    style={{
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        width: "100%",
-                        height: "100%",
-                    }}
                 />
             </div>
             {markerPositions.map((pos, idx) => (
@@ -243,16 +229,12 @@ export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
                         e.stopPropagation();
                         onVehicleClick(pos.vehicle);
                     }}
+                    className="vehicle-marker-clickable"
                     style={{
-                        position: "absolute",
                         left: pos.x - pos.radius,
                         top: pos.y - pos.radius,
                         width: pos.radius * 2,
                         height: pos.radius * 2,
-                        borderRadius: "50%",
-                        pointerEvents: "auto",
-                        cursor: "pointer",
-                        zIndex: 1001,
                     }}
                 />
             ))}

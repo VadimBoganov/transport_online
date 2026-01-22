@@ -34,7 +34,6 @@ export const ForecastPopupStation = React.memo(({
         </div>
     );
 }, (prev, next) => {
-    // Ре-рендерим только если изменились координаты или время прибытия
     return (
         prev.stid === next.stid &&
         prev.lat0 === next.lat0 &&
