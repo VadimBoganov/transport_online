@@ -163,10 +163,13 @@ export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
 
         ctx.clearRect(0, 0, width, height);
 
-        vehicles.forEach((vehicle) => {
+        const selectedVehicle = vehicles.find(v => v.id === selectedVehicleId);
+        const otherVehicles = vehicles.filter(v => v.id !== selectedVehicleId);
+
+        [...otherVehicles, ...(selectedVehicle ? [selectedVehicle] : [])].forEach((vehicle) => {
             const key = `${vehicle.id}-${vehicle.rtype}`;
             const animState = animationStates.current.get(key);
-
+            
             let lat = animState ? animState.current.lat : vehicle.lat;
             let lon = animState ? animState.current.lon : vehicle.lon;
 
