@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  # Development сервис с hot reload
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_BASE_URL=${VITE_API_BASE_URL:-http://localhost:8000/api}
+    restart: unless-stopped
+    networks:
+      - transport-network
+
+networks:
+  transport-network:
+    driver: bridge

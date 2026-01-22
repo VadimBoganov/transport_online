@@ -1,73 +1,308 @@
-# React + TypeScript + Vite
+# Transport Online
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Веб-приложение для мониторинга общественного транспорта в реальном времени. Отслеживайте автобусы, троллейбусы и маршрутные такси на интерактивной карте города.
 
-Currently, two official plugins are available:
+![Version](https://img.shields.io/badge/version-0.4.0-blue.svg)
+![React](https://img.shields.io/badge/React-19.2.0-61dafb.svg)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.9.3-3178c6.svg)
+![Vite](https://img.shields.io/badge/Vite-7.2.4-646cff.svg)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Основные возможности
 
-## React Compiler
+- **Интерактивная карта** с отображением транспорта в реальном времени
+- **Мониторинг маршрутов** автобусов, троллейбусов и маршрутных такси
+- **Остановки** с информацией о времени прибытия транспорта
+- **Выбор нескольких маршрутов** одновременно для отслеживания
+- **Прогнозы прибытия** для каждой остановки и транспортного средства
+- **Современный UI** с Bootstrap 5 и React Bootstrap
+- **Адаптивный дизайн** для работы на различных устройствах
+- **Автообновление** позиций транспорта с анимацией
+- **Canvas-рендеринг** для плавной анимации большого количества транспорта
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Требования
 
-## Expanding the ESLint configuration
+- Node.js 18+ (рекомендуется 20+)
+- npm 9+
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Установка
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+```bash
+# Клонировать репозиторий
+git clone <repository-url>
+cd transport_online
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+# Установить зависимости
+npm install
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# Установить браузеры для E2E тестов (опционально)
+npx playwright install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Запуск приложения
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+```bash
+# Запуск в режиме разработки
+npm run dev
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# Приложение будет доступно по адресу: http://localhost:5173
 ```
+
+### Сборка для продакшена
+
+```bash
+# Сборка проекта
+npm run build
+
+# Предпросмотр продакшен сборки
+npm run preview
+```
+
+## Docker
+
+Проект полностью готов к работе с Docker. Доступны два режима: production и development.
+
+### Production (Docker)
+
+```bash
+# Сборка production образа с указанием API URL
+docker build -t transport-online:latest \
+  --build-arg VITE_API_BASE_URL=http://your-api-server:8000/api .
+
+# Запуск контейнера
+docker run -d -p 8080:80 \
+  --name transport-online \
+  transport-online:latest
+
+# Приложение будет доступно по адресу: http://localhost:8080
+```
+
+**Важно**: Переменная `VITE_API_BASE_URL` должна быть указана при сборке образа через `--build-arg`, так как Vite встраивает переменные окружения в код во время сборки.
+
+### Development (Docker)
+
+```bash
+# Сборка development образа
+docker build -f Dockerfile.dev -t transport-online:dev .
+
+# Запуск контейнера с hot reload
+docker run -d -p 5173:5173 \
+  -v $(pwd):/app \
+  -v /app/node_modules \
+  -e VITE_API_BASE_URL=http://localhost:8000/api \
+  --name transport-online-dev \
+  transport-online:dev
+```
+
+### Docker Compose
+
+Использование docker-compose для упрощения управления:
+
+```bash
+# Production режим
+docker-compose up -d app
+
+# Development режим
+docker-compose --profile dev up -d app-dev
+
+# Или использовать отдельный файл для разработки
+docker-compose -f docker-compose.dev.yml up -d
+
+# Просмотр логов
+docker-compose logs -f app
+
+# Остановка
+docker-compose down
+```
+
+**Переменные окружения:**
+
+Создайте файл `.env` в корне проекта:
+
+```env
+VITE_API_BASE_URL=http://your-api-server:8000/api
+```
+
+Или передайте переменные напрямую:
+
+```bash
+VITE_API_BASE_URL=http://api.example.com/api docker-compose up -d app
+```
+
+**Порты:**
+
+- Production: `8080` (внутри контейнера: `80`)
+- Development: `5173` (внутри контейнера: `5173`)
+
+**Health Check:**
+
+Production контейнер имеет health check endpoint:
+
+```bash
+curl http://localhost:8080/health
+# Ответ: healthy
+```
+
+### Docker Compose файлы
+
+- `docker-compose.yml` - основной файл с production и development сервисами
+- `docker-compose.dev.yml` - упрощенный файл только для development
+
+## Тестирование
+
+Проект имеет комплексное покрытие тестами на двух уровнях:
+
+### Unit тесты (Vitest)
+
+**Покрытие**: 100% всех сервисов
+
+```bash
+# Запуск всех unit тестов
+npm test
+
+# Запуск с UI
+npm test -- --ui
+
+# Запуск в watch режиме
+npm test -- --watch
+
+# Запуск конкретного файла
+npm test -- forecastService.test.ts
+
+# Генерация отчета о покрытии
+npm test -- --coverage
+```
+
+Подробнее: [`src/tests/README.md`](src/tests/README.md)
+
+### E2E тесты (Playwright)
+
+```bash
+# Запуск всех E2E тестов
+npm run test:e2e
+
+# Запуск в UI режиме (рекомендуется для разработки)
+npm run test:e2e:ui
+
+# Запуск с видимым браузером
+npm run test:e2e:headed
+
+# Запуск в debug режиме
+npm run test:e2e:debug
+
+# Просмотр отчета
+npm run test:e2e:report
+```
+Подробнее: [`src/tests/e2e/README.md`](src/tests/e2e/README.md)
+
+## Конфигурация
+
+### Основная конфигурация (`config.ts`)
+
+```typescript
+const config = {
+  map: {
+    lat: 54.628723,        // Начальная широта
+    lng: 39.716815,        // Начальная долгота
+    zoom: 15,              // Начальный зуом
+    stationSelectZoom: 15, // Зум при выборе остановки
+  },
+  routes: [
+    { title: 'Автобусы', type: 'А', color: 'green' },
+    { title: 'Троллейбусы', type: 'Т', color: 'blue' },
+    { title: 'Маршрутные такси', type: 'М', color: '#ff6a00' },
+  ],
+  routeIconSize: 18,
+  routeLineWeight: 3,
+};
+```
+
+## 📡 API
+
+Приложение работает с внешним API транспортной системы.
+
+### Основные эндпоинты
+
+```typescript
+// Получение списка маршрутов
+GET /api/routes
+
+// Получение узлов маршрута
+GET /api/route/nodes?rid={routeId}&rtype={routeType}
+
+// Получение позиций транспорта
+GET /api/vehicle/positions?rids={routeIds}
+
+// Получение списка остановок
+GET /api/stations
+
+// Прогноз для остановки
+GET /api/station/forecast?stid={stationId}
+
+// Прогноз для транспорта
+GET /api/vehicle/forecast?vehid={vehicleId}
+```
+
+### Оптимизация
+
+- **React Query** для кеширования API запросов
+- **TanStack Virtual** для виртуализации длинных списков
+- **Canvas API** для рендеринга большого количества объектов
+
+### Линтинг и форматирование
+
+```bash
+# Проверка кода
+npm run lint
+```
+
+### Анализ bundle
+
+```bash
+# Установить анализатор (если нужно)
+npm install --save-dev rollup-plugin-visualizer
+
+# Сборка с анализом
+npm run build
+```
+
+## Troubleshooting
+
+### Часто встречающиеся проблемы
+
+**Проблема**: Тесты Playwright не запускаются
+
+```bash
+# Решение: переустановить браузеры
+npx playwright install --with-deps
+```
+
+**Проблема**: Ошибки TypeScript при сборке
+
+```bash
+# Решение: очистить кеш и переустановить зависимости
+rm -rf node_modules package-lock.json
+npm install
+```
+
+## Вклад в проект
+
+1. Fork репозитория
+2. Создайте feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit изменения (`git commit -m 'Add amazing feature'`)
+4. Push в branch (`git push origin feature/amazing-feature`)
+5. Откройте Pull Request
+
+**Требования к коду:**
+- Все новые функции должны быть покрыты тестами
+- Следуйте существующему code style
+- Обновите документацию при необходимости
+- Проверьте, что все тесты проходят
+
+## 📄 Лицензия
+
+Этот проект является частной разработкой.
+
+---
+
+**Version**: 0.4.0  
+**Last Updated**: January 2026

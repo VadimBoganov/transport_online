@@ -1,0 +1,17 @@
+# Dockerfile для разработки
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Устанавливаем зависимости
+COPY package.json package-lock.json ./
+RUN npm ci && npm uninstall playwright @playwright/test
+
+# Копируем исходный код
+COPY . .
+
+# Открываем порт для dev сервера
+EXPOSE 5173
+
+# Запускаем dev сервер
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
