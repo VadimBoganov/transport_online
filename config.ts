@@ -16,6 +16,10 @@ export interface AppConfig {
   routes: RouteConfig[];
   routeIconSize: number;
   routeLineWeight: number;
+  vehicleMarkers: {
+    borderColor: string;
+    lowFloorBorderColor: string;
+  };
 }
 
 const config: AppConfig = {
@@ -36,14 +40,18 @@ const config: AppConfig = {
       type: 'Т',
       color: 'blue',
     },
-    {
-      title: 'Маршрутные такси',
-      type: 'М',
-      color: '#ff6a00',
-    },
+    // {
+    //   title: 'Маршрутные такси',
+    //   type: 'М',
+    //   color: '#ff6a00',
+    // },
   ],
   routeIconSize: 18,
   routeLineWeight: 3,
+  vehicleMarkers: {
+    borderColor: '#00a8ff',
+    lowFloorBorderColor: 'white',
+  },
 };
 
 export default config;

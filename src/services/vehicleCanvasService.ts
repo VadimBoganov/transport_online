@@ -1,4 +1,5 @@
 import type { Animation } from "@/types/transport";
+import config from "@config";
 
 export const MARKER_RADIUS = 16;
 export const MARKER_BORDER_WIDTH = 2;
@@ -46,7 +47,10 @@ export const drawMarker = ({
     ctx.fillStyle = routeColor;
     ctx.fill();
 
-    ctx.strokeStyle = "white";
+    // Используем другой цвет бордера для низкопольных ТС
+    ctx.strokeStyle = +vehicle.low_floor === 1 
+        ? config.vehicleMarkers.lowFloorBorderColor 
+        : config.vehicleMarkers.borderColor;
     ctx.lineWidth = borderWidth;
     ctx.stroke();
 
