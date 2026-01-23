@@ -18,9 +18,10 @@ interface SidebarProps {
     selectedRoutes: SelectedRoute[];
     onRoutesChange: (routes: Array<{ id: number; type: TransportType }>) => void;
     onStationSelect: (lat: number, lng: number, id: number, name: string) => void;
+    onToggle?: (isOpen: boolean) => void;
 }
 
-function Sidebar({ routes, stations, loading, error, selectedRoutes, onRoutesChange, onStationSelect }: SidebarProps) {
+function Sidebar({ routes, stations, loading, error, selectedRoutes, onRoutesChange, onStationSelect, onToggle }: SidebarProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [activeTab, setActiveTab] = useState('routes');
     const showLoading = useDelayedLoading(loading);
@@ -41,11 +42,19 @@ function Sidebar({ routes, stations, loading, error, selectedRoutes, onRoutesCha
         });
     };
 
+    const handleToggleSidebar = () => {
+        setIsOpen((prev) => {
+            const next = !prev;
+            onToggle?.(next);
+            return next;
+        });
+    };
+
     return (
         <>
             <button
                 className="sidebar-toggle-btn"
-                onClick={() => setIsOpen(prev => !prev)}
+                onClick={handleToggleSidebar}
                 aria-label={isOpen ? 'Закрыть меню' : 'Открыть меню'}
                 type='button'
             >

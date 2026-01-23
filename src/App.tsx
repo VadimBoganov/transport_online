@@ -22,6 +22,7 @@ function App() {
 
   const [center, setCenter] = useState<[number, number]>([config.map.lat, config.map.lng]);
   const [zoom, setZoom] = useState<number>(config.map.zoom);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const handleStationSelect = useCallback((lat: number, lng: number, id: number, name: string) => {
     setSelectedStation({ lat, lng, id, name });
@@ -49,6 +50,7 @@ function App() {
         onRoutesChange={setSelectedRoutes}
         onStationSelect={handleStationSelect}
         stations={stations}
+        onToggle={setIsSidebarOpen}
       />
       <MapContainer
         selectedRoutes={selectedRoutes}
@@ -58,6 +60,7 @@ function App() {
         selectedVehicle={selectedVehicle}
         onStationDeselect={handleStationDeselect}
         setSelectedVehicle={setSelectedVehicle}
+        isSidebarOpen={isSidebarOpen}
       />
     </div>
   );

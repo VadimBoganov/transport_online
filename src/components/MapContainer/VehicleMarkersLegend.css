@@ -10,6 +10,11 @@
     font-size: 14px;
     min-width: 180px;
     border: 1px solid rgba(148, 163, 184, 0.4);
+    transition: right 0.3s ease;
+}
+
+.vehicle-markers-legend--sidebar-open {
+    right: calc(30% + 20px); /* ширина сайдбара (30%) + отступ */
 }
 
 .legend-title {

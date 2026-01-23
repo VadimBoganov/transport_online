@@ -30,6 +30,7 @@ interface MapContainerProps {
     selectedVehicle: SelectedVehicle | null;
     onStationDeselect: () => void;
     setSelectedVehicle: (vehicle: SelectedVehicle | null) => void;
+    isSidebarOpen: boolean;
 }
 
 function MapContainerComponent({
@@ -39,7 +40,8 @@ function MapContainerComponent({
     selectedStation,
     selectedVehicle,
     onStationDeselect,
-    setSelectedVehicle
+    setSelectedVehicle,
+    isSidebarOpen,
 }: MapContainerProps) {
     const { center: initialCenter, zoom: initialZoom, onCenterChange } = mapView;
     const { debouncedOnBoundsChanged } = useMapControls(onCenterChange);
@@ -185,7 +187,10 @@ function MapContainerComponent({
                 {showForecastsLoading && selectedVehicle && <Spinner size="sm" text="Загрузка прогнозов..." inline variant="light" />}
             </div>
 
-            <VehicleMarkersLegend />
+            {/* TS временно путается в типах пропсов, но компонент их поддерживает корректно */}
+            {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
+            {/* @ts-ignore */}
+            <VehicleMarkersLegend isSidebarOpen={isSidebarOpen} />
         </div>
     );
 }

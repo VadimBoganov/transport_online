@@ -2,12 +2,16 @@ import React from "react";
 import config from "@config";
 import "./VehicleMarkersLegend.css";
 
-export const VehicleMarkersLegend: React.FC = () => {
+export interface VehicleMarkersLegendProps {
+    isSidebarOpen?: boolean;
+}
+
+export const VehicleMarkersLegend = ({ isSidebarOpen }: VehicleMarkersLegendProps) => {
     // Используем первый цвет маршрута из конфига для примера маркера
     const exampleRouteColor = config.routes.length > 0 ? config.routes[0].color : "#4a90e2";
 
     return (
-        <div className="vehicle-markers-legend">
+        <div className={`vehicle-markers-legend ${isSidebarOpen ? "vehicle-markers-legend--sidebar-open" : ""}`}>
             <div className="legend-title">Легенда маркеров</div>
 
             <div className="legend-section">
