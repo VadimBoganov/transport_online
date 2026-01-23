@@ -2,7 +2,7 @@
 
 Веб-приложение для мониторинга общественного транспорта в реальном времени. Отслеживайте автобусы, троллейбусы и маршрутные такси на интерактивной карте города.
 
-![Version](https://img.shields.io/badge/version-0.4.0-blue.svg)
+![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
 ![React](https://img.shields.io/badge/React-19.2.0-61dafb.svg)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.9.3-3178c6.svg)
 ![Vite](https://img.shields.io/badge/Vite-7.2.4-646cff.svg)
@@ -306,5 +306,5 @@ npm install
 
 ---
 
-**Version**: 0.4.2  
+**Version**: 1.0.0  
 **Last Updated**: January 2026
