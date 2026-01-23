@@ -1,0 +1,97 @@
+.vehicle-markers-legend {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(15, 23, 42, 0.96); /* тёмный сланцевый */
+    border-radius: 10px;
+    padding: 14px 18px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    font-size: 14px;
+    min-width: 180px;
+    border: 1px solid rgba(148, 163, 184, 0.4);
+}
+
+.legend-title {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #e5e7eb;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.legend-section {
+    margin-top: 8px;
+}
+
+.legend-section:first-of-type {
+    margin-top: 0;
+}
+
+.legend-section-title {
+    font-weight: 500;
+    font-size: 12px;
+    color: #9ca3af;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+}
+
+.legend-items {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.legend-route-color {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    flex-shrink: 0;
+    box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.9);
+}
+
+.legend-marker-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+}
+
+.legend-marker {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    box-sizing: border-box;
+    background: radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.24), transparent 55%);
+    box-shadow:
+        0 0 0 1px rgba(15, 23, 42, 0.9),
+        0 6px 12px rgba(0, 0, 0, 0.65);
+}
+
+.legend-marker-text {
+    color: #f9fafb;
+    font-weight: bold;
+    font-size: 12px;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.6);
+    line-height: 1;
+}
+
+.legend-label {
+    color: #e5e7eb;
+    font-size: 13px;
+}

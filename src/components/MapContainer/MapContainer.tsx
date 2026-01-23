@@ -14,6 +14,7 @@ import { useMapViewport } from "@/hooks/useMapViewport";
 import { useMapInteractions } from "@/hooks/useMapInteractions";
 import { createRouteColorsMap } from "@/services/routeService";
 import { filterVisibleVehicles, limitRenderedVehicles } from "@/services/vehicleService";
+import { VehicleMarkersLegend } from "./VehicleMarkersLegend";
 
 interface MapViewProps {
     center: [number, number];
@@ -183,6 +184,8 @@ function MapContainerComponent({
                 {showVehiclesLoading && <Spinner size="sm" text="Загрузка ТС..." inline variant="light" />}
                 {showForecastsLoading && selectedVehicle && <Spinner size="sm" text="Загрузка прогнозов..." inline variant="light" />}
             </div>
+
+            <VehicleMarkersLegend />
         </div>
     );
 }
