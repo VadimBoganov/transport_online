@@ -6,6 +6,7 @@ import { useMapState } from "./hooks/useMapState";
 import { useStations } from "./hooks/useStations";
 import { useCallback, useState } from "react";
 import { normalizeCoordinate } from "@/utils/coordinates";
+import "./App.css";
 
 function App() {
   const {
@@ -41,7 +42,7 @@ function App() {
   } as const;
 
   return (
-    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+    <div className="app-root">
       <Sidebar
         routes={routes || []}
         loading={isLoading}

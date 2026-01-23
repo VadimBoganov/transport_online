@@ -181,7 +181,7 @@ function MapContainerComponent({
 
             </PigeonMap>
 
-            <div style={{ position: 'absolute', top: 10, left: 10, zIndex: 1000, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <div className="map-loading-overlay">
                 {showRoutesLoading && <Spinner size="sm" text="Загрузка маршрутов..." inline variant="light" />}
                 {showVehiclesLoading && <Spinner size="sm" text="Загрузка ТС..." inline variant="light" />}
                 {showForecastsLoading && selectedVehicle && <Spinner size="sm" text="Загрузка прогнозов..." inline variant="light" />}

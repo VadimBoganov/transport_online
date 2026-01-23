@@ -10,7 +10,7 @@ interface StationsProps {
 }
 
 const StationItem = memo(({ station, onClick }: { station: Station; onClick: () => void }) => (
-    <li className="station-item" onClick={onClick} style={{ cursor: 'pointer' }}>
+    <li className="station-item" onClick={onClick}>
         <div className="station-name-container">
             <strong>{station.name}</strong>
             {station.descr && <span className="descr">({station.descr})</span>}

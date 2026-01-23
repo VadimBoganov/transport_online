@@ -20,8 +20,7 @@ export const VehicleMarkersLegend = ({ isSidebarOpen }: VehicleMarkersLegendProp
                     {config.routes.map(route => (
                         <div className="legend-item" key={route.type}>
                             <div
-                                className="legend-route-color"
-                                style={{ backgroundColor: route.color }}
+                                className={`legend-route-color legend-route-color--${route.type}`}
                             />
                             <span className="legend-label">
                                 {route.title} ({route.type})
@@ -37,11 +36,7 @@ export const VehicleMarkersLegend = ({ isSidebarOpen }: VehicleMarkersLegendProp
                     <div className="legend-item">
                         <div className="legend-marker-wrapper">
                             <div
-                                className="legend-marker"
-                                style={{
-                                    backgroundColor: exampleRouteColor,
-                                    borderColor: config.vehicleMarkers.borderColor,
-                                }}
+                                className="legend-marker legend-marker--normal"
                             >
                                 <span className="legend-marker-text">1</span>
                             </div>
@@ -51,11 +46,7 @@ export const VehicleMarkersLegend = ({ isSidebarOpen }: VehicleMarkersLegendProp
                     <div className="legend-item">
                         <div className="legend-marker-wrapper">
                             <div
-                                className="legend-marker"
-                                style={{
-                                    backgroundColor: exampleRouteColor,
-                                    borderColor: config.vehicleMarkers.lowFloorBorderColor,
-                                }}
+                                className="legend-marker legend-marker--low-floor"
                             >
                                 <span className="legend-marker-text">1</span>
                             </div>

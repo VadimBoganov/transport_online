@@ -63,6 +63,14 @@
     box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.9);
 }
 
+.legend-route-color--А {
+    background-color: green;
+}
+
+.legend-route-color--Т {
+    background-color: blue;
+}
+
 .legend-marker-wrapper {
     display: flex;
     align-items: center;
@@ -86,6 +94,14 @@
     box-shadow:
         0 0 0 1px rgba(15, 23, 42, 0.9),
         0 6px 12px rgba(0, 0, 0, 0.65);
+}
+
+.legend-marker--normal {
+    border-color: #00a8ff;
+}
+
+.legend-marker--low-floor {
+    border-color: white;
 }
 
 .legend-marker-text {
