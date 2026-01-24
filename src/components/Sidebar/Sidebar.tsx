@@ -43,11 +43,10 @@ function Sidebar({ routes, stations, loading, error, selectedRoutes, onRoutesCha
     };
 
     const handleToggleSidebar = () => {
-        setIsOpen((prev) => {
-            const next = !prev;
-            onToggle?.(next);
-            return next;
-        });
+        const next = !isOpen;
+        setIsOpen(next);
+        // Call onToggle after state update to avoid render-time state updates
+        onToggle?.(next);
     };
 
     return (

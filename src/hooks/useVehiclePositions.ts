@@ -26,17 +26,14 @@ export function useVehiclePositions(rids: string | null) {
                 setIsLoading(true);
                 setError(null);
 
-                // Если rids изменился, отписываемся от старой подписки
                 if (currentRidsRef.current && currentRidsRef.current !== rids && handlerRef.current) {
                     wsClient.off('vehicles_update', handlerRef.current);
                 }
 
                 currentRidsRef.current = rids;
 
-                // Подключаемся, если еще не подключены
                 if (!wsClient.isConnected()) {
                     await wsClient.connect();
-                    // Ждем аутентификации (максимум 5 секунд)
                     let attempts = 0;
                     while (!wsClient.isConnected() && attempts < 50) {
                         await new Promise(resolve => setTimeout(resolve, 100));
@@ -44,7 +41,6 @@ export function useVehiclePositions(rids: string | null) {
                     }
                 }
 
-                // Создаем обработчик для обновлений
                 const handler = (vehicleData: VehiclePosition) => {
                     if (isMounted && currentRidsRef.current === rids) {
                         setData(vehicleData);
@@ -54,7 +50,6 @@ export function useVehiclePositions(rids: string | null) {
 
                 handlerRef.current = handler;
 
-                // Подписываемся на обновления (метод сам проверит аутентификацию)
                 wsClient.subscribeVehicles(rids, handler);
             } catch (err) {
                 if (isMounted) {
@@ -68,7 +63,6 @@ export function useVehiclePositions(rids: string | null) {
 
         return () => {
             isMounted = false;
-            // Отписываемся при размонтировании или изменении rids
             if (handlerRef.current) {
                 wsClient.off('vehicles_update', handlerRef.current);
             }

@@ -95,7 +95,6 @@ class WebSocketClient {
 
       if (message.type === 'auth_success') {
         this.isAuthenticated = true;
-        // Уведомляем всех ожидающих подписок
         const handlers = this.messageHandlers.get('auth_success');
         if (handlers) {
           handlers.forEach((handler) => handler(null));
@@ -103,17 +102,13 @@ class WebSocketClient {
       } else if (message.type === 'error') {
         this.notifyError(message.error || 'Unknown error');
       } else if (message.type === 'pong') {
-        // Ping response received
       } else {
-        // Вызываем обработчики для этого типа сообщения
         const handlers = this.messageHandlers.get(message.type);
         if (handlers) {
-          // Передаем весь объект сообщения, чтобы обработчик мог проверить rids/sid/vid
           handlers.forEach((handler) => handler(message));
         }
       }
     } catch (error) {
-      // Failed to parse message
     }
   }
 
@@ -125,7 +120,6 @@ class WebSocketClient {
 
   subscribeVehicles(rids: string, handler: (data: VehiclePosition) => void) {
     const messageHandler = (message: WSMessage) => {
-      // Проверяем, что это данные для нужных rids (если указано в сообщении)
       if (!message.rids || message.rids === rids || !rids) {
         handler((message.data || message) as VehiclePosition);
       }
@@ -139,7 +133,6 @@ class WebSocketClient {
         rids,
       });
     } else {
-      // Если еще не аутентифицированы, подпишемся после аутентификации
       const authHandler = () => {
         if (this.isAuthenticated) {
           this.send({
@@ -155,7 +148,6 @@ class WebSocketClient {
 
   subscribeStationForecast(sid: number, handler: (data: StationForecast[]) => void) {
     const messageHandler = (message: WSMessage) => {
-      // Проверяем, что это данные для нужного sid
       if (!message.sid || message.sid === sid) {
         handler((message.data || message) as StationForecast[]);
       }
@@ -184,7 +176,6 @@ class WebSocketClient {
 
   subscribeVehicleForecast(vid: string, handler: (data: VehicleForecast[]) => void) {
     const messageHandler = (message: WSMessage) => {
-      // Проверяем, что это данные для нужного vid
       if (!message.vid || message.vid === vid) {
         handler((message.data || message) as VehicleForecast[]);
       }
@@ -241,7 +232,7 @@ class WebSocketClient {
       if (this.ws && this.ws.readyState === WebSocket.OPEN) {
         this.send({ type: 'ping' });
       }
-    }, 30000); // Ping каждые 30 секунд
+    }, 30000);
   }
 
   private stopPing() {
@@ -258,7 +249,6 @@ class WebSocketClient {
       
       setTimeout(() => {
         this.connect().catch(() => {
-          // Reconnect failed, will try again
         });
       }, delay);
     } else {
@@ -282,7 +272,6 @@ class WebSocketClient {
   }
 }
 
-// Singleton instance
 let wsClientInstance: WebSocketClient | null = null;
 
 export function getWebSocketClient(): WebSocketClient {

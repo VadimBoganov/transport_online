@@ -68,11 +68,9 @@ class ApiClient {
     const { params = {}, ...fetchOptions } = options;
     const method = (options.method || 'GET').toUpperCase();
 
-    // Извлекаем путь из URL
     const urlObj = new URL(url, window.location.origin);
     const path = urlObj.pathname;
 
-    // Извлекаем path параметры из пути
     const pathParams: Record<string, string> = {};
     const pathParts = path.split('/');
     
@@ -83,11 +81,9 @@ class ApiClient {
       }
     }
 
-    // Создаем подпись запроса
     const timestamp = Date.now();
     const { signature } = await signRequest(method, path, params, pathParams, timestamp);
 
-    // Формируем финальный URL с параметрами
     let finalUrl = url;
     if (Object.keys(params).length > 0) {
       const searchParams = new URLSearchParams();
@@ -149,12 +145,4 @@ export const api = {
   routeNodes: {
     getByRouteId: (routeId: number) => apiClient.get<RouteNode[]>(API_ENDPOINTS.routeNodes(routeId)),
   },
-  // Динамические данные теперь через WebSocket, не через REST
-  // vehicles: {
-  //   getByRouteIds: (rids: string) => apiClient.get<VehiclePosition>(API_ENDPOINTS.vehicles(rids)),
-  // },
-  // forecasts: {
-  //   getByVehicleId: (vehicleId: string) => apiClient.get<StationForecast[]>(API_ENDPOINTS.vehicleForecasts(vehicleId)),
-  //   getByStationId: (stationId: number) => apiClient.get<VehicleForecast[]>(API_ENDPOINTS.stationForecasts(stationId)),
-  // },
 };
