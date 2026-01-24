@@ -1,7 +1,7 @@
 .vehicle-markers-legend {
     position: absolute;
     bottom: 20px;
-    right: 20px;
+    right: 10px;
     background: rgba(15, 23, 42, 0.96);
     border-radius: 10px;
     padding: 14px 18px;
@@ -14,7 +14,7 @@
 }
 
 .vehicle-markers-legend--sidebar-open {
-    right: calc(30% + 20px); /* ширина сайдбара (30%) + отступ */
+    right: calc(30% + 10px); /* ширина сайдбара (30%) + отступ */
 }
 
 .vehicle-markers-legend--collapsed {
