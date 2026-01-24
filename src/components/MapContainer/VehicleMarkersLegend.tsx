@@ -1,4 +1,4 @@
-import React from "react";
+import { useState } from "react";
 import config from "@config";
 import "./VehicleMarkersLegend.css";
 
@@ -7,12 +7,40 @@ export interface VehicleMarkersLegendProps {
 }
 
 export const VehicleMarkersLegend = ({ isSidebarOpen }: VehicleMarkersLegendProps) => {
-    // Используем первый цвет маршрута из конфига для примера маркера
-    const exampleRouteColor = config.routes.length > 0 ? config.routes[0].color : "#4a90e2";
+    const [isVisible, setIsVisible] = useState(true);
+
+    if (!isVisible) {
+        return (
+            <div className={`vehicle-markers-legend vehicle-markers-legend--collapsed ${isSidebarOpen ? "vehicle-markers-legend--sidebar-open" : ""}`}>
+                <button
+                    className="legend-toggle-button"
+                    onClick={() => setIsVisible(true)}
+                    title="Показать легенду"
+                    aria-label="Показать легенду"
+                >
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8 2L2 8L8 14M14 2L8 8L14 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+        );
+    }
 
     return (
         <div className={`vehicle-markers-legend ${isSidebarOpen ? "vehicle-markers-legend--sidebar-open" : ""}`}>
-            <div className="legend-title">Легенда маркеров</div>
+            <div className="legend-header">
+                <div className="legend-title">Легенда маркеров</div>
+                <button
+                    className="legend-toggle-button"
+                    onClick={() => setIsVisible(false)}
+                    title="Скрыть легенду"
+                    aria-label="Скрыть легенду"
+                >
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M2 2L8 8L2 14M14 2L8 8L14 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                </button>
+            </div>
 
             <div className="legend-section">
                 <div className="legend-section-title">Типы Транспорта</div>

@@ -17,14 +17,52 @@
     right: calc(30% + 20px); /* ширина сайдбара (30%) + отступ */
 }
 
-.legend-title {
-    font-weight: 600;
-    margin-bottom: 8px;
-    color: #e5e7eb;
-    font-size: 13px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+.vehicle-markers-legend--collapsed {
+    padding: 8px;
+    min-width: auto;
 }
+
+.legend-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.legend-title {
+    flex: 1;
+    color: white;
+    font-size: medium;
+}
+
+.legend-toggle-button {
+    background: transparent;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.legend-toggle-button:hover {
+    background: rgba(148, 163, 184, 0.1);
+    color: #e5e7eb;
+}
+
+.legend-toggle-button:active {
+    transform: scale(0.95);
+}
+
+.legend-toggle-button svg {
+    display: block;
+}
+
 
 .legend-section {
     margin-top: 8px;
