@@ -1,4 +1,5 @@
 import { API_ENDPOINTS } from './endpoints';
+import { signRequest } from '@/utils/requestSigner';
 import type { Route, Station, RouteNode, VehiclePosition, StationForecast, VehicleForecast } from '@/types/transport';
 
 export interface ApiError {
@@ -64,10 +65,31 @@ class ApiClient {
   }
 
   private async request<T>(url: string, options: RequestOptions = {}): Promise<T> {
-    const { params, ...fetchOptions } = options;
+    const { params = {}, ...fetchOptions } = options;
+    const method = (options.method || 'GET').toUpperCase();
 
+    // Извлекаем путь из URL
+    const urlObj = new URL(url, window.location.origin);
+    const path = urlObj.pathname;
+
+    // Извлекаем path параметры из пути
+    const pathParams: Record<string, string> = {};
+    const pathParts = path.split('/');
+    
+    if (path.includes('/routenodes/')) {
+      const rid = pathParts[pathParts.length - 1];
+      if (rid && !isNaN(Number(rid))) {
+        pathParams['rid'] = rid;
+      }
+    }
+
+    // Создаем подпись запроса
+    const timestamp = Date.now();
+    const { signature } = await signRequest(method, path, params, pathParams, timestamp);
+
+    // Формируем финальный URL с параметрами
     let finalUrl = url;
-    if (params) {
+    if (Object.keys(params).length > 0) {
       const searchParams = new URLSearchParams();
       Object.entries(params).forEach(([key, value]) => {
         searchParams.append(key, String(value));
@@ -80,6 +102,8 @@ class ApiClient {
         ...fetchOptions,
         headers: {
           ...this.baseHeaders,
+          'X-Request-Signature': signature,
+          'X-Request-Timestamp': timestamp.toString(),
           ...fetchOptions.headers,
         },
       });
@@ -125,11 +149,12 @@ export const api = {
   routeNodes: {
     getByRouteId: (routeId: number) => apiClient.get<RouteNode[]>(API_ENDPOINTS.routeNodes(routeId)),
   },
-  vehicles: {
-    getByRouteIds: (rids: string) => apiClient.get<VehiclePosition>(API_ENDPOINTS.vehicles(rids)),
-  },
-  forecasts: {
-    getByVehicleId: (vehicleId: string) => apiClient.get<StationForecast[]>(API_ENDPOINTS.vehicleForecasts(vehicleId)),
-    getByStationId: (stationId: number) => apiClient.get<VehicleForecast[]>(API_ENDPOINTS.stationForecasts(stationId)),
-  },
+  // Динамические данные теперь через WebSocket, не через REST
+  // vehicles: {
+  //   getByRouteIds: (rids: string) => apiClient.get<VehiclePosition>(API_ENDPOINTS.vehicles(rids)),
+  // },
+  // forecasts: {
+  //   getByVehicleId: (vehicleId: string) => apiClient.get<StationForecast[]>(API_ENDPOINTS.vehicleForecasts(vehicleId)),
+  //   getByStationId: (stationId: number) => apiClient.get<VehicleForecast[]>(API_ENDPOINTS.stationForecasts(stationId)),
+  // },
 };
