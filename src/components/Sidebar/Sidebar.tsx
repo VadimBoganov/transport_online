@@ -38,7 +38,12 @@ function Sidebar({ routes, stations, loading, error, selectedRoutes, onRoutesCha
 
     const handleStationSelect = (lat: number, lng: number, id: number, name: string) => {
         startTransition(() => {
-            onStationSelect(lat, lng, id, name)
+            onStationSelect(lat, lng, id, name);
+            const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+            if (isMobile) {
+                setIsOpen(false);
+                onToggle?.(false);
+            }
         });
     };
 
@@ -48,8 +53,18 @@ function Sidebar({ routes, stations, loading, error, selectedRoutes, onRoutesCha
         onToggle?.(next);
     };
 
+    const handleOverlayClick = () => {
+        setIsOpen(false);
+        onToggle?.(false);
+    };
+
     return (
         <>
+            <div 
+                className={`sidebar-overlay ${isOpen ? 'active' : ''}`}
+                onClick={handleOverlayClick}
+                aria-hidden="true"
+            />
             <button
                 className="sidebar-toggle-btn"
                 onClick={handleToggleSidebar}

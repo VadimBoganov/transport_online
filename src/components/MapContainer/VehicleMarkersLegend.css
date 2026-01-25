@@ -17,6 +17,18 @@
     right: calc(30% + 10px); /* ширина сайдбара (30%) + отступ */
 }
 
+@media (max-width: 768px) {
+    .vehicle-markers-legend {
+        display: none; /* Скрываем легенду на мобильных */
+    }
+}
+
+@media (min-width: 768px) and (max-width: 992px) {
+    .vehicle-markers-legend--sidebar-open {
+        right: calc(50% + 10px); /* ширина сайдбара (50%) + отступ */
+    }
+}
+
 .vehicle-markers-legend--collapsed {
     padding: 8px;
     min-width: auto;

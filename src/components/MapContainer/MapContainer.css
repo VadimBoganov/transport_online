@@ -16,6 +16,31 @@
     gap: 0.5rem;
 }
 
+@media (max-width: 768px) {
+    .map-loading-overlay {
+        top: 5px;
+        left: 5px;
+        font-size: 12px;
+    }
+    
+    .vehicle-marker {
+        width: 28px;
+        height: 28px;
+        font-size: 11px;
+    }
+    
+    .station-marker {
+        width: 18px;
+        height: 18px;
+    }
+    
+    .forecast-popup-station {
+        font-size: 11px;
+        padding: 6px 10px;
+        max-width: 150px;
+    }
+}
+
 .map-container .pigeon-map {
     width: 100%;
     height: 100%;
@@ -68,10 +93,21 @@
 }
 
 .wrapper {
-    position: absolute;
-    transform: translate(-100%, -100%);
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     pointer-events: auto;
-    z-index: 2000;
+    z-index: 4000;
+    width: calc(100vw - 40px);
+    max-width: 420px;
+}
+
+@media (min-width: 769px) {
+    .wrapper {
+        width: auto;
+        max-width: 420px;
+    }
 }
 
 .forecast-popup-station {

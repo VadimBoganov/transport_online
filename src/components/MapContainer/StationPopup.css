@@ -90,15 +90,43 @@
     border-radius: 4px;
     cursor: pointer;
     align-self: flex-end;
+    transition: background-color 0.2s;
 }
 
 .close-button:hover {
     background-color: #0056b3;
 }
 
+@media (max-width: 768px) {
+    .close-button {
+        padding: 12px 24px;
+        font-size: 16px;
+        min-height: 44px; /* touch-friendly */
+        width: 100%;
+        align-self: stretch;
+    }
+}
+
 @media (max-width: 480px) {
     .station-popup {
-        min-width: 300px;
-        max-width: 320px;
+        min-width: calc(100vw - 40px);
+        max-width: calc(100vw - 40px);
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+    
+    .forecast-table {
+        font-size: 12px;
+    }
+    
+    .tbody-container {
+        max-height: 50vh;
+    }
+}
+
+@media (max-width: 360px) {
+    .station-popup {
+        min-width: calc(100vw - 20px);
+        max-width: calc(100vw - 20px);
     }
 }

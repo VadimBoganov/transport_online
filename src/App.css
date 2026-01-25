@@ -1,5 +1,12 @@
- .app-root {
-     display: flex;
-     height: 100vh;
-     overflow: hidden;
- }
+.app-root {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Mobile: sidebar поверх карты */
+@media (max-width: 768px) {
+    .app-root {
+        position: relative;
+    }
+}

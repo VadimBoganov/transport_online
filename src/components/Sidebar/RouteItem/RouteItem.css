@@ -13,6 +13,13 @@
   background-color: #e9ecef;
 }
 
+/* Touch-устройства: отключение hover */
+@media (hover: none) and (pointer: coarse) {
+  .route-item:hover {
+    background-color: #f8f9fa;
+  }
+}
+
 .route-item input[type="checkbox"] {
   margin: 0;
 }

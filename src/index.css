@@ -8,3 +8,24 @@ body, html {
     height: 100%;
     overflow: hidden;
 }
+
+/* Оптимизация для touch-устройств */
+@media (hover: none) and (pointer: coarse) {
+    /* Touch device styles */
+    button, .route-item, .station-item {
+        min-height: 44px;
+    }
+    
+    button {
+        min-width: 44px;
+    }
+    
+    /* Отключение hover-эффектов на touch-устройствах */
+    .sidebar-toggle-btn:hover {
+        transform: none;
+    }
+    
+    .route-item:hover {
+        background-color: #f8f9fa;
+    }
+}

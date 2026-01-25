@@ -12,6 +12,8 @@ export interface AppConfig {
     lng: number;
     zoom: number;
     stationSelectZoom: number;
+    mobileZoom?: number;
+    mobileStationSelectZoom?: number;
   };
   routes: RouteConfig[];
   routeIconSize: number;
@@ -27,7 +29,9 @@ const config: AppConfig = {
     lat: 54.628723,
     lng: 39.716815,
     zoom: 15,
-    stationSelectZoom: 15,
+    stationSelectZoom: 17,
+    mobileZoom: 14,
+    mobileStationSelectZoom: 15,
   },
   routes: [
     {

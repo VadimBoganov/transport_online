@@ -22,9 +22,26 @@
     list-style: none;
     padding: 0;
     margin: 0;
-    height: 680px; 
+    height: calc(100vh - 200px); /* динамическая высота */
     overflow-y: auto;
     position: relative;
+}
+
+@media (max-width: 768px) {
+    .stations-grid {
+        height: calc(100vh - 180px);
+    }
+    
+    .station-item {
+        min-height: 60px; /* touch-friendly */
+        padding: 12px;
+    }
+}
+
+@media (max-width: 768px) and (orientation: landscape) {
+    .stations-grid {
+        height: calc(100vh - 150px);
+    }
 }
 
 .stations-grid .station-item {
@@ -34,6 +51,13 @@
 
 .stations-grid .station-item:hover {
     background-color: #f9f9f9;
+}
+
+/* Touch-устройства: отключение hover */
+@media (hover: none) and (pointer: coarse) {
+    .stations-grid .station-item:hover {
+        background-color: transparent;
+    }
 }
 
 .stations-grid .descr {
@@ -61,7 +85,12 @@
     height: 56px; /* Соответствует rowHeight */
     transform: translateY(0);
     will-change: transform; 
+}
 
+@media (max-width: 768px) {
+    .virtual-station-item {
+        height: 60px; /* Соответствует обновленному min-height */
+    }
 }
 
 .search-input {
