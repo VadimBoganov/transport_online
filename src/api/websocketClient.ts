@@ -1,7 +1,28 @@
 import { createWSAuthToken } from '@/utils/requestSigner';
 import type { VehiclePosition, VehicleForecast } from '@/types/transport';
 
-const WS_BASE_URL = import.meta.env.WS_BASE_URL || 'ws://localhost:8000';
+/**
+ * Определяет URL для WebSocket соединения с автоматическим выбором протокола.
+ * Если WS_BASE_URL уже содержит ws:// или wss://, используется как есть.
+ * Иначе протокол определяется на основе текущего протокола страницы:
+ * - HTTPS страница → wss://
+ * - HTTP страница → ws://
+ */
+function getWebSocketUrl(): string {
+  const envUrl = import.meta.env.WS_BASE_URL || 'localhost:8000';
+  
+  if (envUrl.startsWith('ws://') || envUrl.startsWith('wss://')) {
+    return envUrl;
+  }
+  
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  
+  let host = envUrl.replace(/^https?:\/\//, '');
+  
+  return `${protocol}//${host}`;
+}
+
+const WS_BASE_URL = getWebSocketUrl();
 
 export type WSMessageType =
   | 'auth_required'

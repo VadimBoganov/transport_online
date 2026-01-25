@@ -23,7 +23,8 @@ export default defineConfig(({ mode }) => {
     define: {
       // Экспортируем переменные окружения без префикса VITE_
       'import.meta.env.API_BASE_URL': JSON.stringify(env.API_BASE_URL || 'http://localhost:8000/api'),
-      'import.meta.env.WS_BASE_URL': JSON.stringify(env.WS_BASE_URL || 'ws://localhost:8000'),
+      // Протокол (ws:// или wss://) определяется автоматически на основе протокола страницы
+      'import.meta.env.WS_BASE_URL': JSON.stringify(env.WS_BASE_URL || 'localhost:8000'),
       'import.meta.env.REST_SECRET_KEY': JSON.stringify(env.REST_SECRET_KEY || ''),
       'import.meta.env.WS_SECRET_KEY': JSON.stringify(env.WS_SECRET_KEY || ''),
     },
