@@ -1,5 +1,5 @@
 import './Stations.css';
-import { useMemo, useState, useCallback, useRef, memo } from 'react';
+import { useMemo, useState, useCallback, useRef, memo, useEffect } from 'react';
 import type { Station } from '@/types/transport';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { filterStationsBySearch } from '@/services/stationService';
@@ -9,15 +9,84 @@ interface StationsProps {
     onStationSelect?: (lat: number, lng: number, id: number, name: string) => void;
 }
 
-const StationItem = memo(({ station, onClick }: { station: Station; onClick: () => void }) => (
-    <li className="station-item" onClick={onClick}>
-        <div className="station-name-container">
-            <strong>{station.name}</strong>
-            {station.descr && <span className="descr">({station.descr})</span>}
-        </div>
-        <small>{station.type === 0 ? 'Автобусная' : 'Трамвайная'}</small>
-    </li>
-));
+const StationItem = memo(({ station, onClick }: { station: Station; onClick: () => void }) => {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const nameRef = useRef<HTMLElement>(null);
+    const descrRef = useRef<HTMLSpanElement>(null);
+    const [showDescr, setShowDescr] = useState(!!station.descr);
+
+    useEffect(() => {
+        if (!containerRef.current || !station.descr || !nameRef.current) {
+            setShowDescr(false);
+            return;
+        }
+
+        const checkOverflow = () => {
+            const container = containerRef.current;
+            const nameElement = nameRef.current;
+            const descrElement = descrRef.current;
+            if (!container || !nameElement) return;
+
+            const nameWidth = nameElement.scrollWidth;
+            const containerWidth = container.clientWidth;
+            
+            if (nameWidth > containerWidth) {
+                setShowDescr(false);
+                return;
+            }
+
+            // Для измерения используем visibility: hidden (элемент занимает место, но невидим)
+            // Это позволяет измерить полную ширину с описанием
+            if (descrElement) {
+                // Временно показываем для измерения
+                const originalVisibility = descrElement.style.visibility;
+                const originalDisplay = descrElement.style.display;
+                descrElement.style.visibility = 'hidden';
+                descrElement.style.display = 'inline';
+                
+                const totalWidth = container.scrollWidth;
+                const fits = totalWidth <= containerWidth;
+                
+                // Восстанавливаем оригинальные стили, React применит финальные через showDescr
+                descrElement.style.visibility = originalVisibility;
+                descrElement.style.display = originalDisplay;
+                
+                // Устанавливаем состояние, стили применятся через React
+                setShowDescr(fits);
+            }
+        };
+
+        const timeoutId = setTimeout(checkOverflow, 0);
+        
+        const resizeObserver = new ResizeObserver(checkOverflow);
+        if (containerRef.current) {
+            resizeObserver.observe(containerRef.current);
+        }
+
+        return () => {
+            clearTimeout(timeoutId);
+            resizeObserver.disconnect();
+        };
+    }, [station.descr, station.name]);
+
+    return (
+        <li className="station-item" onClick={onClick}>
+            <div className="station-name-container" ref={containerRef}>
+                <strong ref={nameRef}>{station.name}</strong>
+                {station.descr && (
+                    <span 
+                        className="descr" 
+                        ref={descrRef}
+                        style={{ display: showDescr ? 'inline' : 'none' }}
+                    >
+                        ({station.descr})
+                    </span>
+                )}
+            </div>
+            <small>{station.type === 0 ? 'Автобусная' : 'Трамвайная'}</small>
+        </li>
+    );
+});
 
 export default function Stations({ stations, onStationSelect }: StationsProps) {
     const [searchTerm, setSearchTerm] = useState('');

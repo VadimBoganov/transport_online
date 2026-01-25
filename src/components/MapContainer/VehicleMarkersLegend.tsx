@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import config from "@config";
 import "./VehicleMarkersLegend.css";
 
@@ -7,7 +7,33 @@ export interface VehicleMarkersLegendProps {
 }
 
 export const VehicleMarkersLegend = ({ isSidebarOpen }: VehicleMarkersLegendProps) => {
-    const [isVisible, setIsVisible] = useState(true);
+    // На desktop (> 992px) - открыта, на планшетах (768-992px) - закрыта
+    const getInitialVisibility = () => {
+        if (typeof window === 'undefined') return true;
+        return window.innerWidth > 992;
+    };
+    
+    const [isVisible, setIsVisible] = useState(getInitialVisibility);
+    
+    // Обновляем состояние при изменении размера окна
+    useEffect(() => {
+        const handleResize = () => {
+            const width = window.innerWidth;
+            if (width <= 768) {
+                // На мобильных скрыта через CSS, но состояние можно оставить
+                return;
+            } else if (width > 992) {
+                // На desktop открыта по умолчанию
+                setIsVisible(true);
+            } else {
+                // На планшетах закрыта по умолчанию
+                setIsVisible(false);
+            }
+        };
+        
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     if (!isVisible) {
         return (

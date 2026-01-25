@@ -60,10 +60,25 @@
     }
 }
 
+.station-name-container {
+    display: flex;
+    align-items: baseline;
+    overflow: hidden;
+    min-width: 0;
+    white-space: nowrap;
+}
+
+.station-name-container strong {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
 .stations-grid .descr {
     color: #0066cc;
     font-style: italic;
     margin-left: 8px;
+    flex-shrink: 0;
+    white-space: nowrap;
 }
 
 .stations-grid small {
