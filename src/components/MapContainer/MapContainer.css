@@ -93,20 +93,21 @@
 }
 
 .wrapper {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    position: absolute;
+    transform: translate(-100%, -100%);
     pointer-events: auto;
-    z-index: 4000;
-    width: calc(100vw - 40px);
-    max-width: 420px;
+    z-index: 2000;
 }
 
-@media (min-width: 769px) {
+@media (max-width: 768px) {
     .wrapper {
-        width: auto;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: calc(100vw - 40px);
         max-width: 420px;
+        z-index: 4000;
     }
 }
 
