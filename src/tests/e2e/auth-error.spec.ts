@@ -3,46 +3,38 @@ import { test, expect } from '@playwright/test';
 /**
  * Тесты для проверки обработки ошибок авторизации
  * Имитируют запросы браузера к API без токена или с невалидным токеном
+ * 
+ * Важно: Все запросы включают заголовки браузера (Origin, User-Agent, Sec-Fetch-Site),
+ * чтобы пройти проверки middleware перед проверкой токена.
+ * Без этих заголовков сервер вернет 403 (Forbidden) вместо 401 (Unauthorized).
  */
 
 const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:8000/api';
 
+// Тип для ответа API в тестах
+type ApiResponse = {
+  status: number;
+  statusText: string;
+  body: string;
+  ok: boolean;
+};
+
 test.describe('Ошибки авторизации API', () => {
   test('Запрос к API без токена авторизации должен вернуть ошибку 401', async ({ page }) => {
-    let requestFailed = false;
-    let responseStatus = 0;
-    let responseBody = '';
-
-    // Перехватываем запросы к API
-    page.on('response', async (response) => {
-      const url = response.url();
-      if (url.includes('/api/') && !url.includes('/auth/token')) {
-        if (response.status() === 401) {
-          requestFailed = true;
-          responseStatus = response.status();
-          responseBody = await response.text().catch(() => '');
-        }
-      }
-    });
-
-    // Перехватываем ошибки запросов
-    page.on('requestfailed', (request) => {
-      const url = request.url();
-      if (url.includes('/api/') && !url.includes('/auth/token')) {
-        requestFailed = true;
-      }
-    });
-
     // Загружаем страницу
     await page.goto('/');
 
     // Делаем запрос к API без токена через evaluate
-    const result = await page.evaluate(async (apiUrl) => {
+    // Добавляем заголовки браузера для прохождения проверок middleware
+    const result = await page.evaluate(async (apiUrl: string) => {
       try {
         const response = await fetch(`${apiUrl}/routes`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            'Origin': 'http://localhost:5173',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Sec-Fetch-Site': 'same-origin',
             // НЕ добавляем Authorization заголовок
           },
         });
@@ -61,7 +53,7 @@ test.describe('Ошибки авторизации API', () => {
           ok: false,
         };
       }
-    }, API_BASE_URL);
+    }, API_BASE_URL) as { status: number; statusText: string; body: string; ok: boolean };
 
     // Проверяем, что получили ошибку авторизации
     expect(result.status).toBe(401);
@@ -73,12 +65,15 @@ test.describe('Ошибки авторизации API', () => {
     await page.goto('/');
 
     // Делаем запрос к API с невалидным токеном
-    const result = await page.evaluate(async (apiUrl) => {
+    const result = await page.evaluate(async (apiUrl: string) => {
       try {
         const response = await fetch(`${apiUrl}/routes`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            'Origin': 'http://localhost:5173',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Sec-Fetch-Site': 'same-origin',
             'Authorization': 'Bearer invalid_token_12345',
           },
         });
@@ -97,7 +92,7 @@ test.describe('Ошибки авторизации API', () => {
           ok: false,
         };
       }
-    }, API_BASE_URL);
+    }, API_BASE_URL) as ApiResponse;
 
     // Проверяем, что получили ошибку авторизации
     expect(result.status).toBe(401);
@@ -108,15 +103,21 @@ test.describe('Ошибки авторизации API', () => {
     // Загружаем страницу
     await page.goto('/');
 
-    // Делаем запрос к API с истекшим токеном (формат JWT, но с истекшим временем)
-    const expiredToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MDAwMDAwMDB9.expired';
+    // Создаем истекший токен в формате сервера: randomPart:timestamp:signature
+    // Используем старый timestamp (более 1 часа назад) для имитации истекшего токена
+    // Сервер проверяет: time.Since(timestamp) > tokenTTL (1 час)
+    const oldTimestamp = Math.floor(Date.now() / 1000) - 7200; // 2 часа назад
+    const expiredToken = `expired_random_part:${oldTimestamp}:invalid_signature`;
     
-    const result = await page.evaluate(async (apiUrl, token) => {
+    const result = await page.evaluate(async ({ apiUrl, token }: { apiUrl: string; token: string }) => {
       try {
         const response = await fetch(`${apiUrl}/routes`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            'Origin': 'http://localhost:5173',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Sec-Fetch-Site': 'same-origin',
             'Authorization': `Bearer ${token}`,
           },
         });
@@ -135,11 +136,19 @@ test.describe('Ошибки авторизации API', () => {
           ok: false,
         };
       }
-    }, API_BASE_URL, expiredToken);
+    }, { apiUrl: API_BASE_URL, token: expiredToken });
 
     // Проверяем, что получили ошибку авторизации
-    expect(result.status).toBe(401);
-    expect(result.ok).toBe(false);
+    // Сервер должен вернуть 401 для истекшего или невалидного токена
+    // Если токен в неправильном формате, ValidateToken вернет false и вернется 401
+    const apiResult = result as ApiResponse;
+    expect(apiResult.status).toBe(401);
+    expect(apiResult.ok).toBe(false);
+    
+    // Дополнительно проверяем, что в теле ответа есть информация об ошибке
+    if (apiResult.body) {
+      expect(apiResult.body).toContain('error');
+    }
   });
 
   test('Запрос к API без заголовка Authorization должен вернуть ошибку 401', async ({ page }) => {
@@ -147,12 +156,15 @@ test.describe('Ошибки авторизации API', () => {
     await page.goto('/');
 
     // Делаем запрос к API без заголовка Authorization
-    const result = await page.evaluate(async (apiUrl) => {
+    const result = await page.evaluate(async (apiUrl: string) => {
       try {
         const response = await fetch(`${apiUrl}/stations`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            'Origin': 'http://localhost:5173',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Sec-Fetch-Site': 'same-origin',
             // Полностью отсутствует заголовок Authorization
           },
         });
@@ -171,7 +183,7 @@ test.describe('Ошибки авторизации API', () => {
           ok: false,
         };
       }
-    }, API_BASE_URL);
+    }, API_BASE_URL) as ApiResponse;
 
     // Проверяем, что получили ошибку авторизации
     expect(result.status).toBe(401);
@@ -183,12 +195,15 @@ test.describe('Ошибки авторизации API', () => {
     await page.goto('/');
 
     // Делаем запрос к API с пустым токеном
-    const result = await page.evaluate(async (apiUrl) => {
+    const result = await page.evaluate(async (apiUrl: string) => {
       try {
         const response = await fetch(`${apiUrl}/routes`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            'Origin': 'http://localhost:5173',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Sec-Fetch-Site': 'same-origin',
             'Authorization': 'Bearer ',
           },
         });
@@ -207,7 +222,7 @@ test.describe('Ошибки авторизации API', () => {
           ok: false,
         };
       }
-    }, API_BASE_URL);
+    }, API_BASE_URL) as ApiResponse;
 
     // Проверяем, что получили ошибку авторизации
     expect(result.status).toBe(401);
@@ -219,12 +234,15 @@ test.describe('Ошибки авторизации API', () => {
     await page.goto('/');
 
     // Делаем запрос к API с токеном в неправильном формате (без "Bearer ")
-    const result = await page.evaluate(async (apiUrl) => {
+    const result = await page.evaluate(async (apiUrl: string) => {
       try {
         const response = await fetch(`${apiUrl}/routes`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            'Origin': 'http://localhost:5173',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Sec-Fetch-Site': 'same-origin',
             'Authorization': 'some_token_without_bearer_prefix',
           },
         });
@@ -243,7 +261,7 @@ test.describe('Ошибки авторизации API', () => {
           ok: false,
         };
       }
-    }, API_BASE_URL);
+    }, API_BASE_URL) as ApiResponse;
 
     // Проверяем, что получили ошибку авторизации
     expect(result.status).toBe(401);
