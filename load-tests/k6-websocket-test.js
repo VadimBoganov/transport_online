@@ -21,6 +21,7 @@ export const options = {
 
 const API_BASE_URL = __ENV.API_BASE_URL || 'http://localhost:8000/api';
 const WS_BASE_URL = __ENV.WS_BASE_URL || 'ws://localhost:8000';
+const WS_ORIGIN = __ENV.WS_ORIGIN || 'http://localhost:5173';
 
 function getAuthToken() {
   const response = http.get(`${API_BASE_URL}/auth/token`);
@@ -49,7 +50,14 @@ export default function () {
 
   const wsUrl = `${WS_BASE_URL}/ws`;
   
-  const response = ws.connect(wsUrl, null, function (socket) {
+  // Добавляем Origin заголовок для прохождения проверки на сервере
+  const params = {
+    headers: {
+      'Origin': WS_ORIGIN,
+    },
+  };
+  
+  const response = ws.connect(wsUrl, params, function (socket) {
     let authenticated = false;
     let messagesReceived = 0;
     let lastPingTime = 0;

@@ -42,7 +42,12 @@ k6 предоставляет более детальную аналитику �
 npm run load-test:k6
 
 # С кастомными параметрами
-API_BASE_URL=http://localhost:8000/api WS_BASE_URL=ws://localhost:8000 k6 run load-tests/k6-websocket-test.js
+API_BASE_URL=http://localhost:8000/api WS_BASE_URL=ws://localhost:8000 WS_ORIGIN=http://localhost:5173 k6 run load-tests/k6-websocket-test.js
+
+# Переменные окружения для k6:
+# - API_BASE_URL: URL API сервера (по умолчанию: http://localhost:8000/api)
+# - WS_BASE_URL: URL WebSocket сервера (по умолчанию: ws://localhost:8000)
+# - WS_ORIGIN: Origin заголовок для WebSocket (по умолчанию: http://localhost:5173)
 
 # С выводом результатов в файл
 k6 run --out json=load-tests/results/k6-results.json load-tests/k6-websocket-test.js
