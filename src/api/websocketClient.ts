@@ -1,5 +1,5 @@
 import { createWSAuthToken } from '@/utils/requestSigner';
-import type { VehiclePosition, StationForecast, VehicleForecast } from '@/types/transport';
+import type { VehiclePosition, VehicleForecast } from '@/types/transport';
 
 const WS_BASE_URL = import.meta.env.WS_BASE_URL || 'ws://localhost:8000';
 
@@ -146,10 +146,10 @@ class WebSocketClient {
     }
   }
 
-  subscribeStationForecast(sid: number, handler: (data: StationForecast[]) => void) {
+  subscribeStationForecast(sid: number, handler: (data: VehicleForecast[]) => void) {
     const messageHandler = (message: WSMessage) => {
       if (!message.sid || message.sid === sid) {
-        handler((message.data || message) as StationForecast[]);
+        handler((message.data || message) as VehicleForecast[]);
       }
     };
 

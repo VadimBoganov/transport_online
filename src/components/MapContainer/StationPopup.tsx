@@ -43,7 +43,7 @@ function StationPopupContent({ forecasts }: { forecasts: VehicleForecast[] | nul
                                         {Math.round(current.arrt / 60)} мин
                                         {next ? (
                                             <><br /><small>→ {Math.round(next.arrt / 60)} мин</small></>
-                                        ) : <><br /><small>→ отсутствует</small></>}
+                                        ) : <><br /><small>→ нет ТС</small></>}
                                     </td>
                                 </tr>
                             );

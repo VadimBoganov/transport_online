@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import type { StationForecast } from '@/types/transport';
+import type { VehicleForecast } from '@/types/transport';
 import { getWebSocketClient } from '@/api/websocketClient';
 
 interface UseStationForecastProps {
@@ -7,11 +7,11 @@ interface UseStationForecastProps {
 }
 
 export default function useStationForecast({ stationId }: UseStationForecastProps) {
-    const [data, setData] = useState<StationForecast[]>([]);
+    const [data, setData] = useState<VehicleForecast[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
     const wsClientRef = useRef(getWebSocketClient());
-    const handlerRef = useRef<((data: StationForecast[]) => void) | null>(null);
+    const handlerRef = useRef<((data: VehicleForecast[]) => void) | null>(null);
 
     useEffect(() => {
         if (!stationId) {
@@ -32,7 +32,7 @@ export default function useStationForecast({ stationId }: UseStationForecastProp
                     await wsClient.connect();
                 }
 
-                const handler = (forecastData: StationForecast[]) => {
+                const handler = (forecastData: VehicleForecast[]) => {
                     if (isMounted) {
                         setData(Array.isArray(forecastData) ? forecastData : []);
                         setIsLoading(false);
