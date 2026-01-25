@@ -1,5 +1,5 @@
 import { API_ENDPOINTS } from './endpoints';
-import { signRequest } from '@/utils/requestSigner';
+import { tokenService } from '@/services/tokenService';
 import type { Route, Station, RouteNode, VehiclePosition, StationForecast, VehicleForecast } from '@/types/transport';
 
 export interface ApiError {
@@ -66,23 +66,9 @@ class ApiClient {
 
   private async request<T>(url: string, options: RequestOptions = {}): Promise<T> {
     const { params = {}, ...fetchOptions } = options;
-    const method = (options.method || 'GET').toUpperCase();
 
-    const urlObj = new URL(url, window.location.origin);
-    const path = urlObj.pathname;
-
-    const pathParams: Record<string, string> = {};
-    const pathParts = path.split('/');
-    
-    if (path.includes('/routenodes/')) {
-      const rid = pathParts[pathParts.length - 1];
-      if (rid && !isNaN(Number(rid))) {
-        pathParams['rid'] = rid;
-      }
-    }
-
-    const timestamp = Date.now();
-    const { signature } = await signRequest(method, path, params, pathParams, timestamp);
+    // Получаем токен (автоматически обновляется при необходимости)
+    const token = await tokenService.getToken();
 
     let finalUrl = url;
     if (Object.keys(params).length > 0) {
@@ -98,8 +84,7 @@ class ApiClient {
         ...fetchOptions,
         headers: {
           ...this.baseHeaders,
-          'X-Request-Signature': signature,
-          'X-Request-Timestamp': timestamp.toString(),
+          'Authorization': `Bearer ${token}`,
           ...fetchOptions.headers,
         },
       });

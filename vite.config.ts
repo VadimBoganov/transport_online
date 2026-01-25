@@ -10,7 +10,8 @@ export default defineConfig(({ mode }) => {
   
   return {
     plugins: [react()],
-    envPrefix: '', // Загружаем все переменные без префикса
+    // Не используем envPrefix: '', так как это небезопасно
+    // Все нужные переменные явно определены через define ниже
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),
@@ -25,8 +26,7 @@ export default defineConfig(({ mode }) => {
       'import.meta.env.API_BASE_URL': JSON.stringify(env.API_BASE_URL || 'http://localhost:8000/api'),
       // Протокол (ws:// или wss://) определяется автоматически на основе протокола страницы
       'import.meta.env.WS_BASE_URL': JSON.stringify(env.WS_BASE_URL || 'localhost:8000'),
-      'import.meta.env.REST_SECRET_KEY': JSON.stringify(env.REST_SECRET_KEY || ''),
-      'import.meta.env.WS_SECRET_KEY': JSON.stringify(env.WS_SECRET_KEY || ''),
+      // Секретные ключи больше не нужны - используем токены
     },
     test: {
       environment: 'jsdom', 

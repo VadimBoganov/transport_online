@@ -1,4 +1,4 @@
-import { createWSAuthToken } from '@/utils/requestSigner';
+import { tokenService } from '@/services/tokenService';
 import type { VehiclePosition, VehicleForecast } from '@/types/transport';
 
 /**
@@ -97,13 +97,12 @@ class WebSocketClient {
     }
 
     try {
-      const timestamp = Date.now();
-      const token = await createWSAuthToken(timestamp);
+      // Получаем токен из токен-сервиса
+      const token = await tokenService.getToken();
 
       this.send({
         type: 'auth',
         token,
-        timestamp,
       });
     } catch (error) {
       this.notifyError('Authentication failed');
