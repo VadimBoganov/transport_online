@@ -13,7 +13,9 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:debug": "playwright test --debug",
-    "test:e2e:report": "playwright show-report"
+    "test:e2e:report": "playwright show-report",
+    "load-test:k6": "k6 run load-tests/k6-websocket-test.js",
+    "load-test:node": "node load-tests/nodejs-load-test.js"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.90.16",
@@ -46,6 +48,7 @@
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
     "vite": "^7.2.4",
-    "vitest": "^4.0.16"
+    "vitest": "^4.0.16",
+    "ws": "^8.18.0"
   }
 }

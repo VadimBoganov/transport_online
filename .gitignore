@@ -32,6 +32,10 @@ coverage
 /playwright/.cache/
 /playwright-results/
 
+# Load tests
+/load-tests/results/
+/load-tests/*.log
+
 # Environment variables
 .env
 .env.local
