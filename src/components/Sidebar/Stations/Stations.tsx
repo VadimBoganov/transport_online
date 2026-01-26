@@ -38,7 +38,6 @@ const StationItem = memo(({ station, onClick }: { station: Station; onClick: () 
             // Для измерения используем visibility: hidden (элемент занимает место, но невидим)
             // Это позволяет измерить полную ширину с описанием
             if (descrElement) {
-                // Временно показываем для измерения
                 const originalVisibility = descrElement.style.visibility;
                 const originalDisplay = descrElement.style.display;
                 descrElement.style.visibility = 'hidden';
@@ -47,11 +46,9 @@ const StationItem = memo(({ station, onClick }: { station: Station; onClick: () 
                 const totalWidth = container.scrollWidth;
                 const fits = totalWidth <= containerWidth;
                 
-                // Восстанавливаем оригинальные стили, React применит финальные через showDescr
                 descrElement.style.visibility = originalVisibility;
                 descrElement.style.display = originalDisplay;
                 
-                // Устанавливаем состояние, стили применятся через React
                 setShowDescr(fits);
             }
         };
