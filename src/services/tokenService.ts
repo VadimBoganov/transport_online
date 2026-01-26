@@ -1,33 +1,41 @@
-/**
- * Сервис для управления токенами аутентификации
- * Токены выдаются бэкендом и используются для доступа к API и WebSocket
- */
-
 interface TokenResponse {
-  token: string;
+  access_token: string;
+  refresh_token: string;
   expires_at: number;
   ttl: number;
 }
 
+declare global {
+  interface Window {
+    grecaptcha?: {
+      ready: (callback: () => void) => void;
+      execute: (siteKey: string, options: { action: string }) => Promise<string>;
+    };
+  }
+}
+
 class TokenService {
-  private token: string | null = null;
-  private expiresAt: number = 0;
+  private accessToken: string | null = null;
+  private refreshToken: string | null = null;
+  private accessExpiresAt: number = 0;
+  private refreshExpiresAt: number = 0;
   private refreshPromise: Promise<string> | null = null;
 
-
   async getToken(): Promise<string> {
-    // Если токен валиден, возвращаем его
-    if (this.token && Date.now() < this.expiresAt - 60000) { // Обновляем за минуту до истечения
-      return this.token;
+    if (this.accessToken && Date.now() < this.accessExpiresAt - 60000) {
+      return this.accessToken;
     }
 
-    // Если уже идет запрос на обновление, ждем его
     if (this.refreshPromise) {
       return this.refreshPromise;
     }
 
-    // Запрашиваем новый токен
-    this.refreshPromise = this.fetchToken();
+    if (this.refreshToken && Date.now() < this.refreshExpiresAt) {
+      this.refreshPromise = this.refreshAccessToken();
+    } else {
+      this.refreshPromise = this.fetchToken();
+    }
+
     try {
       const token = await this.refreshPromise;
       return token;
@@ -36,12 +44,17 @@ class TokenService {
     }
   }
 
-
   private async fetchToken(): Promise<string> {
     const API_BASE_URL = import.meta.env.API_BASE_URL || 'http://localhost:8000/api';
+    const recaptchaToken = await this.getRecaptchaToken();
+
+    const url = new URL(`${API_BASE_URL}/auth/token`);
+    if (recaptchaToken) {
+      url.searchParams.set('recaptcha_token', recaptchaToken);
+    }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/token`, {
+      const response = await fetch(url.toString(), {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -54,25 +67,112 @@ class TokenService {
 
       const data: TokenResponse = await response.json();
 
-      this.token = data.token;
-      this.expiresAt = data.expires_at * 1000; // Конвертируем в миллисекунды
+      this.accessToken = data.access_token;
+      this.refreshToken = data.refresh_token;
+      this.accessExpiresAt = data.expires_at * 1000;
+      this.refreshExpiresAt = data.expires_at * 1000 + (14 * 24 * 60 * 60 * 1000);
 
-      return this.token;
+      return this.accessToken;
     } catch (error) {
       console.error('Error fetching token:', error);
       throw error;
     }
   }
 
+  private async refreshAccessToken(): Promise<string> {
+    if (!this.refreshToken) {
+      return this.fetchToken();
+    }
 
-  clearToken(): void {
-    this.token = null;
-    this.expiresAt = 0;
+    const API_BASE_URL = import.meta.env.API_BASE_URL || 'http://localhost:8000/api';
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          refresh_token: this.refreshToken,
+        }),
+      });
+
+      if (!response.ok) {
+        this.refreshToken = null;
+        return this.fetchToken();
+      }
+
+      const data: TokenResponse = await response.json();
+
+      this.accessToken = data.access_token;
+      this.refreshToken = data.refresh_token;
+      this.accessExpiresAt = data.expires_at * 1000;
+      this.refreshExpiresAt = data.expires_at * 1000 + (14 * 24 * 60 * 60 * 1000);
+
+      return this.accessToken;
+    } catch (error) {
+      console.error('Error refreshing token:', error);
+      this.refreshToken = null;
+      this.refreshExpiresAt = 0;
+      return this.fetchToken();
+    }
   }
 
+  private async getRecaptchaToken(): Promise<string | null> {
+    if (typeof window === 'undefined') {
+      return null;
+    }
+
+    const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
+    if (!siteKey) {
+      return null;
+    }
+
+    if (!window.grecaptcha) {
+      return new Promise((resolve) => {
+        const checkInterval = setInterval(() => {
+          if (window.grecaptcha) {
+            clearInterval(checkInterval);
+            window.grecaptcha.ready(() => {
+              window.grecaptcha!
+                .execute(siteKey, { action: 'get_token' })
+                .then(resolve)
+                .catch(() => resolve(null));
+            });
+          }
+        }, 100);
+
+        setTimeout(() => {
+          clearInterval(checkInterval);
+          resolve(null);
+        }, 5000);
+      });
+    }
+
+    try {
+      return await new Promise<string | null>((resolve) => {
+        window.grecaptcha!.ready(() => {
+          window
+            .grecaptcha!.execute(siteKey, { action: 'get_token' })
+            .then(resolve)
+            .catch(() => resolve(null));
+        });
+      });
+    } catch (error) {
+      console.warn('reCAPTCHA error:', error);
+      return null;
+    }
+  }
+
+  clearToken(): void {
+    this.accessToken = null;
+    this.refreshToken = null;
+    this.accessExpiresAt = 0;
+    this.refreshExpiresAt = 0;
+  }
 
   hasValidToken(): boolean {
-    return this.token !== null && Date.now() < this.expiresAt;
+    return this.accessToken !== null && Date.now() < this.accessExpiresAt;
   }
 }
 
