@@ -66,7 +66,7 @@ npm run preview
 ```bash
 # Сборка production образа с указанием API URL
 docker build -t transport-online:latest \
-  --build-arg VITE_API_BASE_URL=http://your-api-server:8000/api .
+  --build-arg API_BASE_URL=http://your-api-server:8000/api .
 
 # Запуск контейнера
 docker run -d -p 8080:80 \
@@ -76,7 +76,7 @@ docker run -d -p 8080:80 \
 # Приложение будет доступно по адресу: http://localhost:8080
 ```
 
-**Важно**: Переменная `VITE_API_BASE_URL` должна быть указана при сборке образа через `--build-arg`, так как Vite встраивает переменные окружения в код во время сборки.
+**Важно**: Переменная `API_BASE_URL` должна быть указана при сборке образа через `--build-arg`, так как Vite встраивает переменные окружения в код во время сборки.
 
 ### Development (Docker)
 
@@ -88,7 +88,7 @@ docker build -f Dockerfile.dev -t transport-online:dev .
 docker run -d -p 5173:5173 \
   -v $(pwd):/app \
   -v /app/node_modules \
-  -e VITE_API_BASE_URL=http://localhost:8000/api \
+  -e API_BASE_URL=http://localhost:8000/api \
   --name transport-online-dev \
   transport-online:dev
 ```
@@ -119,13 +119,13 @@ docker-compose down
 Создайте файл `.env` в корне проекта:
 
 ```env
-VITE_API_BASE_URL=http://your-api-server:8000/api
+API_BASE_URL=http://your-api-server:8000/api
 ```
 
 Или передайте переменные напрямую:
 
 ```bash
-VITE_API_BASE_URL=http://api.example.com/api docker-compose up -d app
+API_BASE_URL=http://api.example.com/api docker-compose up -d app
 ```
 
 **Порты:**
