@@ -1,6 +1,10 @@
-import type { StationForecast, VehicleForecast } from "@/types/transport";
+import type { VehicleForecast } from "@/types/transport";
 
-export const sortForecastsByArrivalTime = (forecasts: StationForecast[] | undefined): StationForecast[] => {
+type ForecastWithArrival = { arrt: number };
+
+export const sortForecastsByArrivalTime = <T extends ForecastWithArrival>(
+    forecasts: T[] | undefined
+): T[] => {
     if (!forecasts) return [];
 
     return forecasts.sort((a, b) => a.arrt - b.arrt);
@@ -10,12 +14,14 @@ export const formatArrivalMinutes = (arrt: number): number => {
     return Math.round(arrt / 60);
 };
 
-export const isForecastValid = (forecast: StationForecast): boolean => {
+export const isForecastValid = (forecast: ForecastWithArrival): boolean => {
     const now = Math.floor(Date.now() / 1000);
     return forecast.arrt > now - 60 * 5;
 };
 
-export const processForecasts = (forecasts: StationForecast[] | undefined): StationForecast[] => {
+export const processForecasts = <T extends ForecastWithArrival>(
+    forecasts: T[] | undefined
+): T[] => {
     return sortForecastsByArrivalTime(forecasts);
 };
 

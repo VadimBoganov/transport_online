@@ -1,7 +1,7 @@
 import { GeoJson, Map as PigeonMap, Overlay } from "pigeon-maps";
 import { Suspense, useMemo, memo, useRef } from "react";
 import "./MapContainer.css";
-import type { Route, SelectedRoute, SelectedStation, SelectedVehicle } from "@/types/transport";
+import type { Route, SelectedRoute, SelectedStation, SelectedVehicle, StationForecast } from "@/types/transport";
 import { MemoizedStationPopup } from "@components/MapContainer/StationPopup";
 import { useMapData } from "@/hooks/useMapData";
 import { VehicleCanvasLayer } from "./VehicleCanvasLayer";
@@ -132,7 +132,7 @@ function MapContainerComponent({
                 />
 
                 {sortedForecasts && sortedForecasts.length > 0 && !activeSelectedStation &&
-                    sortedForecasts.map((forecast, index) => (
+                    (sortedForecasts as StationForecast[]).map((forecast, index) => (
                         <Overlay
                             key={`forecast-${selectedVehicle?.id}-${forecast.stid}-${index}`}
                             anchor={[normalizeCoordinate(forecast.lat0), normalizeCoordinate(forecast.lng0)]}

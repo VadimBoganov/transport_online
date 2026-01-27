@@ -1,6 +1,6 @@
 import { API_ENDPOINTS } from './endpoints';
 import { tokenService } from '@/services/tokenService';
-import type { Route, Station, RouteNode, VehiclePosition, StationForecast, VehicleForecast } from '@/types/transport';
+import type { Route, Station, RouteNode } from '@/types/transport';
 
 export interface ApiError {
   message: string;

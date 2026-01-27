@@ -4,10 +4,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        - VITE_API_BASE_URL=${VITE_API_BASE_URL:-http://localhost:8000/api}
     ports:
-      - "8080:80"
+      - "49050:80"
+    environment:
+      - API_BASE_URL=${API_BASE_URL:-http://localhost:8000/api}
     restart: unless-stopped
     networks:
       - transport-network
@@ -23,7 +23,7 @@ services:
       - .:/app
       - /app/node_modules
     environment:
-      - VITE_API_BASE_URL=${VITE_API_BASE_URL:-http://localhost:8000/api}
+      - API_BASE_URL=${API_BASE_URL:-http://localhost:8000/api}
     restart: unless-stopped
     networks:
       - transport-network

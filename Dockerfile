@@ -5,15 +5,18 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Аргументы сборки для переменных окружения
-ARG VITE_API_BASE_URL=http://localhost:8000/api
-ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+# Аргументы сборки для переменных окружения // must have
+ARG API_BASE_URL=http://localhost:8000/api
+ENV API_BASE_URL=$API_BASE_URL
+
+ARG WS_BASE_URL=localhost:8000
+ENV WS_BASE_URL=$WS_BASE_URL
 
 # Копируем файлы зависимостей
 COPY package.json package-lock.json ./
 
-# Устанавливаем зависимости (без devDependencies для production)
-RUN npm ci --omit=dev
+# Устанавливаем все зависимости (dev-зависимости нужны только на этапе сборки)
+RUN npm ci
 
 # Копируем исходный код
 COPY . .

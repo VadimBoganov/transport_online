@@ -24,7 +24,7 @@ export default defineConfig(({ mode }) => {
     define: {
       'import.meta.env.API_BASE_URL': JSON.stringify(env.API_BASE_URL || 'http://localhost:8000/api'),
       'import.meta.env.WS_BASE_URL': JSON.stringify(env.WS_BASE_URL || 'localhost:8000'),
-      'import.meta.env.RECAPTCHA_SITE_KEY': JSON.stringify(env.VITE_RECAPTCHA_SITE_KEY || ''),
+      'import.meta.env.RECAPTCHA_SITE_KEY': JSON.stringify(env.RECAPTCHA_SITE_KEY || ''),
     },
     test: {
       environment: 'jsdom', 
