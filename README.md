@@ -138,15 +138,6 @@ API_BASE_URL=http://api.example.com/api WS_BASE_URL=ws.example.com docker-compos
 - Production: `49050` (внутри контейнера: `80`)
 - Development: `5173` (внутри контейнера: `5173`)
 
-**Health Check:**
-
-Production контейнер имеет health check endpoint:
-
-```bash
-curl http://localhost:8080/health
-# Ответ: healthy
-```
-
 ### Docker Compose файлы
 
 - `docker-compose.yml` - основной файл с production и development сервисами
