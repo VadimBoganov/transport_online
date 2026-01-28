@@ -109,8 +109,9 @@
 
 @media (max-width: 480px) {
     .station-popup {
-        min-width: calc(100vw - 40px);
-        max-width: calc(100vw - 40px);
+        width: 100%;
+        max-width: 100%;
+        min-width: auto;
         max-height: 80vh;
         overflow-y: auto;
     }
@@ -126,7 +127,8 @@
 
 @media (max-width: 360px) {
     .station-popup {
-        min-width: calc(100vw - 20px);
-        max-width: calc(100vw - 20px);
+        width: 100%;
+        max-width: 100%;
+        min-width: auto;
     }
 }

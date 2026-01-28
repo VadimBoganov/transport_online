@@ -4,6 +4,7 @@ import { useCanvasVehicleAnimations } from "@/hooks/useCanvasVehicleAnimations";
 import { useVehicleMarkerPositions } from "@/hooks/useVehicleMarkerPositions";
 import { useVehicleCanvasRender } from "@/hooks/useVehicleCanvasRender";
 import { getTimeSinceUpdate } from "@/utils/timeUtils";
+import { useIsDesktop } from "@/hooks/useIsDesktop";
 import "./VehicleCanvasLayer.css";
 
 interface VehicleCanvasLayerProps {
@@ -33,6 +34,7 @@ export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
     const containerRef = useRef<HTMLDivElement>(null);
     const [hoveredVehicleId, setHoveredVehicleId] = useState<string | null>(null);
     const [currentTime, setCurrentTime] = useState(Date.now());
+    const isDesktop = useIsDesktop();
 
     const dimensions = mapState
         ? { width: mapState.width, height: mapState.height }
@@ -76,14 +78,14 @@ export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
     });
 
     useEffect(() => {
-        if (!hoveredVehicleId) return;
+        if (!isDesktop || !hoveredVehicleId) return;
 
         const interval = setInterval(() => {
             setCurrentTime(Date.now());
         }, 1000);
 
         return () => clearInterval(interval);
-    }, [hoveredVehicleId]);
+    }, [hoveredVehicleId, isDesktop]);
 
     const hoveredVehicle = hoveredVehicleId
         ? vehicles.find(v => v.id === hoveredVehicleId)
@@ -112,8 +114,8 @@ export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
                         e.stopPropagation();
                         onVehicleClick(pos.vehicle);
                     }}
-                    onMouseEnter={() => setHoveredVehicleId(pos.vehicle.id)}
-                    onMouseLeave={() => setHoveredVehicleId(null)}
+                    onMouseEnter={isDesktop ? () => setHoveredVehicleId(pos.vehicle.id) : undefined}
+                    onMouseLeave={isDesktop ? () => setHoveredVehicleId(null) : undefined}
                     className="vehicle-marker-clickable"
                     style={{
                         left: pos.x - pos.radius,
@@ -123,7 +125,7 @@ export const VehicleCanvasLayer: React.FC<VehicleCanvasLayerProps> = ({
                     }}
                 />
             ))}
-            {hoveredVehicle && hoveredPosition && (
+            {isDesktop && hoveredVehicle && hoveredPosition && (
                 <div
                     className="vehicle-tooltip"
                     style={{

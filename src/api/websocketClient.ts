@@ -51,7 +51,6 @@ type ErrorHandler = (error: string) => void;
 class WebSocketClient {
   private ws: WebSocket | null = null;
   private reconnectAttempts = 0;
-  private maxReconnectAttempts = 5;
   private reconnectDelay = 1000;
   private isAuthenticated = false;
   private messageHandlers = new Map<WSMessageType, MessageHandler[]>();
@@ -263,17 +262,17 @@ class WebSocketClient {
   }
 
   private attemptReconnect() {
-    if (this.reconnectAttempts < this.maxReconnectAttempts) {
-      this.reconnectAttempts++;
-      const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1);
-      
-      setTimeout(() => {
-        this.connect().catch(() => {
-        });
-      }, delay);
-    } else {
-      this.notifyError('Failed to reconnect to WebSocket');
-    }
+    this.reconnectAttempts++;
+    const delay = Math.min(
+      this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1),
+      30000,
+    );
+
+    setTimeout(() => {
+      this.connect().catch(() => {
+        this.notifyError('Failed to reconnect to WebSocket');
+      });
+    }, delay);
   }
 
   disconnect() {
